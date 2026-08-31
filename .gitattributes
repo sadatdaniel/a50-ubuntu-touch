@@ -1,0 +1,20 @@
+# Consumed on Linux; routinely cloned on Windows, where git's default
+# core.autocrlf=true rewrites text files on checkout and breaks things quietly:
+# a CRLF shebang makes a script "no such file or directory", and a field match
+# against "value\r" silently fails. Both have already cost this project time -
+# see a50-halium's .gitattributes commit. Force LF.
+* text=auto eol=lf
+deviceinfo text eol=lf
+build.sh text eol=lf
+*.sh text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.rules text eol=lf
+*.conf text eol=lf
+*.sha256 text eol=lf
+ramdisk-overlay/** text eol=lf
+overlay/** text eol=lf
+
+*.img binary
+*.gz binary
+*.xz binary

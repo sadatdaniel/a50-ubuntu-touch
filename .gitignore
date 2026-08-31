@@ -1,0 +1,8 @@
+# halium-generic-adaptation-build-tools, cloned by build.sh
+/build/
+
+# Build outputs
+/workdir/
+/out/
+/ota/
+/images/

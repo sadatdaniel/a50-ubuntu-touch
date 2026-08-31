@@ -1,0 +1,165 @@
+# Samsung Galaxy A50 (SM-A505F) - Ubuntu Touch 26.04
+#
+# Consumed by halium-generic-adaptation-build-tools (see build.sh). Option
+# names and semantics come from that project's deviceinfo.sample; do not
+# invent options here.
+#
+# PROVENANCE MARKERS. This project's first rule is "verify, never assume", so
+# every value below is marked:
+#
+#   [V] verified - read out of a boot image that has actually booted this
+#       device, or out of the kernel tree, and checked
+#   [C] convention - required or strongly implied by the upstream porting
+#       guide, not yet exercised on this device
+#   [?] unverified - a best guess that has NOT been tested. Treat as a bug
+#       until it is either confirmed or replaced.
+#
+# Nothing in this file has yet produced a booting Ubuntu Touch image. See
+# docs/status.md.
+
+##########
+# Basic device information
+
+# [V] ro.product.model / marketing name
+deviceinfo_name="Galaxy A50"
+deviceinfo_manufacturer="Samsung"
+deviceinfo_codename="a50"
+deviceinfo_arch="aarch64"
+deviceinfo_kernel_arch="arm64"
+
+# [V] The vendor base is Android 11. The kernel tree's own build.sh exports
+#     ANDROID_MAJOR_VERSION="r" and PLATFORM_VERSION="11.0.0", and the working
+#     Droidian port runs against Android 11 vendor blobs (RP1A.200720.012).
+#     Android 11 -> Halium 11 -> LineageOS 18.1, per the UBports version table.
+deviceinfo_halium_version="11"
+
+# [C] 26.04-1.x is a supported value in prepare-fake-ota.sh, and its rootfs
+#     artifact URL resolves (HTTP 200, checked 2026-09-01). It is an early
+#     release series - expect churn.
+deviceinfo_ubuntu_touch_release="26.04-1.x"
+
+##########
+# Kernel
+#
+# READ docs/kernel.md BEFORE CHANGING ANYTHING HERE.
+#
+# This device's kernel has one hard requirement that conflicts with how the
+# adaptation build tools build kernels: a kernel built with a bare
+# `make <defconfig>` compiles cleanly and does not boot. The tree's own
+# build.sh sets KCONFIG_BUILTINCONFIG (a second baseline defconfig merged
+# through the environment), ANDROID_MAJOR_VERSION and PLATFORM_VERSION, and
+# build/build-kernel.sh in halium-generic-adaptation-build-tools sets none of
+# them. Resolving that is the first task of this port and the values below are
+# provisional until it is resolved.
+
+# [?] The branch does not exist yet. It is to be created off the commit pinned
+#     in a50-halium's kernel/source.lock (bec0c2aff1ee8a02ac9f582d60fe611f1d2bc939)
+#     with that repository's patch series applied as commits.
+deviceinfo_kernel_source="https://github.com/sadatdaniel/android_kernel_samsung_exynos9610_mint"
+deviceinfo_kernel_source_branch="ubuntu-touch-26.04"
+
+# [?] halium.config is the config fragment the UBports standalone-kernel guide
+#     requires. exynos9610-a50_core_defconfig is the tree's real defconfig -
+#     but see the warning above: it is NOT sufficient on its own, because
+#     exynos9610-a50_default_defconfig is merged in via KCONFIG_BUILTINCONFIG.
+deviceinfo_kernel_defconfig="exynos9610-a50_core_defconfig halium.config"
+
+# [V] This device's bootloader (S-Boot) SILENTLY IGNORES the boot image header
+#     command line and merges its own from the device tree's bootargs. The
+#     value here is what the known-good image carries, so it is kept for
+#     fidelity, but it does not take effect.
+#
+#     The UBports guide says `console=tty0` is mandatory for the rootfs to
+#     boot. On this device that CANNOT be delivered here - it has to be
+#     compiled into CONFIG_CMDLINE. See docs/kernel.md; this is open risk #2.
+deviceinfo_kernel_cmdline="androidboot.selinux=permissive loop.max_part=7"
+
+# [?] The boot-verified kernel is built with Proton Clang 210521, pinned in
+#     a50-halium. The adaptation tools instead fetch Google's prebuilt clang
+#     by branch/revision, so this selects a DIFFERENT compiler from the one
+#     every booting kernel of this device was built with. android11-gsi is the
+#     tools' default for Halium 11; recorded explicitly so the difference is
+#     visible rather than implicit.
+deviceinfo_kernel_clang_compile="true"
+deviceinfo_kernel_clang_branch="android11-gsi"
+
+# [V] `build.sh -v recovery` emits arch/arm64/boot/Image, uncompressed, with
+#     the DTB already inside it - the known-good boot images carry no separate
+#     dt/dtb blob (second_size 0, header v1 has no dtb field).
+deviceinfo_kernel_image_name="Image"
+
+##########
+# Boot image
+#
+# [V] Every value in this block was read out of halium-boot-canonical.img
+#     (sha256 d69a30a6...), an image that has booted this device, by unpacking
+#     its header. The addresses in the header are:
+#         kernel_addr  0x10008000   ramdisk_addr 0x00000000
+#         second_addr  0x00000000   tags_addr    0x10000100
+#         page_size    2048         header_version 1
+#
+#     a50-droidian reaches those with base=0x10000000 and a deliberately
+#     overflowing ramdisk_offset=0xf0000000, which is what the vendor's own
+#     build.sh does and what a stricter mkbootimg rejects. Setting base=0
+#     and folding the base into each offset gives the identical header with no
+#     overflow. See docs/experiments/001-bootimg-header.md.
+deviceinfo_bootimg_header_version="1"
+deviceinfo_flash_pagesize="2048"
+deviceinfo_flash_offset_base="0x00000000"
+deviceinfo_flash_offset_kernel="0x10008000"
+deviceinfo_flash_offset_ramdisk="0x00000000"
+deviceinfo_flash_offset_second="0x00000000"
+deviceinfo_flash_offset_tags="0x10000100"
+
+# [V] Board name and OS version strings, as carried by the booting image.
+deviceinfo_bootimg_board="SRPRL05B007KU"
+deviceinfo_bootimg_os_version="12.0"
+deviceinfo_bootimg_os_patch_level="2022-09"
+
+# [V] NOT SET, deliberately, and both omissions are load-bearing:
+#
+#   deviceinfo_bootimg_tailtype="SEAndroid"
+#       The usual advice for Samsung devices. The last 32 bytes of every
+#       known-good A50 boot image are zeros, not "SEANDROIDENFORCE", so this
+#       device does not want the footer and adding it would change a working
+#       image into an untested one.
+#
+#   deviceinfo_bootimg_partition_size="57671680"
+#       Setting this makes make-bootimage.sh run `avbtool add_hash_footer`,
+#       which appends an AVB footer and pads the image out to the full
+#       partition. No image that has booted this device has an AVB footer.
+#       The size limit still matters - the boot partition is exactly
+#       57,671,680 bytes and dd truncates silently past it - but it is
+#       enforced by scripts/check-boot-image.sh instead of by padding.
+
+##########
+# Ramdisk
+#
+# [C] Left at the tools' default, which downloads the upstream Halium
+#     initramfs (initramfs-tools-halium, `dynparts` release; URL checked
+#     2026-09-01, HTTP 200). ramdisk-overlay/ then overlays this device's
+#     fixes on top - see ramdisk-overlay/README.md. Four such fixes are known
+#     from the Droidian port and are expected to be needed again.
+deviceinfo_ramdisk_compression="gzip"
+
+##########
+# Rootfs
+
+# [C] Required for Ubuntu Touch 20.04 and later.
+deviceinfo_use_overlaystore="true"
+
+# [V] userdata is /dev/block/sda32 on this device and is where rootfs.img
+#     goes during bringup. 3584M is the tools' own default; not yet exercised.
+deviceinfo_system_partition_size="3584M"
+
+# [?] The device has UFS storage (13520000.ufs), so 4096 is the expected
+#     sector size, but this has not been read back off the device.
+deviceinfo_rootfs_image_sector_size="4096"
+
+##########
+# Recovery
+#
+# [C] Deliberately not built yet. The UBports guide adds recovery at the
+#     finalization stage, and this device already has a working TWRP which is
+#     the only reliable way back when a boot image fails. recovery is sda15.
+deviceinfo_has_recovery_partition="false"
