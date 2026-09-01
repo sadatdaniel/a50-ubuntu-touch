@@ -43,26 +43,35 @@ deviceinfo_ubuntu_touch_release="26.04-1.x"
 #
 # READ docs/kernel.md BEFORE CHANGING ANYTHING HERE.
 #
-# This device's kernel has one hard requirement that conflicts with how the
-# adaptation build tools build kernels: a kernel built with a bare
-# `make <defconfig>` compiles cleanly and does not boot. The tree's own
-# build.sh sets KCONFIG_BUILTINCONFIG (a second baseline defconfig merged
-# through the environment), ANDROID_MAJOR_VERSION and PLATFORM_VERSION, and
-# build/build-kernel.sh in halium-generic-adaptation-build-tools sets none of
-# them. Resolving that is the first task of this port and the values below are
-# provisional until it is resolved.
+# This device's kernel had one hard conflict with how the adaptation tools
+# build kernels: a bare `make <defconfig>` of the tree's checked-in defconfigs
+# compiles cleanly and does not boot. RESOLVED 2026-09-01 (experiment 002):
+# the tree's build.sh assembles its config from core + four merge_config
+# fragments + an appended block (NOT via KCONFIG_BUILTINCONFIG, which this
+# kconfig never reads), and halium_a50_defconfig on the branch below carries
+# that whole recipe. The boot test of the tools-built kernel is still open.
 
-# [?] The branch does not exist yet. It is to be created off the commit pinned
-#     in a50-halium's kernel/source.lock (bec0c2aff1ee8a02ac9f582d60fe611f1d2bc939)
-#     with that repository's patch series applied as commits.
+# [V] Created 2026-09-01 off the pinned commit bec0c2aff1ee8a02ac9f582d60fe611f1d2bc939
+#     (verified on the remote, tip bab51ce8e). Carries, as commits: a50-halium's
+#     4-patch series; arch/arm64/configs/halium_a50_defconfig (the savedefconfig
+#     of the boot-verified kernel's .config — expands byte-identically under a
+#     bare make, see docs/experiments/002-bare-make-config.md); the guide's
+#     halium.config fragment; the ANDROID_MAJOR_VERSION dependency removal for
+#     HALL_EVENT_REVERSE/HALL_NEW_NODE/USB_F_CONN_GADGET_NDOP; and
+#     console=tty0 prepended to CONFIG_CMDLINE (own commit, own boot test).
 deviceinfo_kernel_source="https://github.com/sadatdaniel/android_kernel_samsung_exynos9610_mint"
 deviceinfo_kernel_source_branch="ubuntu-touch-26.04"
 
-# [?] halium.config is the config fragment the UBports standalone-kernel guide
-#     requires. exynos9610-a50_core_defconfig is the tree's real defconfig -
-#     but see the warning above: it is NOT sufficient on its own, because
-#     exynos9610-a50_default_defconfig is merged in via KCONFIG_BUILTINCONFIG.
-deviceinfo_kernel_defconfig="exynos9610-a50_core_defconfig halium.config"
+# [V] halium_a50_defconfig replaces exynos9610-a50_core_defconfig: the core
+#     defconfig alone produces an incomplete config (the real recipe is core +
+#     four merge_config fragments + the patch-0002 block, all already baked
+#     into halium_a50_defconfig — see docs/experiments/002-bare-make-config.md).
+#     halium.config stays merged on top per the guide; every option it carries
+#     is already in the defconfig, so it is a no-op guard. Verified in-container:
+#     `make ARCH=arm64 halium_a50_defconfig halium.config` in a bare environment
+#     differs from the boot-verified .config by exactly one line — the intended
+#     console=tty0.
+deviceinfo_kernel_defconfig="halium_a50_defconfig halium.config"
 
 # [V] This device's bootloader (S-Boot) SILENTLY IGNORES the boot image header
 #     command line and merges its own from the device tree's bootargs. The
