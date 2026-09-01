@@ -250,11 +250,19 @@ run_scripts /scripts/init-bottom
 # Move /run to the root
 mount -n -o move /run ${rootmnt}/run
 
+# a50: klibc run-init -n (the upstream validate_init probe) opens
+# /dev/console even in dry-run mode, and this kernel has no readable
+# console (write-only console=ram only), so EVERY probe returns ENXIO,
+# init= is emptied and this block panics - before any later patch can
+# run (verified live, tests 2-4). Validate with a plain shell check
+# instead, and force the standard init: S-Boot always passes init=/init
+# (device tree bootargs), which no Debian-style rootfs provides.
 validate_init() {
-	run-init -n "${rootmnt}" "${1}"
+	[ -n "${1#-}" ] && [ -x "${rootmnt}${1}" ]
 }
 
 # Check init is really there
+init=/sbin/init
 if ! validate_init "$init"; then
 	echo "Target filesystem doesn't have requested ${init}."
 	init=
@@ -303,16 +311,10 @@ mount -n -o move /sys ${rootmnt}/sys
 mount -n -o move /proc ${rootmnt}/proc
 
 # Chain to real filesystem
-# a50: two device facts make the upstream handoff line unworkable here.
-# 1) S-Boot always passes init=/init from the device tree bootargs; the
-#    rootfs mounted here is Debian-style and has /sbin/init, not /init.
-# 2) This kernel registers no readable console (only Samsung write-only
-#    console=ram), so klibc run-init's internal open of /dev/console
-#    fails ENXIO and the handoff can never run - shell-side redirections
-#    do not help (verified live, test 3). Hand off with busybox
-#    switch_root instead, which never opens the console; output goes to
-#    /dev/kmsg so it survives into the booted system's dmesg.
-init=/sbin/init
+# a50: hand off with busybox switch_root rather than klibc run-init -
+# run-init opens /dev/console itself and cannot work on this kernel
+# (write-only console=ram only). Output to /dev/kmsg survives into the
+# booted system's dmesg.
 exec busybox switch_root ${rootmnt} ${init} "$@" </dev/null >/dev/kmsg 2>&1
 echo "Something went badly wrong in the initramfs."
 panic "Please file a bug on initramfs-tools."
