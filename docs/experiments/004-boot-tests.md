@@ -119,22 +119,49 @@ The rootfs it booted is Droidian's (that is what lives on userdata); the
 Ubuntu Touch rootfs is the next stage (rootfs install), not a boot-image
 matter.
 
-## Where this leaves the open threads
+## Test 6 — no-LTO tools build (`boot-nolto.img`, `3a0120d2…`): HANGS
 
-* **Tools-built kernel hang (test 1)** — still open, still the only thing
-  standing between this port and a fully tools-built boot image. The
-  bisection starts from: same tools-built kernel with LTO disabled
-  (single variable: ThinLTO under clang-r383902 is the prime suspect).
-* **UT rootfs install** — next stage once the kernel question is settled
-  (or meanwhile, on the control kernel).
-* Everything else in the plan (Lomiri, AppArmor, hardware) comes after a
-  UT rootfs exists.
+Identical to test 1 except `CONFIG_LTO_CLANG` dropped (single variable:
+ThinLTO). Result: stuck at Samsung logo, no gadget, no panic — same
+signature as test 1 (owner-confirmed screen state). **ThinLTO
+exonerated.**
+
+## Test 7 — Proton + tools-style build (`boot-proton.img`, Image `3b74364a…`): ✅ BOOTS to Droidian
+
+Identical to test 1 except the compiler: the pinned Proton Clang 13
+(a50-halium's toolchain) building the *same branch* with the same
+bare `make O= … LLVM=1` style the tools use (minus `LLVM_IAS=1` —
+Proton's integrated assembler rejects this tree's `memcpy` binding, so
+the GNU cross assembler handles the `.S` files, exactly like mint's own
+build). Same defconfig (`console=tty0` in, Polly out), same v3 ramdisk.
+Result: **boots to the Droidian userspace.** The Image is 41,633,808
+bytes — the identical byte count of the boot-verified `074aad86…`.
+
+## Verdict
+
+**Google clang-r383902 (`android11-gsi`) produces kernels that hang
+this device early** — pre-initramfs, no panic. ThinLTO, the bare-make
+delivery, `console=tty0` and the Polly removal are all exonerated: each
+was varied independently and only swapping the compiler changed the
+outcome.
+
+Consequences:
+
+* Near term the kernel comes from **Proton** — either a50-halium's
+  pinned build or the equivalent tools-style Proton build just proven —
+  fed into the tools' boot-image step. This is the fallback kernel.md
+  always documented; everything else (ramdisk, packing, rootfs) is the
+  tools' own.
+* Convention-compliance option for later: try newer Google clang
+  branches (`android12-gsi`, `android13-gsi`, …) — one build + one
+  flash each, exactly like this series.
 
 ## Ledger of variables (one per test, as earned)
 
-* Test 1 vs nothing: tools kernel + tools ramdisk — hang (kernel).
-* Test 2 vs test 1: kernel swapped to boot-verified — boots; ramdisk
-  handoff bug exposed (pre-existing, kernel-independent).
-* Test 3 vs test 2: ramdisk handoff patched — expected to complete boot.
-* Next after that: tools-kernel bisection (config delta vs compiler),
-  each on its own boot.
+* Test 1: tools clang kernel + tools ramdisk — hangs.
+* Test 2: kernel → boot-verified Proton — boots; ramdisk handoff bugs
+  exposed (kernel-independent).
+* Tests 3-5: ramdisk overlay v1→v3 — each fixed one diagnosed bug;
+  v3 boots the full chain.
+* Test 6: test 1 minus ThinLTO — still hangs ⇒ not ThinLTO.
+* Test 7: test 1 with Proton — boots ⇒ **the compiler**.
