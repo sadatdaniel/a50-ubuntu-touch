@@ -116,3 +116,12 @@ bit-for-bit — the tools' flow does not pin `SOURCE_DATE_EPOCH` /
 `KBUILD_BUILD_*`, so timestamps and builder identity are compiled in.
 Bit-for-bit reproducibility remains a50-halium's domain, with its pinned
 in-tree Proton build.
+
+**Verified 2026-09-01:** a completely fresh workdir (`build.sh -k` with a
+new `-b` dir, cold ThinLTO cache, only GitHub-published commits — kernel
+branch at `d25a56a60`) completed green: boot.img exactly the same
+46,995,456 bytes, kernel Image byte-count identical (41,586,688), header
+again field-identical to the canonical image. sha256 of that build's
+boot.img: `81b6ff7f…` (differs from build 1's `beb55619…` for the
+timestamp reasons above). Artifacts of both builds kept in the session
+workspace: `boot-tools-built.img`, `boot-repro3.img`.
