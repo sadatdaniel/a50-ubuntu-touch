@@ -307,10 +307,12 @@ mount -n -o move /proc ${rootmnt}/proc
 # 1) S-Boot always passes init=/init from the device tree bootargs; the
 #    rootfs mounted here is Debian-style and has /sbin/init, not /init.
 # 2) This kernel registers no readable console (only Samsung write-only
-#    console=ram), so opening ${rootmnt}/dev/console O_RDWR fails ENXIO
-#    and the exec never runs. Force the standard init and move the
-#    handoff fds to /dev/kmsg, mirroring the working Droidian ramdisk.
+#    console=ram), so klibc run-init's internal open of /dev/console
+#    fails ENXIO and the handoff can never run - shell-side redirections
+#    do not help (verified live, test 3). Hand off with busybox
+#    switch_root instead, which never opens the console; output goes to
+#    /dev/kmsg so it survives into the booted system's dmesg.
 init=/sbin/init
-exec run-init ${drop_caps} ${rootmnt} ${init} "$@" </dev/null >/dev/kmsg 2>&1
+exec busybox switch_root ${rootmnt} ${init} "$@" </dev/null >/dev/kmsg 2>&1
 echo "Something went badly wrong in the initramfs."
 panic "Please file a bug on initramfs-tools."
