@@ -96,5 +96,23 @@ defconfig otherwise, byte-compared before the POLLY line was dropped.
 * Full build (`-b` without `-k`) — rootfs + system-image + device tarball,
   needed before the first real installation but not before the first kernel
   boot test.
-* The from-scratch reproducibility rebuild (fresh workdir, published commits
-  only) — running as this was written; its result belongs in this file.
+
+## Postscript: the first green build was luckier than it looked
+
+A from-scratch rebuild in a fresh workdir failed at the LTO link with the
+same "segfault" — the first build had passed because the *manual* copies
+from the link debugging session were still sitting in the object tree (and
+the ThinLTO cache was warm). The Makefile pattern rule that was supposed to
+create those copies had been silently discarded by make as a **circular
+dependency** (`Circular …/startup.tzar <- …/startup.tzar dependency
+dropped`), so it never did anything. Fixed by commit `d25a56a60` on the
+kernel branch: a parse-time `$(shell …)` copy that has no place in the
+dependency graph and cannot be dropped. The fresh-workdir rebuild with only
+published commits then completed green.
+
+On reproducibility: builds are reproducible **in kind** from the published
+repos (same inputs → builds, same size class, same header), not
+bit-for-bit — the tools' flow does not pin `SOURCE_DATE_EPOCH` /
+`KBUILD_BUILD_*`, so timestamps and builder identity are compiled in.
+Bit-for-bit reproducibility remains a50-halium's domain, with its pinned
+in-tree Proton build.
