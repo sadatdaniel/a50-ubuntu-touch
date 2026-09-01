@@ -83,7 +83,7 @@ deviceinfo_kernel_defconfig="halium_a50_defconfig halium.config"
 #     compiled into CONFIG_CMDLINE. See docs/kernel.md; this is open risk #2.
 deviceinfo_kernel_cmdline="androidboot.selinux=permissive loop.max_part=7"
 
-# [?] The boot-verified kernel is built with Proton Clang 210521, pinned in
+# [V] The boot-verified kernel is built with Proton Clang 210521, pinned in
 #     a50-halium. The adaptation tools instead fetch Google's prebuilt clang
 #     by branch/revision, so this selects a DIFFERENT compiler from the one
 #     every booting kernel of this device was built with. android11-gsi is the
@@ -91,6 +91,14 @@ deviceinfo_kernel_cmdline="androidboot.selinux=permissive loop.max_part=7"
 #     visible rather than implicit.
 deviceinfo_kernel_clang_compile="true"
 deviceinfo_kernel_clang_branch="android11-gsi"
+
+# [V] Required: the kernel config carries CONFIG_LTO_CLANG=y + CONFIG_THINLTO=y
+#     (checked in the boot-verified .config), and ThinLTO links need ld.lld +
+#     llvm-* binutils. clang_compile alone leaves GNU ld from the gcc-4.9
+#     prebuilt as the linker, which cannot link LTO bitcode. llvm_compile makes
+#     the tools pass LLVM=1 LLVM_IAS=1 and build in a hermetic LLVM-only PATH -
+#     the closest match to how the Proton Clang build was invoked.
+deviceinfo_kernel_llvm_compile="true"
 
 # [V] `build.sh -v recovery` emits arch/arm64/boot/Image, uncompressed, with
 #     the DTB already inside it - the known-good boot images carry no separate
