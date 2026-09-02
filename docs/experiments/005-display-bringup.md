@@ -129,6 +129,21 @@ single-layer ramdisk build), `a50-kernel-shell` (canonical branch clone at
 * **Same kernel opened mali0 fine under Droidian** — so the difference is
   environmental: who opens it first, in what order, with what HAL state.
 
+### Correction (2026-09-02, from cross-session review)
+
+The claim that Samsung's `misc_open` holding the mutex across the driver open
+is a Samsung deviation is **wrong**: mainline 4.14 and current torvalds/linux
+both have the identical structure — it is a long-standing upstream
+characteristic (the 2015 LKML proposal to change it was never merged).
+Consequence: patching `misc_open` would be a stability mitigation only (the
+system survives a stuck open, ssh keeps working) and would **not** fix the
+display by itself — the compositor's own mali0 open would still hang in
+isolation. Also corrected by evidence: during an *active* wedge, `/dev/ion`
+hangs too (earlier "ion always works" was measured outside a wedge window),
+and the `/dev/mali0` node minor (10:76) matches `/sys/class/misc/mali0/dev`
+— no node/registration mismatch. `cat /proc/misc` itself freezes in a wedge
+(misc_seq_start takes the same mutex) — a useful wedge detector.
+
 ## 5. Likely solution paths (in order)
 
 1. **Stop the GSI's own SurfaceFlinger** (it fights the host compositor for
