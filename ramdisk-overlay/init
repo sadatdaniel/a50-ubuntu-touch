@@ -315,6 +315,15 @@ mount -n -o move /proc ${rootmnt}/proc
 # run-init opens /dev/console itself and cannot work on this kernel
 # (write-only console=ram only). Output to /dev/kmsg survives into the
 # booted system's dmesg.
+# Also: devtmpfs on this kernel does not create /dev/kmsg (nor console)
+# in the real root's /dev, and without kmsg systemd exits(1) and the
+# kernel panics - a ~36s bootloop (observed 2026-09-02, first UT rootfs
+# boot). Droidian's rootfs boots only because its old initramfs
+# mknod'd kmsg INTO the image, where it persisted. Create the nodes at
+# every handoff so any rootfs image works.
+mknod ${rootmnt}/dev/kmsg c 1 11 2>/dev/null
+chmod 600 ${rootmnt}/dev/kmsg 2>/dev/null
+mknod ${rootmnt}/dev/console c 5 1 2>/dev/null
 exec busybox switch_root ${rootmnt} ${init} "$@" </dev/null >/dev/kmsg 2>&1
 echo "Something went badly wrong in the initramfs."
 panic "Please file a bug on initramfs-tools."
