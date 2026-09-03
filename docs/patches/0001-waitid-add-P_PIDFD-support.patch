@@ -1,0 +1,90 @@
+From: Ubuntu Touch A50 port
+Subject: [PATCH] waitid: add P_PIDFD support (backport of upstream v5.4)
+
+This kernel has an INCOMPLETE pidfd backport:
+
+  - include/uapi/linux/wait.h already defines P_PIDFD (3)
+  - kernel/fork.c has CLONE_PIDFD, pidfd_pid(), pidfd_fops
+  - kernel/pid.c has pidfd_get_pid() and the pidfd_open() syscall
+  - BUT kernel/exit.c:kernel_waitid() only handles P_ALL/P_PID/P_PGID
+    and returns -EINVAL for anything else.
+
+Userspace (glib >= 2.74, here 2.88) probes pidfd, succeeds, and then calls
+waitid(P_PIDFD, ...) to watch child processes. That returns -EINVAL, so
+every g_child_watch_source_new() fails:
+
+  glib/gmain.c:6142: waitid(pid:4523, pidfd=18) failed: Invalid argument (22)
+
+lightdm cannot track its own children, exits with status 1, and systemd
+restarts it in a loop -- the greeter never stays up, so the display shows
+only the boot spinner. Fixes that.
+
+This mirrors upstream commit "pidfd: add P_PIDFD to waitid()" (v5.4).
+All required helpers already exist in this tree, so the change is confined
+to kernel_waitid().
+
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@
+ static long kernel_waitid(int which, pid_t upid, struct waitid_info *infop,
+ 			  int options, struct rusage *ru)
+ {
+ 	struct wait_opts wo;
+ 	struct pid *pid = NULL;
+ 	enum pid_type type;
+ 	long ret;
++	unsigned int f_flags = 0;
+
+ 	if (options & ~(WNOHANG|WNOWAIT|WEXITED|WSTOPPED|WCONTINUED|
+ 			__WNOTHREAD|__WCLONE|__WALL))
+ 		return -EINVAL;
+ 	if (!(options & (WEXITED|WSTOPPED|WCONTINUED)))
+ 		return -EINVAL;
+
+ 	switch (which) {
+ 	case P_ALL:
+ 		type = PIDTYPE_MAX;
+ 		break;
+ 	case P_PID:
+ 		type = PIDTYPE_PID;
+ 		if (upid <= 0)
+ 			return -EINVAL;
+ 		break;
+ 	case P_PGID:
+ 		type = PIDTYPE_PGID;
+ 		if (upid <= 0)
+ 			return -EINVAL;
+ 		break;
++	case P_PIDFD:
++		type = PIDTYPE_PID;
++		if (upid < 0)
++			return -EINVAL;
++
++		pid = pidfd_get_pid(upid, &f_flags);
++		if (IS_ERR(pid))
++			return PTR_ERR(pid);
++		break;
+ 	default:
+ 		return -EINVAL;
+ 	}
+
+-	if (type < PIDTYPE_MAX)
++	/* P_PIDFD already resolved the pid above; do not clobber it. */
++	if (!pid && type < PIDTYPE_MAX)
+ 		pid = find_get_pid(upid);
+
+ 	wo.wo_type	= type;
+ 	wo.wo_pid	= pid;
+ 	wo.wo_flags	= options;
+ 	wo.wo_info	= infop;
+ 	wo.wo_rusage	= ru;
++	if (f_flags & O_NONBLOCK)
++		wo.wo_flags |= WNOHANG;
++
+ 	ret = do_wait(&wo);
++	if (!ret && !(options & WNOHANG) && (f_flags & O_NONBLOCK))
++		ret = -EAGAIN;
+
+ 	put_pid(pid);
+ 	return ret;
+ }
