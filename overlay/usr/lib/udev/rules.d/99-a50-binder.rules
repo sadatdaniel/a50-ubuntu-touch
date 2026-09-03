@@ -1,0 +1,17 @@
+# Android binder nodes must be world-accessible.
+#
+# Stock Android's ueventd.rc sets all three to 0666. The udev rules generated
+# from the GSI's ueventd.rc missed them, so /dev/hwbinder and /dev/vndbinder
+# came up 0600 root:root.
+#
+# The consequence is not obvious: the gralloc mapper is a HIDL HAL reached over
+# /dev/hwbinder. lomiri-system-compositor runs as root and could reach it, so
+# Mir came up correctly (LVDS connected, 1080x2340, power on) -- but the
+# greeter runs as uid 108 (lightdm), could not open hwbinder, failed with
+# "gralloc-mapper is missing", and lightdm restarted in a loop forever. The
+# display looked broken while the display stack was in fact fine.
+#
+# See docs/experiments/006-what-we-missed.md section 2.
+KERNEL=="binder",    MODE="0666"
+KERNEL=="hwbinder",  MODE="0666"
+KERNEL=="vndbinder", MODE="0666"

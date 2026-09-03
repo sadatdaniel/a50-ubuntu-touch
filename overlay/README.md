@@ -5,8 +5,15 @@ installed into `/system/opt/halium-overlay` and overlaid onto the rootfs rather
 than replacing it. Required for Ubuntu Touch 20.04 and later. See the guide's
 [Overlay page](https://docs.ubports.com/en/latest/porting/configure_test_fix/Overlay.html).
 
-Empty for now — nothing here should be written before the device boots, because
-none of it can be tested until then.
+## What is here, confirmed on the device
+
+Both landed in [experiment 006](../docs/experiments/006-what-we-missed.md),
+after the device first reached the Ubuntu Touch wizard.
+
+| File | Fix |
+|---|---|
+| `usr/lib/udev/rules.d/99-a50-binder.rules` | `/dev/hwbinder` and `/dev/vndbinder` came up `0600`, so the greeter (uid 108) could not reach the gralloc mapper HAL and lightdm restart-looped. Stock Android sets all three binder nodes `0666`. |
+| `etc/ubuntu-touch-session.d/android.conf` | No device config existed, so the shell fell back to `generic.conf`'s `GRID_UNIT_PX=8` and rendered far too small. `ro.sf.lcd_density=420` → `GRID_UNIT_PX=21`. |
 
 ## What is expected to go here, from the Droidian port
 
