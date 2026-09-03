@@ -14,6 +14,7 @@ after the device first reached the Ubuntu Touch wizard.
 |---|---|
 | `usr/lib/udev/rules.d/99-a50-binder.rules` | `/dev/hwbinder` and `/dev/vndbinder` came up `0600`, so the greeter (uid 108) could not reach the gralloc mapper HAL and lightdm restart-looped. Stock Android sets all three binder nodes `0666`. |
 | `etc/ubuntu-touch-session.d/android.conf` | No device config existed, so the shell fell back to `generic.conf`'s `GRID_UNIT_PX=8` and rendered far too small. `ro.sf.lcd_density=420` → `GRID_UNIT_PX=21`. |
+| `etc/resolv.conf` → `/run/NetworkManager/resolv.conf` | The rootfs image shipped a static `resolv.conf` naming `192.168.65.7` — Docker Desktop's internal DNS, captured while the image was prepared in a container. Nothing resolved, so no page loaded, while Wi-Fi and routing were fine. |
 
 ## What is expected to go here, from the Droidian port
 

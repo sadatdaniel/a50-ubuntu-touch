@@ -126,7 +126,37 @@ corners. `ro.sf.lcd_density=420`, and UT's grid unit is 8dp at mdpi, so
 `GRID_UNIT_PX = 8 * 420/160 = 21`. Set in
 `overlay/etc/ubuntu-touch-session.d/android.conf`.
 
-## 4. Tested and FALSIFIED: CMA exhaustion
+## 4. No browser pages: a Docker DNS address baked into the rootfs
+
+Reported as "the browser cannot load pages". It was neither the browser nor
+Wi-Fi. `/etc/resolv.conf` was a **static file** carrying
+
+```
+nameserver 192.168.65.7
+```
+
+which is Docker Desktop's internal DNS — captured when the rootfs image was
+prepared inside a container, and unreachable from any real network. Everything
+else was healthy: Wi-Fi associated, a correct default route, and
+NetworkManager's own `dnsmasq` stub running and listening on `127.0.1.1:53`
+with the DHCP-learned upstream (`192.168.179.1`).
+
+Fixed by making `/etc/resolv.conf` a symlink to `/run/NetworkManager/resolv.conf`,
+the conventional arrangement on an NM-managed system. `getent hosts ubuntu.com`
+and `github.com` resolve immediately afterwards. Carried in
+`overlay/etc/resolv.conf`.
+
+Worth checking whether other build-time state leaked into the image the same
+way — this one was invisible until the device had real internet to fail at.
+
+### Side note: Wi-Fi associates on `swlan0`, not `wlan0`
+
+`overlay/README.md` predicted "Wi-Fi binds the wrong netdev" from the Droidian
+port, expecting `p2p0`. On Ubuntu Touch it picks **`swlan0`**, and unlike the
+Droidian symptom it associates and routes correctly. Left alone deliberately —
+it works, and forcing `wlan0` is a change with no observed benefit yet.
+
+## 5. Tested and FALSIFIED: CMA exhaustion
 
 An earlier draft of this file named CMA exhaustion as the root cause. It is
 wrong, and is recorded here so it is not chased again:
@@ -148,7 +178,7 @@ page-cache pages and migrated out on demand. It is not a pressure gauge.
 from a 4 GB device and risks colliding with this DT's fixed `reserved-mem`
 carveouts, for no benefit.
 
-## 5. Secondary findings that do hold
+## 6. Secondary findings that do hold
 
 ### IPC namespace
 
@@ -181,7 +211,7 @@ Backport prepared in `docs/patches/0001-waitid-add-P_PIDFD-support.patch`.
 Its permanent home is a50-halium's `kernel/patches/`, per
 [`conventions.md`](../conventions.md) — it is staged here for reference only.
 
-## 6. What we should have done sooner
+## 7. What we should have done sooner
 
 1. Instrument rather than infer. Two sessions of D-state sweeps, `wchan`
    grouping and SysRq-T dumps could not see an R-state holder *by
@@ -191,7 +221,7 @@ Its permanent home is a50-halium's `kernel/patches/`, per
 3. Test the cheap falsification first. One `drop_caches` retired the CMA
    hypothesis in seconds.
 
-## 7. State at close
+## 8. State at close
 
 * Boots to the Ubuntu Touch first-boot wizard; shell renders at GU 21
 * `misc_open` blockers **0** (was 41-94); load average ~12 (was 115)
