@@ -1,12 +1,15 @@
 # Status
 
-**Last updated: 2026-09-01.** Nothing in this repository has yet booted Ubuntu
-Touch on the device. This file is the honest inventory.
+**Last updated: 2026-09-03.** Ubuntu Touch now boots on the device and reaches
+the first-boot wizard. This file is the honest inventory.
 
 ## Proven
 
 | Claim | How it was checked |
 |---|---|
+| **Ubuntu Touch boots to its UI on this device** | Wizard (language selection) renders; Mir drives the panel at 1080x2340; container `sys.boot_completed=1`; lightdm `NRestarts=0`; verified across a clean reboot. [experiment 006](experiments/006-what-we-missed.md) |
+| The display blocker was misc-list corruption, not CMA and not the mutex design | Unguarded double `misc_register()` on a static `miscdevice` in `f_conn_gadget.c` makes `misc_list` circular; `MISCDBG` instrumentation caught `GOTLOCK` with no release. CMA falsified directly: 50 MB freed via `drop_caches`, `mali0` still hung. [experiment 006](experiments/006-what-we-missed.md) |
+| The greeter needed `/dev/hwbinder` at `0666` | Compositor (root) worked while greeter (uid 108) failed with `gralloc-mapper is missing`; fixed by `overlay/usr/lib/udev/rules.d/99-a50-binder.rules` |
 | a50-halium reproduces `074aad86…` from a clean checkout | Fresh `git clone`, fresh container, `sha256sum -c kernel/expected-artifacts.sha256` passes. The toolchain used for this port is therefore the right one. |
 | UBports' `mkbootimg` (`LineageOS/android_system_tools_mkbootimg`, `lineage-20.0`) can pack this device's boot image | Repacked `halium-boot-canonical.img`'s own parts with the `deviceinfo` offsets: identical except the 20-byte `id` digest. [experiment 001](experiments/001-bootimg-header.md) |
 | a50-droidian's overflowing offsets are genuinely rejected by that tool | `struct.error: 'I' format requires 0 <= number <= 4294967295` |
@@ -27,12 +30,22 @@ Touch on the device. This file is the honest inventory.
 | **Does S-Boot check the boot header `id` digest?** | The one field experiment 001 could not reproduce. One boot test. |
 | **AppArmor** | Untouched. Ubuntu Touch needs it to run apps. |
 | **The initramfs fixes have not been ported** | Four are expected to be needed. `ramdisk-overlay/README.md`. |
+| **Wi-Fi has no UI: `CONFIG_RFKILL` is not built** | Every layer below the UI works — `wlan0` up, `wpa_supplicant` running, NetworkManager scans and lists APs. But with no `/dev/rfkill`, `urfkilld` enumerates nothing and reports WLAN killswitch `state = -1` (no adapter), so the indicator shows no Wi-Fi. One rebuild. [experiment 006](experiments/006-what-we-missed.md) |
+| **`conn_gadget` double-registration is avoided, not fixed** | The container is kept away from USB gadget configfs. The real fix is an idempotency guard in `conn_gadget_setup()`, still unwritten to the kernel branch. |
+| **Audio** | `pulseaudio.service` fails in the phablet session. The 32-bit vendor HAL bridge from the Droidian port is the expected shape of the fix. |
 
 ## Deliberately not started
 
-* Bluetooth. `CONFIG_BT` + `CONFIG_BT_HCIVHCI` bootloop this device; the patch
-  is parked in a50-halium's `kernel/patches-experimental/`. Not before the port
-  boots.
+* Bluetooth. `CONFIG_BT` + `CONFIG_BT_HCIVHCI` bootlooped this device on
+  2026-08-31; the patch is parked in a50-halium's
+  `kernel/patches-experimental/`. The Android half is confirmed alive under
+  Ubuntu Touch too — `/dev/scsc_h4_0` present,
+  `android.hardware.bluetooth@1.0-service` running, and `bluebinder`
+  auto-restarting on `ENODEV` waiting for a `/dev/vhci` that does not exist.
+  Worth a fresh test now: that bootloop predates experiment 006, its own README
+  named an Android-init fatal error as the leading hypothesis, and `hci_vhci.c`
+  registers `/dev/vhci` via `misc_register()` — adding a node to the very list
+  that was being corrupted. One variable at a time: land `CONFIG_RFKILL` first.
 * UBports recovery and the UBports installer. The guide adds both at
   finalization, and TWRP is currently the only reliable way back.
 
