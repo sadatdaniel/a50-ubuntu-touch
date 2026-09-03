@@ -1,0 +1,19 @@
+# --- UT display blocker fix ---
+# Samsung's watchdogd opens /dev/watchdog (misc minor 130); that open spins
+# forever in kernel while holding the global misc_mtx, which freezes EVERY
+# misc-device open system-wide (mali0, ion, binder, hwbinder, uinput...).
+# Kernel-logged proof: "MISCDBG: pid=N comm=watchdogd GOTLOCK minor=130"
+# with no matching release. Override the vendor rc so watchdogd never starts.
+if [ -f /var/lib/lxc/android/init.exynos9610.rc.nowatchdog ]; then
+    mount --bind /var/lib/lxc/android/init.exynos9610.rc.nowatchdog         "${LXC_ROOTFS_MOUNT}/vendor/etc/init/init.exynos9610.rc"
+fi
+
+# Samsung f_conn_gadget.c has no idempotency guard: conn_gadget_setup() calls
+# misc_register() on a STATIC miscdevice every time the configfs function is
+# instantiated. A 2nd instantiation runs INIT_LIST_HEAD on a node still linked
+# in misc_list -> circular list -> any later list_for_each_entry in misc_open
+# spins forever at 100% CPU HOLDING misc_mtx -> every misc open on the system
+# (mali0/ion/binder/uinput) hangs. Stop Android creating it a second time.
+if [ -f /var/lib/lxc/android/usb.rc.empty ]; then
+    mount --bind /var/lib/lxc/android/usb.rc.empty         "${LXC_ROOTFS_MOUNT}/vendor/etc/init/init.exynos9610.usb.rc"
+fi

@@ -1,0 +1,3 @@
+126:    # start watchdogd  # DISABLED: hangs misc_mtx (UT display blocker)
+798:service watchdogd /system/bin/watchdogd_DISABLED 10 20
+801:     seclabel u:r:watchdogd:s0

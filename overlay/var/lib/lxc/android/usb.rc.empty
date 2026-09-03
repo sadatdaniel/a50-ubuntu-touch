@@ -1,0 +1,2 @@
+# emptied: UT usb_moded owns the USB gadget; Android double-instantiating
+# configfs gadget functions corrupts misc_list (unguarded misc_register).
