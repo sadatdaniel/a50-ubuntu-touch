@@ -488,3 +488,39 @@ The kernel change itself is `CONFIG_EXTRA_FIRMWARE` plus the eight blobs; see
   `mixer_gains.xml` values are not applied.
 * **The camera driver panics** on V4L2 enumeration (§10) — unrelated to audio
   but it looks like a bootloop when `gst-plugin-scan` runs.
+
+## 18. Correction: the ALSA sink breaks the rest of the system — reverted
+
+The `module-alsa-sink` workaround in §14 **was backed out**, on the device and
+from `scripts/apply-device-workarounds.sh`.
+
+It made PulseAudio hold `hw:0,0` as the default sink, and that stalls anything
+that expects to play through the normal path: **YouTube videos stopped
+starting at all** while it was loaded. The card has a single usable playback
+device here, so a raw ALSA sink sitting on it is not a neutral addition — it
+takes the device away from the droid HAL and from media-hub, and a media stack
+that cannot open audio does not degrade to silent video, it blocks.
+
+Reverted by unloading the module, restoring `set-default-sink` to
+`sink.primary-out`, and restoring `touch.pa` from `touch.pa.a50-orig`. Video
+playback returns immediately.
+
+There is also an honest gap in the §14 evidence that this exposes. What was
+confirmed audible by ear was **raw ALSA** (`speaker-test -D hw:0,0`). The
+PulseAudio path was never confirmed audible — it was inferred from the sink
+reading `RUNNING` and the amp logging `profile = 0: music`, which is precisely
+the "it returned 0 is not it worked" trap `SESSION-HANDOFF.md` §8 warns about.
+Those same log lines appear whether or not sound actually comes out.
+
+So the accurate statement of where audio stands is:
+
+* **Proven:** the ABOX DSP boots and the speaker amplifier runs, and raw ALSA
+  on `hw:0,0` with the `UAIF2 SPK = SIFS0` route produces **audible sound**.
+  That is a real, reproducible result and the kernel side of it is solid.
+* **Not proven:** that anything routed through PulseAudio is audible.
+* **Wrong turn:** forcing PulseAudio onto a raw ALSA sink. It costs video
+  playback, which is a much worse regression than no sound.
+
+The route service and the kernel change stay — they are correct and carry no
+such cost. The remaining work is to make the **droid HAL** reach the hardware,
+rather than to route around it.
