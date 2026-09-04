@@ -80,7 +80,58 @@ Confirm the loop device before running this — it is `loop0` here, but
 /dev/loop2: … (/data/per_boot/zram_swap)
 ```
 
-## OpenStore does not launch on 26.04
+## OpenStore on 26.04 — FIXED by co-installing the old SONAMEs
+
+**Resolved.** OpenStore runs on 26.04; the section below records the wrong
+turns taken first, because two of them are traps worth not repeating.
+
+Ubuntu 26.04 ships libxml2 2.15, which bumped the SONAME
+`libxml2.so.2` -> `libxml2.so.16`. That is an Ubuntu-wide change, not a UT
+one, and it breaks any click built against the older framework. It is a
+**known upstream 26.04 issue** - other testers report the identical error,
+and `morph-browser` is hit by it too.
+
+Differing SONAMEs are *designed* to co-exist, so the fix is simply to
+install the genuine old libraries alongside the new ones:
+
+```sh
+# source them from the 24.04 rootfs image rather than downloading
+mount -o loop,ro /userdata/rootfs-24.04.img /mnt/r24
+L=/usr/lib/aarch64-linux-gnu
+cp -a /mnt/r24$L/libxml2.so.2.9.14 $L/ && ln -sf libxml2.so.2.9.14 $L/libxml2.so.2
+cp -a /mnt/r24$L/libicu*.so.74* $L/
+ldconfig
+```
+
+`libicuuc.so.74` and friends are needed because libxml2 2.9 links ICU 74;
+the dependency surfaces only once libxml2.so.2 is in place. After both,
+`ldd` on the OpenStore binary reports nothing missing and the app launches
+and stays up.
+
+`libsnapd-qt.so.1` needs no action - the click already bundles its own copy
+in `lib/aarch64-linux-gnu/`, it simply is not on the loader path when the
+binary is run by hand.
+
+### Two things NOT to do
+
+* **Do not symlink a renamed library to the old name.** Pointing
+  `libsnapd-qt.so.1` at `libsnapd-qt-2.so.1` links and starts, then dies
+  with `corrupted size vs. prev_size` - the ABI differs and it corrupts the
+  heap. Co-installing the *genuine* old library is safe; aliasing a
+  different one is not.
+* **Do not switch the whole rootfs for this.** 24.04-2.x was built and
+  booted for this reason and **bootloops at ~15s** on this device, needing
+  TWRP to rename the images back. The image is kept at
+  `/userdata/rootfs-24.04.img` and is useful precisely as the source of
+  these libraries; `deviceinfo` remains on 26.04-1.x.
+
+### Search before improvising
+
+This cost a rootfs build and a bootloop that a web search would have
+avoided: the SONAME bump and the co-install fix are both publicly
+documented. Check for a known fix before building anything.
+
+## Appendix: the original (wrong) reading of the OpenStore failure
 
 Not a port bug, and not AppArmor — other click apps (Terminal, the
 preinstalled set) launch fine. The preinstalled OpenStore 4.1.0 targets the

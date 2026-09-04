@@ -48,7 +48,7 @@ deviceinfo_halium_version="11"
 #     docs/experiments/006-what-we-missed.md - so this is a userspace
 #     compatibility choice, not a boot-chain one. Keep the old rootfs image
 #     alongside the new one to switch back.
-deviceinfo_ubuntu_touch_release="24.04-2.x"
+deviceinfo_ubuntu_touch_release="26.04-1.x"
 
 ##########
 # Kernel
