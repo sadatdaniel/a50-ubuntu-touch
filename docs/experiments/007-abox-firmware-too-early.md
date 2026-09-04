@@ -1,13 +1,18 @@
 # Experiment 007 — why the audio DSP never boots: the firmware is requested before any filesystem exists
 
-**Date:** 2026-09-04/05 · **Status:** ✅ **resolved — audio works.** Sound out
-of the speaker, through PulseAudio, surviving a reboot with no manual steps.
+**Date:** 2026-09-04/05 · **Status:** kernel side **solved** — the ABOX DSP
+boots and the speaker amplifier runs, and raw ALSA on `hw:0,0` is **audibly
+working**. Getting that sound through PulseAudio is **still open**.
 · **Device needed:** yes
 
-Three separate faults had to be fixed, in this order: the DSP firmware was
-requested before any filesystem existed (Part 1), the speaker route is never
-set by anything in Ubuntu Touch (Part 3 §13), and the droid HAL silently
-swallows audio (Part 3 §14).
+Two faults are fixed: the DSP firmware was requested before any filesystem
+existed (Part 1), and the speaker route is never set by anything in Ubuntu
+Touch (Part 3 §13). Both changes are permanent and cost nothing.
+
+A third — the droid HAL accepting audio without it reaching the hardware
+(§14) — is **not** fixed. The ALSA-sink workaround written for it was reverted:
+it takes `hw:0,0` away from the media stack and stops video playing at all.
+**Read §18 before trying that again.**
 
 ## TL;DR
 

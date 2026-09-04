@@ -18,7 +18,7 @@ the first-boot wizard. This file is the honest inventory.
 | Every boot image header value in `deviceinfo` | Read out of an image that has booted this device |
 | No SEAndroid footer, no AVB footer | Last 32 bytes of every known-good A50 boot image are zeros |
 | The three artifacts the tools will download all exist | HTTP 200 on the 26.04 rootfs, the Halium 11 GSI and the halium-boot ramdisk, 2026-09-01 |
-| **Audio works — sound comes out of the speaker** | Confirmed by ear through PulseAudio, and again after a clean reboot with no manual steps. Three separate fixes: `CONFIG_EXTRA_FIRMWARE` so the ABOX DSP gets `calliope_*.bin` at probe (t = 1.43 s, before any filesystem exists on this device); the `ABOX UAIF2 SPK` route, which nothing in Ubuntu Touch sets; and a native ALSA sink, because the droid HAL swallows the audio. [experiment 007](experiments/007-abox-firmware-too-early.md) |
+| **The audio DSP boots and the speaker amplifier works** | `calliope_version` reads `rSK1`, `Invalid calliope state: 0` is gone, and `speaker-test -D hw:0,0` is **audible** — confirmed by ear. Two fixes: `CONFIG_EXTRA_FIRMWARE`, so the DSP gets `calliope_*.bin` at probe (t = 1.43 s, before any filesystem exists here), and the `ABOX UAIF2 SPK` route, which nothing in Ubuntu Touch sets. [experiment 007](experiments/007-abox-firmware-too-early.md) |
 
 ## Not proven, and blocking
 
@@ -33,7 +33,7 @@ the first-boot wizard. This file is the honest inventory.
 | **The initramfs fixes have not been ported** | Four are expected to be needed. `ramdisk-overlay/README.md`. |
 | **Wi-Fi has no UI: `CONFIG_RFKILL` is not built** | Every layer below the UI works — `wlan0` up, `wpa_supplicant` running, NetworkManager scans and lists APs. But with no `/dev/rfkill`, `urfkilld` enumerates nothing and reports WLAN killswitch `state = -1` (no adapter), so the indicator shows no Wi-Fi. One rebuild. [experiment 006](experiments/006-what-we-missed.md) |
 | **`conn_gadget` double-registration is avoided, not fixed** | The container is kept away from USB gadget configfs. The real fix is an idempotency guard in `conn_gadget_setup()`, still unwritten to the kernel branch. |
-| **Audio through the droid HAL** | Media playback works, but via a native ALSA sink, not the HAL — the HAL accepts writes and returns success while nothing reaches the card. Everything below it is proven working, so this is a userspace question now. [experiment 007](experiments/007-abox-firmware-too-early.md) §14 |
+| **Audio through PulseAudio / the droid HAL** | The HAL accepts writes and returns success while nothing reaches the card, and no PulseAudio playback has ever been confirmed audible. Everything below it is proven working, so this is a userspace question. **Do not "fix" it with a raw ALSA sink** — that takes `hw:0,0` from the media stack and stops video playing at all. [experiment 007](experiments/007-abox-firmware-too-early.md) §14, §18 |
 | **Headphones / earpiece** | Only the speaker (UAIF2) is routed. UAIF0 is the codec path and is untested. |
 | **Camera** | `fimc_is_devicemgr_open` NULL-derefs when anything enumerates V4L2 (`gst-plugin-scan` does), panicking the kernel. Looks like a bootloop. Unrelated to audio. |
 
