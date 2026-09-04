@@ -33,10 +33,22 @@ deviceinfo_kernel_arch="arm64"
 #     Android 11 -> Halium 11 -> LineageOS 18.1, per the UBports version table.
 deviceinfo_halium_version="11"
 
-# [C] 26.04-1.x is a supported value in prepare-fake-ota.sh, and its rootfs
-#     artifact URL resolves (HTTP 200, checked 2026-09-01). It is an early
-#     release series - expect churn.
-deviceinfo_ubuntu_touch_release="26.04-1.x"
+# [V] 24.04-2.x, the tools' own default. Moved here from 26.04-1.x after the
+#     churn that conventions.md predicted actually bit: on 26.04 the
+#     preinstalled OpenStore cannot start at all. It is a focal /
+#     ubuntu-sdk-20.04 framework click, and 26.04 renamed the sonames it
+#     links - libsnapd-qt.so.1 -> libsnapd-qt-2.so.1, libxml2.so.2 ->
+#     libxml2.so.16 - so the loader fails on a cascade of them. 4.1.0 is the
+#     newest OpenStore, so no newer build fixes it, and substituting the
+#     renamed libraries is not viable (the libsnapd-qt swap links but then
+#     corrupts the heap; see docs/device-provisioning.md). 24.04 still ships
+#     the sonames that click expects.
+#
+#     26.04-1.x is otherwise device-proven - it reached the Lomiri UI, see
+#     docs/experiments/006-what-we-missed.md - so this is a userspace
+#     compatibility choice, not a boot-chain one. Keep the old rootfs image
+#     alongside the new one to switch back.
+deviceinfo_ubuntu_touch_release="24.04-2.x"
 
 ##########
 # Kernel
