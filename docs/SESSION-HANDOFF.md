@@ -6,33 +6,35 @@ Read this first, then `docs/status.md` and
 
 ---
 
-## 0. RIGHT NOW: the device is in an experiment, and it may not boot
+## 0. RIGHT NOW: the device is recovered and healthy
 
-The boot partition currently holds **`boot-abox-bt.img`** — a kernel carrying
-two untested patches (audio DSP fix + Bluetooth). It was flashed from TWRP and
-**has not been boot-tested yet**.
+**Updated 2026-09-04, later session.** The `boot-abox-bt.img` experiment
+described in earlier versions of this section is over. It did not boot, the
+device was recovered to the known-good image, and it now runs `uname #4` with
+`lightdm` active (`NRestarts=0`), container `sys.boot_completed=1`, `mali0`
+opening instantly and zero `misc_open` waiters.
 
-### If it boots
+### Flashing no longer needs TWRP
 
-Verify the two things it was built for:
-
-```sh
-# audio DSP: this must NOT say "Invalid calliope state: 0"
-ssh root@10.15.19.82 "dmesg | grep -aiE 'abox_enable|SRAM firmware|calliope' | grep -vi fg_asoc | head"
-# bluetooth: /dev/vhci should now exist and hciconfig should not error
-ssh root@10.15.19.82 "ls -l /dev/vhci; hciconfig -a | head -3; systemctl status bluebinder --no-pager | head -5"
-```
-
-### If it bootloops or hangs — GET BACK TO SAFETY
-
-Boot into TWRP (Power+VolUp+USB), then:
+The boot partition is writable from running Ubuntu Touch. It is **`/dev/sda14`**
+(the `/dev/block/bootdevice/by-name/` symlinks are an Android-init thing and do
+not exist on the UT side):
 
 ```sh
-adb shell 'dd if=/tmp/boot-backup-prev.img of=/dev/block/bootdevice/by-name/boot bs=4M; sync'
+dd if=/userdata/<image>.img of=/dev/sda14 bs=4M; sync
+# then read it back and hash it before rebooting - always
+dd if=/dev/sda14 bs=1M count=52 2>/dev/null | head -c <image size> | sha256sum
 ```
 
-`/tmp` in TWRP is a ramdisk and is wiped on reboot. If that file is gone, push
-a known-good image from the host instead:
+A known-good image is staged **on the device** at
+`/userdata/boot-known-good.img` (sha256 `1fa490eb…`, identical to
+`boot-miscdbg2.img`), so a rollback is one `dd` with no host transfer and no
+TWRP.
+
+### If a flash does leave it unbootable
+
+TWRP (Power+VolUp+USB), then push from the host — `/tmp` in TWRP is a ramdisk
+and is wiped on reboot:
 
 ```sh
 cd C:\Users\sadat\.zcode\workspace\default\a50-first-build
@@ -40,13 +42,27 @@ adb push boot-miscdbg2.img /tmp/b.img
 adb shell 'dd if=/tmp/b.img of=/dev/block/bootdevice/by-name/boot bs=4M; sync'
 ```
 
-`boot-miscdbg2.img` is the **last known-good boot image** (the one that ran all
-day). `boot-backup-preUT.img` returns the device to its pre-project state.
-Both are also published in the GitHub release `boot-images-2026-09-04`.
+`boot-miscdbg2.img` is the last known-good image. `boot-backup-preUT.img`
+returns the device to its pre-project state. Both are published in the GitHub
+release `boot-images-2026-09-04`.
 
-**If the combined kernel bootloops, Bluetooth is the prime suspect** — it
-bootlooped once before (a50-halium `kernel/patches-experimental/README.md`).
-Rebuild with `0005-abox.patch` only and retest; that isolates it.
+### Why `boot-abox-bt.img` told us nothing
+
+No kernel evidence of its failure survives: `/sys/fs/pstore` is empty and
+`/proc/last_kmsg` held only the S-Boot log, because the device was recovered
+with a forced button reset and Samsung's `sec_debug` clears its buffers on a
+PIN reset. Do not go looking for it again.
+
+It also moved **three** variables, not two. Its manifest is
+`0001..0004 + 0005-abox + 0006-bt`, which silently **drops**
+`misc-open-scope-and-tracing.patch` — the patch `d21f4fc` records as the source
+of `uname #4`, the kernel that runs all day. **Every experimental build must
+start from that patch set**, i.e. `kernel/patches/` *plus* the misc scope fix,
+not `kernel/patches/` alone.
+
+Bluetooth remains parked and remains the prime suspect for the older bootloop
+(a50-halium `kernel/patches-experimental/README.md` already isolated it). It
+stays out of every build until audio lands.
 
 ---
 
@@ -141,13 +157,27 @@ DSP never boots: `samsung-abox: Invalid calliope state: 0`, no `abox_enable`,
 no firmware download, and `speaker-test` straight to `hw:0,0` with PulseAudio
 stopped fails with `-EIO`. So it is *not* a PulseAudio or HAL problem.
 
-Root cause found: `samsung_abox_probe()` calls `pm_runtime_get()` — which is
-asynchronous and never invokes the resume callback. `abox_runtime_resume()` →
-`abox_enable()` is the only path that downloads `calliope_*.bin` and releases
-the DSP from reset, and the pinned usage count then prevents any later resume.
-Fix: `pm_runtime_get_sync()` —
-`a50-halium/kernel/patches-experimental/abox-runtime-pm-get-sync.patch`,
-**now flashed and awaiting its first boot test**.
+**Root cause, proven on hardware 2026-09-04** — and it is *not* what the parked
+patch says. See [experiment 007](experiments/007-abox-firmware-too-early.md)
+for the full log.
+
+`samsung_abox_probe()` requests `calliope_sram.bin` at **t = 1.43 s**, and this
+device has **no filesystem at all until t = 2.08 s** — the kernel rejects the
+boot image's ramdisk as an initramfs ("junk in compressed archive; looks like
+an initrd"), frees it, and Samsung's `SAR_RD` loader brings it up only at
+2.08 s. So the request fails `-ENOENT`,
+`abox_complete_sram_firmware_request()` returns early on `!fw` and **never
+retries**, and probe's `pm_runtime_get()` pins the usage count so the device
+can never idle and resume to try again. One shot, missed by 0.65 s.
+
+`abox-runtime-pm-get-sync.patch` is therefore **disproved**: its premise is
+that `pm_runtime_get()` never invokes the resume callback, but the boot log
+shows `abox_enable` running at 1.4249 s. Do not flash it as "the audio fix".
+
+The fix under test is `CONFIG_EXTRA_FIRMWARE` — link the calliope blobs into
+the kernel image, since `fw_get_builtin_firmware()` is checked before any
+filesystem. Putting the firmware in the initramfs was tried first and does
+**not** work, for the SAR_RD reason above.
 
 Ruled out along the way: firmware presence, the CP/`cass` daemon, `/dev/snd`
 permissions, the `calliope_cmd FAILSAFE` path, and PCM contention.
@@ -223,4 +253,16 @@ usual win.
 * Verify, never assume. "It returned 0" is not "it worked": `paplay` exits 0
   into a stub HAL that makes no sound, and sinks appear even when the HAL is a
   stub.
+* **An absent log line is not evidence of an absent event.** The kernel ring
+  buffer holds ~8,600 lines and the container's `ueventd` `restorecon` storm
+  wipes the whole boot out of it within a second of starting. Two sessions
+  concluded "`abox_enable` never runs" from a `dmesg | grep` that could not
+  physically have contained it. Before drawing a conclusion from a missing
+  line, check what the buffer actually still covers (`dmesg | head -1`).
+  `a50-dmesg-snap.service` on the device now snapshots the buffer at t ≈ 5.3 s,
+  before the flood, into `/userdata/dmesg-boot-first.txt` — read that, not
+  live `dmesg`, for anything about boot.
+* Check a patch's *premise* against the source before building it, not just
+  whether it applies. `abox-runtime-pm-get-sync.patch` applied cleanly, read
+  plausibly, and was wrong about what the driver does.
 * Keep replies short; do the work in the tools.

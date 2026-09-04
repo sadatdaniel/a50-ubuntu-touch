@@ -126,5 +126,29 @@ else
     echo "audio: touch.pa already patched"
 fi
 
+# The droid HAL accepts writes and returns success, but nothing ever reaches
+# the ABOX hardware - no RDMA trigger, no UAIF activity, silence. Raw ALSA on
+# hw:0,0 works once ABOX is routed, so drive the card directly with a native
+# ALSA sink and make it the default. The droid card stays loaded: it still owns
+# voice call and mode switching, which have no ALSA equivalent here. Stopgap for
+# media playback, not a replacement for the HAL.
+# See docs/experiments/007-abox-firmware-too-early.md.
+if ! grep -q 'a50_speaker' /etc/pulse/touch.pa; then
+    [ -f /etc/pulse/touch.pa.a50-orig ] || cp /etc/pulse/touch.pa /etc/pulse/touch.pa.a50-orig
+    cat >> /etc/pulse/touch.pa <<'EOS'
+
+### A50: native ALSA sink for the speaker (see a50-audio-route.service).
+.ifexists module-alsa-sink.so
+.nofail
+load-module module-alsa-sink device=hw:0,0 sink_name=a50_speaker sink_properties="device.description='Speaker'" rate=48000 channels=2 format=s16le
+set-default-sink a50_speaker
+.fail
+.endif
+EOS
+    echo "audio: touch.pa ALSA sink added (restart pulseaudio to apply)"
+else
+    echo "audio: touch.pa ALSA sink already present"
+fi
+
 sync
 echo "done."

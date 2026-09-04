@@ -1,0 +1,19 @@
+[Unit]
+Description=A50: route ABOX playback to the speaker amplifier
+# The ABOX mixer comes up unrouted on every boot and nothing in the Ubuntu
+# Touch stack sets it; there is no /var/lib/alsa/asound.state on this image,
+# so alsa-restore does not carry it either.
+After=sound.target
+Wants=sound.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/a50-audio-speaker-route.sh
+# The sound card is a platform device; if this runs before it is registered,
+# retry rather than fail the boot.
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
