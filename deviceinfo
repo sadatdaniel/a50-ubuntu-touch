@@ -33,21 +33,18 @@ deviceinfo_kernel_arch="arm64"
 #     Android 11 -> Halium 11 -> LineageOS 18.1, per the UBports version table.
 deviceinfo_halium_version="11"
 
-# [V] 24.04-2.x, the tools' own default. Moved here from 26.04-1.x after the
-#     churn that conventions.md predicted actually bit: on 26.04 the
-#     preinstalled OpenStore cannot start at all. It is a focal /
-#     ubuntu-sdk-20.04 framework click, and 26.04 renamed the sonames it
-#     links - libsnapd-qt.so.1 -> libsnapd-qt-2.so.1, libxml2.so.2 ->
-#     libxml2.so.16 - so the loader fails on a cascade of them. 4.1.0 is the
-#     newest OpenStore, so no newer build fixes it, and substituting the
-#     renamed libraries is not viable (the libsnapd-qt swap links but then
-#     corrupts the heap; see docs/device-provisioning.md). 24.04 still ships
-#     the sonames that click expects.
+# [V] 26.04-1.x, device-proven: it boots and reaches the Lomiri UI (see
+#     docs/experiments/006-what-we-missed.md), and OpenStore runs on it.
 #
-#     26.04-1.x is otherwise device-proven - it reached the Lomiri UI, see
-#     docs/experiments/006-what-we-missed.md - so this is a userspace
-#     compatibility choice, not a boot-chain one. Keep the old rootfs image
-#     alongside the new one to switch back.
+#     This was briefly switched to 24.04-2.x because the preinstalled
+#     OpenStore would not start on 26.04 - 26.04 ships libxml2 2.15, which
+#     bumped the SONAME libxml2.so.2 -> libxml2.so.16, and that breaks any
+#     click built against the older framework. That switch was wrong twice
+#     over: the 24.04 rootfs BOOTLOOPS at ~15s on this device, and the real
+#     fix needs no release change at all. Co-installing the genuine old
+#     libraries alongside the new ones (libxml2.so.2 plus the ICU 74 set it
+#     links) resolves every missing symbol and OpenStore launches.
+#     docs/device-provisioning.md has the procedure and the two traps.
 deviceinfo_ubuntu_touch_release="26.04-1.x"
 
 ##########
