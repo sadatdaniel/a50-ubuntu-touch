@@ -1,18 +1,25 @@
 # Experiment 007 — why the audio DSP never boots: the firmware is requested before any filesystem exists
 
-**Date:** 2026-09-04/05 · **Status:** kernel side **solved** — the ABOX DSP
-boots and the speaker amplifier runs, and raw ALSA on `hw:0,0` is **audibly
-working**. Getting that sound through PulseAudio is **still open**.
+**Date:** 2026-09-04/05 · **Status:** ✅ **resolved — audio works**, through
+the normal Ubuntu Touch path, with video unaffected. Confirmed by ear.
 · **Device needed:** yes
 
-Two faults are fixed: the DSP firmware was requested before any filesystem
-existed (Part 1), and the speaker route is never set by anything in Ubuntu
-Touch (Part 3 §13). Both changes are permanent and cost nothing.
+Three independent faults, each hiding the next:
 
-A third — the droid HAL accepting audio without it reaching the hardware
-(§14) — is **not** fixed. The ALSA-sink workaround written for it was reverted:
-it takes `hw:0,0` away from the media stack and stops video playing at all.
-**Read §18 before trying that again.**
+1. **The DSP never booted** — its firmware is requested at t = 1.43 s, before
+   any filesystem exists on this device (Part 1). Fixed with
+   `CONFIG_EXTRA_FIRMWARE`.
+2. **The speaker was never routed** — `ABOX UAIF2 SPK` comes up `RESERVED` and
+   nothing in Ubuntu Touch sets it (Part 3 §13).
+3. **PulseAudio was loading a stub HAL** — the `hidl_compat` wrapper is
+   bind-mounted only inside the container's namespace, and even once presented
+   host-side it would not load, because the linker resolves it in the `sphal`
+   namespace which cannot reach `libaudiohal.so` (Part 4 §19–§20).
+
+Two approaches that look reasonable and must **not** be retried — both break
+video, because media-hub needs the droid stack regardless of the audio path:
+a raw ALSA sink as default (§18), and replacing the droid stack with
+`module-alsa-card` (Part 4 intro).
 
 ## TL;DR
 
@@ -529,3 +536,134 @@ So the accurate statement of where audio stands is:
 The route service and the kernel change stay — they are correct and carry no
 such cost. The remaining work is to make the **droid HAL** reach the hardware,
 rather than to route around it.
+
+---
+
+# Part 4 — the droid HAL, made to work properly
+
+**2026-09-05.** Audio and video both work, through the normal Ubuntu Touch
+path. Nothing is bypassed and nothing is removed.
+
+§18 was still not the answer. Two more approaches were tried and both failed
+in the same way, which is what finally pointed at the real cause:
+
+* **Raw ALSA sink as default** (§18) — broke video.
+* **Dropping the droid stack entirely** for `module-alsa-card` on card 0 — the
+  ALSA card loaded correctly and silent playback produced real
+  `abox_rdma_trigger[0](1)`, so the audio path was genuinely working. **Video
+  still broke, and there was still no sound in apps.**
+
+That second result is the important one: media-hub does not simply play through
+whatever sink PulseAudio offers. Without the droid stack there is no video at
+all, regardless of how good the audio path is. So routing *around* the HAL can
+never work here — the HAL itself has to work.
+
+## 19. Why the HAL did nothing: PulseAudio was loading a stub
+
+`scripts/apply-device-workarounds.sh` bind-mounts the 64-bit
+`audio.hidl_compat.default.so` wrapper over
+`/vendor/lib64/hw/audio.primary.default.so` **from the LXC mount hook** — i.e.
+inside the *container's* mount namespace. That is what the container's own HAL
+service needs.
+
+**PulseAudio runs on the host.** In the host namespace that path is still the
+stock 12 KB generic stub:
+
+| path | size | md5 |
+|---|---|---|
+| host `/android/vendor/lib64/hw/audio.primary.default.so` | 12,088 | `c20573d8…` (stub) |
+| container view of the same path | 20,784 | the real wrapper |
+| host bind mounts for it | **0** | |
+
+So PulseAudio loaded the stub, which accepts every write and returns success
+while discarding the audio — exactly the "returned 0 is not worked" signature.
+`/android/…` and `/var/lib/lxc/android/rootfs/…` are the **same inode**, so the
+fix is simply to do that bind in the host namespace as well. a50-droidian's
+`scripts/setup/13-fix-audio-hidl-compat.sh` always did it host-side, via an
+`android-mount.service` drop-in; the Ubuntu Touch port lost that when the same
+idea was moved into the container's mount hook.
+
+## 20. Why the real wrapper then would not load: the linker namespace
+
+Bind-mounting the wrapper host-side made PulseAudio load it — and fail:
+
+```
+dlopen failed: library "libaudiohal.so" not found
+Failed to load audio hw module audio.primary : Invalid argument (22)
+Failed to load module "module-droid-card-30" ... initialization failed.
+```
+
+`libaudiohal.so` is **not** missing — `/android/system/lib64/` has
+`libaudiohal.so`, `libaudiohal@2.0/@4.0/@5.0/@6.0.so` and
+`libaudiohal_deathhandler.so`. The problem is *which namespace* asks for it.
+
+From `/linkerconfig/ld.config.txt`:
+
+```
+namespace.default.search.paths = /system/${LIB}
+namespace.default.search.paths += /android/system/${LIB}      <- libaudiohal lives here
+...
+namespace.sphal.search.paths = /odm/${LIB}
+namespace.sphal.search.paths += /vendor/${LIB}                <- only vendor/odm
+namespace.sphal.links = rs,default,vndk
+namespace.sphal.link.default.shared_libs = libEGL.so:...:libvulkan.so   <- fixed allowlist
+```
+
+The wrapper is loaded out of `/vendor/lib64/hw/`, so Android's linker resolves
+it in the **sphal** namespace, which searches only vendor/odm and may reach the
+default namespace for a fixed allowlist that does not contain `libaudiohal.so`.
+
+Unsetting `HYBRIS_USE_VENDOR_NAMESPACE` — which
+`/etc/systemd/user/pulseaudio.service.d/zz-a50-hybris.conf` does, over
+`ubuntu-touch.conf`'s `HYBRIS_USE_VENDOR_NAMESPACE=1` — is **not** sufficient.
+Verified directly: the variable is absent from the PulseAudio process
+environment and the load still fails.
+
+Fix: allow the three framework audio-HAL client libraries through the
+sphal to default link.
+
+```
+namespace.sphal.link.default.shared_libs += libaudiohal.so
+namespace.sphal.link.default.shared_libs += libaudiohal@5.0.so
+namespace.sphal.link.default.shared_libs += libaudiohal_deathhandler.so
+```
+
+`@5.0` is the version that matters here: the registered service is
+`android.hardware.audio@5.0::IDevicesFactory/default`, from the 32-bit
+`vendor.audio-hal` (pid 136).
+
+## 21. Proof it is really connected now
+
+| check | stub (before) | wrapper (after) |
+|---|---|---|
+| libs mapped into PulseAudio | none | `libaudiohal.so`, `libaudiohal@5.0.so`, `libaudiohal_deathhandler.so`, the wrapper |
+| `/dev/hwbinder` fd in PulseAudio | **absent** | **open** |
+| ABOX activity playing to `sink.primary-out` | none | `abox_rdma_trigger[0](1)`, `tfa_start: profile:music` |
+| audible | no | **yes** |
+| video | works | works |
+
+The `/dev/hwbinder` fd is the single clearest signal: with the stub there is no
+Binder connection at all, because the stub never talks to anything.
+
+## 22. Both fixes are per-boot, and why
+
+`/linkerconfig/ld.config.txt` is regenerated by `linkerconfig` on every boot,
+and the bind mount is runtime state. `a50-audio-hidl-compat.service` re-applies
+both before the session starts, waiting for `ld.config.txt` to appear first.
+
+There is also an ordering constraint that cost a boot to find: **the route from
+§13 must be applied after the HAL initialises.** Once the HAL actually works it
+programs the mixer from its own `mixer_paths.xml` when PulseAudio loads it,
+which puts `ABOX UAIF2 SPK` back to `RESERVED`. Applying the route earlier is
+silently undone and there is no sound. `a50-audio-route.service` is therefore
+ordered `After=lightdm.service` with a short settle delay.
+
+## 23. What Ubuntu Touch was missing that Droidian had
+
+Worth stating plainly, because it is the whole gap: a50-droidian solved the
+32-bit-HAL problem in `13-fix-audio-hidl-compat.sh` and did the bind
+**host-side**. The Ubuntu Touch port reimplemented it inside the container's
+mount hook, where PulseAudio cannot see it, and never noticed because the stub
+reports success. The linker-namespace half (§20) is new — Droidian's PulseAudio
+evidently resolved `libaudiohal.so` without it, which is worth understanding if
+this ever needs revisiting.

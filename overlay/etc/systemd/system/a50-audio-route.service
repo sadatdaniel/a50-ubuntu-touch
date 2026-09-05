@@ -1,19 +1,21 @@
 [Unit]
 Description=A50: route ABOX playback to the speaker amplifier
-# The ABOX mixer comes up unrouted on every boot and nothing in the Ubuntu
-# Touch stack sets it; there is no /var/lib/alsa/asound.state on this image,
-# so alsa-restore does not carry it either.
-After=sound.target
-Wants=sound.target
+Documentation=https://github.com/sadatdaniel/a50-ubuntu-touch/blob/main/docs/experiments/007-abox-firmware-too-early.md
+# Must run AFTER the audio HAL has initialised. The HAL applies its own mixer
+# settings from /vendor/etc/mixer_paths.xml when PulseAudio loads it, which
+# resets ABOX UAIF2 SPK back to RESERVED - so applying the route any earlier
+# is silently undone and there is no sound.
+After=lxc-android-config.service lightdm.service
+Wants=lxc-android-config.service
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
+# Give PulseAudio time to load the droid card and let the HAL settle before
+# overriding the one control it leaves unrouted.
+ExecStartPre=/bin/sleep 20
 ExecStart=/usr/local/bin/a50-audio-speaker-route.sh
-# The sound card is a platform device; if this runs before it is registered,
-# retry rather than fail the boot.
-Restart=on-failure
-RestartSec=2
+TimeoutStartSec=180
 
 [Install]
 WantedBy=multi-user.target
