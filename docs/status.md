@@ -1,7 +1,7 @@
 # Status
 
 **Last updated: 2026-09-05.** Ubuntu Touch boots, reaches the UI, and now has
-working audio. This file is the honest inventory.
+working audio, Bluetooth and mobile data. This file is the honest inventory.
 
 ## Proven
 
@@ -19,7 +19,9 @@ working audio. This file is the honest inventory.
 | No SEAndroid footer, no AVB footer | Last 32 bytes of every known-good A50 boot image are zeros |
 | The three artifacts the tools will download all exist | HTTP 200 on the 26.04 rootfs, the Halium 11 GSI and the halium-boot ramdisk, 2026-09-01 |
 | **Audio works** | Sound out of the speaker through Ubuntu Touch's normal path, with video unaffected — confirmed by ear across clean reboots. Two fixes: `CONFIG_EXTRA_FIRMWARE`, so the DSP gets `calliope_*.bin` at probe (t = 1.43 s, before any filesystem exists here), and presenting the real `hidl_compat` wrapper to PulseAudio host-side, which needed a linker-namespace change to resolve `libaudiohal.so`. The ABOX mixer is left entirely to the HAL. [experiment 007](experiments/007-abox-firmware-too-early.md) |
-| **Wi-Fi works, including the UI** | Connects and lists networks. Note this happens with **no** `/dev/rfkill` and `urfkilld` inactive, which falsifies the earlier claim that the indicator needed `CONFIG_RFKILL` — that rebuild is not required. `swlan0` is the interface that carries traffic. |
+| **Bluetooth works** | `hci0` is `UP RUNNING` with the device's own BD address, and `bluetoothctl` discovers real nearby devices with live RSSI. Needed `CONFIG_BT` + `CONFIG_BT_HCIVHCI`, restoring the HCI socket layer this vendor tree comments out, and `CONFIG_RFKILL`. The old "CONFIG_BT bootloops this device" result was a misdiagnosis — see [experiment 008](experiments/008-bluetooth-hci-sock.md). |
+| **Mobile network works — SIM detected, registered on LTE** | `Present=true`, `ServiceProviderName="fraenk"`, `NetworkRegistration Status=registered`, `Technology=lte`, `ConnectionManager Attached=true`, on `/ril_0` of a dual-SIM device. Two config files: `OfonoPlugin: binder` in a device yaml that did not exist, and slot definitions in `binder.conf`. No kernel change. |
+| **Wi-Fi works, including the UI** | Connects and lists networks. Note this happens with **no** `/dev/rfkill` and `urfkilld` inactive, which falsifies experiment 006's claim that the indicator needed `CONFIG_RFKILL`. RFKILL is built now, but for Bluetooth: `bluebinder` needs `/dev/rfkill`. `swlan0` is the interface that carries traffic. |
 
 ## Not proven, and blocking
 
@@ -39,18 +41,6 @@ working audio. This file is the honest inventory.
 
 ## Deliberately not started
 
-* Bluetooth. `CONFIG_BT` + `CONFIG_BT_HCIVHCI` bootlooped this device on
-  2026-08-31; the patch is parked in a50-halium's
-  `kernel/patches-experimental/`. The Android half is confirmed alive under
-  Ubuntu Touch too — `/dev/scsc_h4_0` present,
-  `android.hardware.bluetooth@1.0-service` running, and `bluebinder`
-  auto-restarting on `ENODEV` waiting for a `/dev/vhci` that does not exist.
-  Worth a fresh test now: that bootloop predates experiment 006, its own README
-  named an Android-init fatal error as the leading hypothesis, and `hci_vhci.c`
-  registers `/dev/vhci` via `misc_register()` — adding a node to the very list
-  that was being corrupted, so the old bootloop is plausibly a symptom of a bug
-  that is now fixed. Retest it. **`bluebinder` is currently `systemctl mask`ed**
-  (it was flooding the kernel log with MISCDBG lines) — unmask it first.
 * UBports recovery and the UBports installer. The guide adds both at
   finalization, and TWRP is currently the only reliable way back.
 
