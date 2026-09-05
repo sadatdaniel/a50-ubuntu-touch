@@ -127,5 +127,26 @@ else
 fi
 
 
+# A50 speaker routing: the stock mixer_paths.xml routes the speaker amplifier
+# from SIFS1, fed by RDMA7 - a channel this ABOX DSP NACKs - so nothing reaches
+# the amp. Generate a patched copy and bind it in via the LXC mount hook, so the
+# HAL itself routes correctly on every stream and every call.
+# See docs/experiments/007-abox-firmware-too-early.md.
+if [ -x /usr/local/bin/a50-gen-mixer-paths.py ]; then
+    python3 /usr/local/bin/a50-gen-mixer-paths.py || echo "audio: mixer_paths patch FAILED"
+fi
+if ! grep -q mixer_paths.a50.xml /var/lib/lxc/android/mount.sh 2>/dev/null; then
+    cat >> /var/lib/lxc/android/mount.sh <<'HOOK'
+
+if [ -f /var/lib/lxc/android/mixer_paths.a50.xml ]; then
+    mount --bind /var/lib/lxc/android/mixer_paths.a50.xml \
+        "${LXC_ROOTFS_MOUNT}/vendor/etc/mixer_paths.xml"
+fi
+HOOK
+    echo "audio: mixer_paths bind added to mount.sh (takes effect next container start)"
+else
+    echo "audio: mixer_paths bind already in mount.sh"
+fi
+
 sync
 echo "done."
