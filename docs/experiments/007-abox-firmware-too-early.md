@@ -4,22 +4,29 @@
 the normal Ubuntu Touch path, with video unaffected. Confirmed by ear.
 · **Device needed:** yes
 
-Three independent faults, each hiding the next:
+Two real faults, one hiding the other:
 
 1. **The DSP never booted** — its firmware is requested at t = 1.43 s, before
    any filesystem exists on this device (Part 1). Fixed with
    `CONFIG_EXTRA_FIRMWARE`.
-2. **The speaker was never routed** — `ABOX UAIF2 SPK` comes up `RESERVED` and
-   nothing in Ubuntu Touch sets it (Part 3 §13).
-3. **PulseAudio was loading a stub HAL** — the `hidl_compat` wrapper is
+2. **PulseAudio was loading a stub HAL** — the `hidl_compat` wrapper is
    bind-mounted only inside the container's namespace, and even once presented
    host-side it would not load, because the linker resolves it in the `sphal`
    namespace which cannot reach `libaudiohal.so` (Part 4 §19–§20).
 
-Two approaches that look reasonable and must **not** be retried — both break
-video, because media-hub needs the droid stack regardless of the audio path:
-a raw ALSA sink as default (§18), and replacing the droid stack with
-`module-alsa-card` (Part 4 intro).
+**Read Part 5 first if you are here to change something.** The hand-applied
+speaker route of Part 3 §13 looked like a third fault and is now *obsolete* —
+it was an artefact of the stub HAL leaving the mixer unprogrammed. With the
+real HAL loading, the HAL owns the routing and writing it from a boot service
+is redundant and actively harmful (§24).
+
+Three approaches that look reasonable and must **not** be retried:
+
+* a raw ALSA sink as default (§18) — breaks video;
+* replacing the droid stack with `module-alsa-card` (Part 4 intro) — breaks
+  video, because media-hub needs the droid stack regardless of the audio path;
+* setting the ABOX mixer from a boot service (§24) — the HAL wins anyway, and
+  rewriting those controls mid-stream corrupts playback.
 
 ## TL;DR
 
@@ -667,3 +674,77 @@ mount hook, where PulseAudio cannot see it, and never noticed because the stub
 reports success. The linker-namespace half (§20) is new — Droidian's PulseAudio
 evidently resolved `libaudiohal.so` without it, which is worth understanding if
 this ever needs revisiting.
+
+---
+
+# Part 5 — final state, and how hacky each piece actually is
+
+**2026-09-05.** Audio works, confirmed by ear across two clean reboots, through
+Ubuntu Touch's normal path with video unaffected.
+
+## 24. The hand-applied mixer route is gone
+
+Part 3 §13 found the speaker route by hand and Part 4 §22 made a boot service
+re-apply it. **Both are obsolete.** That route was only ever necessary because
+PulseAudio was loading a *stub* HAL, so nothing was programming the ABOX mixer
+at all.
+
+Once the real wrapper loads, the HAL programs its own routing from
+`/vendor/etc/mixer_paths.xml`, and re-applies it on every stream change. Left
+completely alone, it builds:
+
+```
+SPUS OUT0 = SIFS0    UAIF0 SPK = SIFS0                       (codec)
+SPUS OUT7 = SIFS1    SIFS1 = SPUS OUT7    UAIF2 SPK = SIFS1  (speaker)
+```
+
+which is the vendor's own `media-speaker`. Note this is the RDMA7 path that
+§13 measured the DSP NACKing — yet audio is audibly correct. The right reading
+of §13 is therefore narrower than it was written: **RDMA7 is unusable as an
+AP-written PCM**, which is what made a hand-built `hw:0,7` stream fail, but the
+HAL's use of that leg for the speaker works because the HAL is not writing PCM
+data to channel 7.
+
+Writing the mixer from a boot service was, in the end, both redundant and
+harmful: the HAL wins regardless, and rewriting `UAIF2 SPK` or the rate/width
+controls mid-stream corrupts playback with a fast-forward artefact. Deleting it
+also removed a `sleep`-based race that guessed when the HAL had settled.
+
+## 25. What is actually installed, and how defensible each part is
+
+| piece | what it does | assessment |
+|---|---|---|
+| `CONFIG_EXTRA_FIRMWARE` + 8 blobs | DSP and amp firmware available at probe | **Not a hack.** The upstream Kconfig mechanism for exactly this case: firmware needed before any rootfs. Costs +2.36 MB of kernel image. |
+| `abox-fixup-helper-dai-guard.patch` | NULL-deref guard in `abox_hw_params_fixup_helper()` | **Not a hack.** Matches ASoC's own guard in `snd_soc_dapm_connect_dai_link_widgets()`. The same unguarded code is in other Samsung ABOX trees. |
+| host-side bind mount of `audio.hidl_compat.default.so` | PulseAudio gets the real wrapper, not the stub | **Conventional.** Exactly what a50-droidian's `13-fix-audio-hidl-compat.sh` does; the UT port simply lost it by moving the bind into the container's mount hook. |
+| `ld.config.txt` sphal→default allowlist | lets the wrapper resolve `libaudiohal.so` | **Hacky.** Patches a file `linkerconfig` regenerates every boot, before the session starts. It is correct in content — the same three libraries Android itself would need — but the delivery is a per-boot rewrite of generated state. |
+| pin default sink to `sink.primary-out` | keeps playback off the low-latency `sink.fast` | **Mild.** One `pactl` call; needed because the default drifts to `sink.fast` after a PulseAudio restart and that buffer size cannot be sustained here. |
+
+Two of the five are solid kernel work, one follows the ecosystem's own
+convention, one is a small papering-over, and one — the `ld.config.txt`
+rewrite — is a genuine hack.
+
+## 26. The one thing that deserves a proper fix
+
+`HYBRIS_USE_VENDOR_NAMESPACE` exists precisely to choose whether libhybris
+loads Android libraries in the vendor/sphal namespace or the default one, and
+`zz-a50-hybris.conf` unsets it over `ubuntu-touch.conf`'s `=1` for exactly this
+reason. **It does not work here** — verified directly: the variable is absent
+from the PulseAudio process environment and `libaudiohal.so` still fails to
+resolve, which is why the `ld.config.txt` allowlist edit was needed at all.
+
+Understanding why that mechanism does not take effect is the proper fix, and
+would delete §20 entirely. Worth doing before this port is published, because
+a per-boot rewrite of generated linker configuration is not something to ship
+quietly.
+
+## 27. Verified end state
+
+| check | result |
+|---|---|
+| `a50-audio-hidl-compat.service` | active; patches `ld.config.txt`, binds the wrapper |
+| `a50-audio-route.service` | active; pins `sink.primary-out`, touches no mixer control |
+| `/dev/hwbinder` in PulseAudio | open (absent with the stub) |
+| ABOX mixer | left entirely to the HAL |
+| audio | **works**, confirmed by ear after reboot |
+| video | unaffected |
