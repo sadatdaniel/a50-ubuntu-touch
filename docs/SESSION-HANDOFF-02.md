@@ -11,16 +11,56 @@ device was recovered, and GPS was fixed outright - it never needed that kernel.
 
 ---
 
-## 0. RIGHT NOW: the device is healthy, on the known-good kernel
+## 0. RIGHT NOW: healthy, on a kernel with two new patches
 
 The phone boots and runs with **audio, Bluetooth (incl. A2DP), phone calls,
-mobile data and GPS** all working, verified across clean reboots. Nothing is
-in flight. (Fingerprint is half-done — Settings no longer crashes and the HAL
-enrolls, but the optical sensor cannot capture without HBM; see #0 and #7.)
+mobile data, GPS and Waydroid (Android apps)** all working, verified across
+clean reboots.
 
-The boot partition holds
-`53fe13b58818d56c2610c6a6fcc4a7596689b2b3bc53b91440d29cb0573c0f7d` — the
-published `boot-a50-2026-09-05.img`.
+**The running kernel is `90c281f8…`** (`/userdata/boot-known-good-waydroid.img`),
+not the older published image. It carries two changes on top of it:
+
+| change | what it does | state |
+|---|---|---|
+| `decon-force-mask-layer.patch` | `/sys/module/decon/parameters/force_mask_layer` forces the fingerprint HBM mask layer | works; **defaults off**, inert when unset |
+| `CONFIG_ANDROID_BINDER_DEVICES` + `anbox-*` | gives Waydroid its own binder domain | works; Waydroid runs Android 13 |
+
+Both are in a50-halium and both are boot-tested.
+
+### Fallbacks staged on the device
+
+| image | sha256 | what it is |
+|---|---|---|
+| `/userdata/boot-known-good-waydroid.img` | `90c281f8…` | **what is running now** — everything above |
+| `/userdata/boot-known-good.img` | `53fe13b5…` | the published `boot-a50-2026-09-05.img`; no Waydroid, no HBM |
+| `/userdata/boot-bt4.img` | `53fe13b5…` | same image again |
+
+Flash from running Linux, no TWRP needed:
+
+```sh
+dd if=/userdata/boot-known-good-waydroid.img of=/dev/sda14 bs=4M; sync
+dd if=/dev/sda14 bs=512 count=108172 | sha256sum    # verify BEFORE rebooting
+```
+
+### Rootfs is now 16 GB
+
+Grown from 8 GB online (`truncate` + `losetup -c` + `resize2fs`), 12 GB free.
+Note Waydroid did **not** need this — `/var/lib/waydroid` is already a mount
+from `/dev/sda32`. It is general headroom.
+
+### What is parked, and where
+
+* **Fingerprint** — [experiment 012](experiments/012-fingerprint.md). HBM is
+  solved. The wall is sensor bring-up inside Samsung's closed trustlet: the HAL
+  never issues `INT_TRIGGER_INIT`, so no DRDY interrupt is registered and
+  `nd cnt` can never leave 0. Lead worth chasing: there is **no fingerprint
+  calibration data** under `/mnt/vendor/efs`.
+* **Waydroid** — [experiment 013](experiments/013-waydroid.md). Working, F-Droid
+  installed. Re-run `scripts/apply-device-workarounds.sh` after installing new
+  Android apps, or their icons come back hidden and non-functional.
+* **Camera** — next. See §7 and the warning in §5: it **panics the kernel**.
+  Samsung's `vendor.samsung.hardware.camera.provider@4.0-service` is also
+  crash-looping every 5 s in the Halium container right now.
 
 ### The AppArmor kernel was tested. It does not boot. It has been reverted.
 
