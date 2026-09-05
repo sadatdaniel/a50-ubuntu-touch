@@ -201,5 +201,59 @@ else
     echo "gps: location-service trust-store drop-in already present"
 fi
 
+# ---------------------------------------------------------------------------
+# 6. GPS: unblock gpsd, which waits for a boot animation that never runs.
+#
+# REAL FIX: none available - this is closed vendor code. The property is what
+# stock Android's boot animation sets; the container simply has no boot
+# animation to set it.
+#
+# /vendor/bin/hw/gpsd reads service.bootanim.exit at startup and, until it is
+# set, sits in a 250 ms poll loop forever: one thread, never reads its config,
+# never opens /dev/gnss_ipc, never binds its socket, logs nothing. The GNSS HAL
+# then fails to connect to @GNSSND and spins lal_state_handle_transition three
+# times a second. With the property set, gpsd reaches 12 threads, binds the
+# socket, and real satellites arrive.
+#
+# See docs/experiments/009-gps-permissions.md.
+# ---------------------------------------------------------------------------
+install -D -m 0755 /dev/stdin /usr/local/bin/a50-gnss-unblock.sh <<'SCRIPT'
+#!/bin/sh
+set -eu
+A="lxc-attach -n android --"
+$A /system/bin/setprop service.bootanim.exit 1
+$A /system/bin/setprop ctl.restart gpsd
+i=0
+while [ $i -lt 40 ]; do
+    grep -q GNSSND /proc/net/unix 2>/dev/null && { echo "gnss: gpsd bound @GNSSND"; break; }
+    i=$((i + 1)); sleep 0.25
+done
+grep -q GNSSND /proc/net/unix 2>/dev/null || echo "gnss: WARNING gpsd did not bind @GNSSND" >&2
+$A /system/bin/setprop ctl.restart sec_gnss_service
+systemctl try-restart lomiri-location-service || true
+echo "gnss: done"
+SCRIPT
+
+install -D -m 0644 /dev/stdin /etc/systemd/system/a50-gnss-unblock.service <<'UNIT'
+[Unit]
+Description=A50: unblock Samsung gpsd (waits for a boot animation that never runs)
+Documentation=https://github.com/sadatdaniel/a50-ubuntu-touch/blob/main/docs/experiments/009-gps-permissions.md
+After=lxc-android-config.service
+Wants=lxc-android-config.service
+Before=lomiri-location-service.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/a50-gnss-unblock.sh
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+systemctl daemon-reload
+systemctl enable a50-gnss-unblock.service >/dev/null 2>&1 || true
+echo "gps: gpsd unblock service installed"
+
 sync
 echo "done."

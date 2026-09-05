@@ -1,6 +1,6 @@
 # Experiment 009 — GPS: why no app could ever get a location
 
-**Date:** 2026-09-05 · **Status:** partly answered · **Device needed:** yes
+**Date:** 2026-09-05 · **Status:** ✅ answered — GPS works · **Device needed:** yes
 
 ## Question
 
@@ -122,63 +122,110 @@ KERNEL=="gnss_ipc", SUBSYSTEM=="misc", OWNER="system", GROUP="system", MODE="066
 
 **Verified across a reboot:** `crw-rw---- 1 system system 10, 77 /dev/gnss_ipc`.
 
-## Still open — GPS does not yet produce a fix
+## Result 4 — the real blocker: `gpsd` waits for a boot animation
 
-Both fixes above are necessary and both are confirmed; real apps (Pure Maps)
-now register as location clients. They are **not sufficient**: no satellites,
-no position. The fault is inside the vendor stack, and it is `gpsd`.
+With permissions solved, GPS still produced nothing. The Samsung GNSS HAL
+logged, three times a second, for as long as any app held a session:
 
-**What is healthy:**
+```
+E vendor.samsung.hardware.gnss@2.0-service:
+  Critical Error: lal_state_handle_transition: curST:1 pendingST:2
+```
 
-* The kernel. `/userdata/dmesg-boot-first.txt` shows the Exynos GNSS interface
-  driver (`gif`, KEPLER) probing cleanly — reserved memory at `0xFB000000`,
-  shared-memory/fault/IPC regions created, `gnss_ipc created`. No kernel GNSS
-  error in any test.
-* The HAL. It registers `android.hardware.gnss@2.1::IGnss/default` and
-  `vendor.samsung.hardware.gnss@2.0::ISehGnss/default` cleanly, then spins
-  `lal_state_handle_transition: curST:1 pendingST:2` three times a second for
-  as long as a session is open — it is asking `gpsd` for something and getting
-  nothing.
+That string is undocumented anywhere online. `strace` answered it in one pass —
+the HAL is retrying a connection:
 
-**`gpsd` is inert.** One thread, sleeping in `hrtimer_nanosleep`. Its entire fd
-table is `/dev/null` ×3 plus a zero-byte `/data/vendor/gps/gnssd.pid` — no
-socket, no device. It has loaded **no vendor library at all**, notably not
-`/vendor/lib64/libwrappergps.so`, which its own strings reference. It never
-opens `/dev/gnss_ipc`, and it writes nothing to any logcat buffer, even after
-`setprop dev.gnss.silentlogging ON` swaps in `gps.debug.cfg` (which also
-produced no files in `silentGnssLogging`). Run by hand it prints nothing
-either.
+```
+connect(7, {sa_family=AF_UNIX, sun_path=@"GNSSND"...}, 110) = -1 ECONNREFUSED
+```
 
-`/data/vendor/gps/chip.info` read `S.LSI,UNKOWN` (sic), dated weeks earlier.
-Deleting it did not make `gpsd` re-probe — it is simply never rewritten.
+`@GNSSND` is an **abstract** unix socket. `gpsd` is supposed to bind it — the
+name and its `spot_host/lal/lal_router.c` paths are both in the `gpsd` binary —
+and it never did, because `gpsd` never initialised at all.
 
-### Ruled out — do not re-test these without new evidence
+Tracing `gpsd` from startup showed its entire `main()`:
 
-| Suspect | Finding |
-|---|---|
-| `/dev/gnss_ipc` permissions | was the bug, now fixed and verified across a reboot |
-| `/dev/umts_boot0` permissions | `0660 system radio` is exactly what `/vendor/ueventd.rc` specifies; `cbd` holds it open. Stock-correct. |
-| `/sys/devices/soc0/machine`, `revision` | both present and readable ("… Exynos9610", "2") |
-| `/sys/power/wake_lock` | `radio:3010`, and `gpsd` carries gid 3010 — reachable |
-| `/mnt/vendor/efs`, `/data/vendor/gps/sgee` | both mounted/present; the usual "missing EFS" answer does not apply |
-| stale `chip.info` | deleted, no change |
-| `vendor.gsm.sim.state` | empty on this port (ofono drives the modem from the host, so Android's framework never sets it). Setting it to `LOADED` changed nothing. |
-| GNSS firmware in `/vendor/firmware` | none there; whether KEPLER needs a file at all is still unknown |
+```
+openat("/data/vendor/gps/gnssd.pid", O_RDWR|O_CREAT) = 3
+flock(3, LOCK_EX|LOCK_NB)                            = 0
+openat("/dev/__properties__/u:object_r:exported_system_prop:s0") = 4
+mmap(...); close(4)
+nanosleep({0, 250000000})     <- forever
+```
 
-### Next single variable
+It takes its lock, reads **one property**, and drops into a 250 ms poll loop:
+one thread, never reads the `gps.cfg` given on its own command line, never
+opens `/dev/gnss_ipc`, never binds a socket, logs nothing anywhere.
 
-**Install `strace`.** Every remaining question is a syscall question: what
-`gpsd` polls in that nanosleep loop, and what it fails before giving up.
-`strace`, `curl`, `gdb` and `ltrace` are all absent from the device.
+The property context pins it down. `exported_system_prop` contains only five
+properties on this build:
 
-Two traps that cost time here:
+```
+persist.sys.locale  persist.sys.timezone  service.bootanim.exit
+sys.boot_from_charger_mode  sys.shutdown.requested
+```
 
-* `pgrep -f 'bin/hw/gpsd'` **matches your own ssh command line** and returns
-  your shell's pid. Use `pgrep -x gpsd`. The same trap makes
-  `pkill -f <pattern>` kill the session — already in the handoff's §3, and it
-  still bit twice.
-* Device time is CEST; `logcat` timestamps are UTC. A log that looks two hours
-  stale is live.
+**`service.bootanim.exit`** is the only one a GPS daemon would gate on. On
+stock Android the boot animation sets it to `1` when it finishes. A Halium
+container runs no boot animation, so nothing ever sets it, and `gpsd` waits
+forever. All five were empty.
+
+Setting it changes everything:
+
+```sh
+lxc-attach -n android -- /system/bin/setprop service.bootanim.exit 1
+lxc-attach -n android -- /system/bin/setprop ctl.restart gpsd
+```
+
+| | before | after |
+|---|---|---|
+| `gpsd` threads | 1 | **12** |
+| `@GNSSND` in `/proc/net/unix` | absent | **bound, with a connection** |
+| `/dev/gnss_ipc` open by `gpsd` | never | **yes** |
+| `lal_state_handle_transition` | 3/second | **gone** |
+
+And real satellites arrive, through Ubuntu Touch's own hybris bridge:
+
+```
+gnssSvStatusCb: num_svs: 5
+  prn: 7,  snr: 36.9, elevation: 66.4, azimuth: 88.3
+  prn: 79, snr: 40.6, elevation: 48.0, azimuth: 64.8
+  ephemeris_mask: 15, almanac_mask: 0, used_in_fix_mask: 15
+gnssLocationCb: called
+```
+
+`used_in_fix_mask: 15` is four satellites used in the fix, and `gnssLocationCb`
+is a real position delivered to the platform — repeating once a second.
+
+### Made permanent
+
+`a50-gnss-unblock.service` (in `overlay/`, and installed on an existing device
+by `scripts/apply-device-workarounds.sh`) sets the property, restarts `gpsd`,
+**waits for `@GNSSND` to actually appear** rather than assuming, then restarts
+the HAL and `lomiri-location-service` — both cache their connection, so both
+must come up after `gpsd` is ready.
+
+Verified from a cold boot with no manual step:
+
+```
+a50-gnss-unblock.sh[3746]: gnss: gpsd bound @GNSSND
+gpsd pid=3808 threads=12, /dev/gnss_ipc open, @GNSSND bound
+```
+
+with audio, Bluetooth (`hci0` up with its BD address), the container
+(`sys.boot_completed=1`) and lightdm all unaffected.
+
+### Left over
+
+* `Critical Error: handle_sgee_aiding_request: sgeeReqType=6` — SGEE is
+  Samsung's extended-ephemeris A-GPS download. Non-fatal; it only slows the
+  first fix. Not investigated.
+* `Unable to Initialize AGnss interface` / `Unable to initialize GNSS NI
+  interface` from the hybris bridge — assisted-GNSS and network-initiated
+  positioning are absent. Plain GNSS works without them.
+* `visible_space_vehicles` over the CLI still reads empty even while the HAL
+  is reporting five satellites. The data reaches the platform, so this looks
+  like a separate reporting path; not chased.
 
 ## What not to redo
 

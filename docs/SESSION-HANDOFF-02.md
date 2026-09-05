@@ -7,14 +7,15 @@ are touching.
 Handoff 01 is kept at [`SESSION-HANDOFF.md`](SESSION-HANDOFF.md) so the two can
 be compared side by side. It is **superseded** — where they disagree, this file
 is right. What changed: the AppArmor kernel was boot-tested and failed, the
-device was recovered, and GPS turned out not to need that kernel at all.
+device was recovered, and GPS was fixed outright - it never needed that kernel.
 
 ---
 
 ## 0. RIGHT NOW: the device is healthy, on the known-good kernel
 
-The phone boots and runs with **audio, Bluetooth (incl. A2DP), phone calls and
-mobile data** all working, verified across clean reboots. Nothing is in flight.
+The phone boots and runs with **audio, Bluetooth (incl. A2DP), phone calls,
+mobile data and GPS** all working, verified across clean reboots. Nothing is
+in flight.
 
 The boot partition holds
 `53fe13b58818d56c2610c6a6fcc4a7596689b2b3bc53b91440d29cb0573c0f7d` — the
@@ -43,32 +44,39 @@ read in TWRP holds TWRP's own boot, not the failed one.
 **If you retry it, split the variables** — `CONFIG_SECURITY_APPARMOR=y` alone
 first, leaving SELinux the default LSM. But it is no longer urgent: see below.
 
-### GPS: AppArmor was never required, and two real fixes landed
+### GPS works
 
-The inherited claim was that `lomiri-location-service` refuses every session
-with *"Client lacks permissions"* because AppArmor is missing, so GPS needed
-that kernel. Re-derived from scratch — see
-[experiment 009](experiments/009-gps-permissions.md):
+Three separate faults, **none of them in the kernel**, and the inherited plan
+(build a kernel with AppArmor) was the wrong answer to all three. See
+[experiment 009](experiments/009-gps-permissions.md).
 
-* That message appears in **no** journal. It is returned to the *caller* as a
-  DBus error, which is why the service side looks silent. The real error is
-  `Error.CreatingSession`. **The diagnosis was right; the quoted message was
-  not.**
-* `TrustStorePermissionManager` checks
-  `TRUST_STORE_PERMISSION_MANAGER_IS_RUNNING_UNDER_TESTING` **before** it reads
-  any AppArmor profile. `lxc-android-config`'s own wrapper already sets it from
-  an Android property. A systemd drop-in makes sessions work with **no kernel
-  change** — verified as `phablet` on a clean boot, and Pure Maps now registers
-  as a client.
-* `/dev/gnss_ipc` came up `0600 root:root` while the vendor's own
-  `init.gps.rc` says `0660 system system` and runs `gpsd` as user `gps` /
-  group `system`. Fixed with a udev rule; verified across a reboot.
+1. `lomiri-location-service` resolves each caller's AppArmor profile before
+   opening a session, so with no AppArmor every request failed. The error is
+   returned to the caller and never logged, which is why the journal looked
+   clean and why the inherited message ("Client lacks permissions") appears
+   nowhere — the real one is `Error.CreatingSession`.
+   `TrustStorePermissionManager` short-circuits on
+   `TRUST_STORE_PERMISSION_MANAGER_IS_RUNNING_UNDER_TESTING` before it reads
+   any profile, which is what `lxc-android-config`'s own wrapper already does.
+2. `/dev/gnss_ipc` came up `0600 root:root` while the vendor's own
+   `init.gps.rc` specifies `0660 system system` and runs `gpsd` as user `gps` /
+   group `system`. Its `on post-fs-data` block never runs in the container.
+3. **The real blocker:** `gpsd` reads `service.bootanim.exit` at startup and,
+   until it is set, sits in a 250 ms poll loop forever — one thread, never
+   reads its own config, never opens `/dev/gnss_ipc`, never binds its socket,
+   logs nothing at all. On stock Android the boot animation sets it. A Halium
+   container runs no boot animation. The visible symptom was one level up: the
+   GNSS HAL retrying `connect()` to the abstract socket `@GNSSND` and spinning
+   `lal_state_handle_transition` three times a second.
 
-Both ship in `overlay/` and are installed on an existing device by
-`scripts/apply-device-workarounds.sh`.
+Setting it takes `gpsd` from 1 thread to 12; it binds `@GNSSND`, opens
+`/dev/gnss_ipc`, and satellites arrive — `num_svs: 5`, SNR 31–40 dB,
+`used_in_fix_mask: 15`, and `gnssLocationCb` delivering a position every
+second. Verified from a cold boot with nothing done by hand, and with audio,
+Bluetooth, the container and lightdm all unaffected.
 
-**GPS still does not produce a fix** — §7.1 says exactly where it stops. The
-point is that AppArmor is off its critical path.
+`strace` is what cracked it and is **now installed on the device** (it needed
+`-o APT::Sandbox::User=root`; apt's `_apt` user cannot resolve DNS here).
 
 ### Also fixed: Google Maps in Morph
 
@@ -258,43 +266,8 @@ Images on `/userdata`: `rootfs.img` (live 26.04), `rootfs-26.04.img` (backup),
 
 ## 7. Next steps, in order
 
-1. **GPS — the last mile, and it is `gpsd`, not permissions.** Sessions are
-   created, real apps (Pure Maps) register as clients, and `/dev/gnss_ipc` is
-   correct. Still no satellites and no position. The fault is inside the vendor
-   stack:
-
-   * The kernel side is healthy — the Exynos GNSS driver (`gif`, KEPLER) probes
-     cleanly in `/userdata/dmesg-boot-first.txt`, reserves memory at
-     `0xFB000000` and creates `gnss_ipc`. No kernel GNSS errors, ever.
-   * The HAL registers `android.hardware.gnss@2.1::IGnss/default` and
-     `vendor.samsung.hardware.gnss@2.0::ISehGnss/default` cleanly, then spins
-     `lal_state_handle_transition: curST:1 pendingST:2` three times a second
-     for as long as a session is open. That string is undocumented anywhere
-     online — do not go looking for it.
-   * **`gpsd` is inert.** One thread, sleeping in `hrtimer_nanosleep`, fds are
-     `/dev/null` ×3 plus a zero-byte `gnssd.pid`. It has loaded **no** vendor
-     library — notably not `/vendor/lib64/libwrappergps.so`, which its own
-     strings reference — never opens `/dev/gnss_ipc`, and logs nothing at all.
-   * `/data/vendor/gps/chip.info` read `S.LSI,UNKOWN`. Deleting it did not make
-     `gpsd` re-probe; it is simply never rewritten.
-
-   **Ruled out** (verify before re-testing any of these):
-   `/dev/gnss_ipc` permissions (fixed); `/dev/umts_boot0` permissions — they are
-   `0660 system radio`, exactly what `/vendor/ueventd.rc` specifies, and `cbd`
-   holds it open; `/sys/devices/soc0/machine` and `revision` (both readable);
-   `/sys/power/wake_lock` (gpsd holds gid 3010); `/mnt/vendor/efs` and
-   `/data/vendor/gps/sgee` (both present); the stale `chip.info`; and
-   `vendor.gsm.sim.state` — it is empty on this port because ofono drives the
-   modem from the host, but setting it to `LOADED` changed nothing.
-
-   **Next single variable: install `strace`.** Every remaining question is a
-   syscall question — what `gpsd` polls in that nanosleep loop, and what it
-   fails before giving up. It is not installed, and `curl`, `gdb` and
-   `ltrace` are absent too. Note `pgrep -f 'bin/hw/gpsd'` **matches your own
-   ssh command line** and will report the wrong pid — use `pgrep -x gpsd`.
-
-2. **Camera.** The NULL-deref above. A stability bug, not just a missing
-   feature.
+1. **Camera.** The NULL-deref below. A stability bug, not just a missing
+   feature — it presents as a bootloop and is easy to misattribute.
 
 3. **Drop the `ld.config.txt` hack.** `a50-audio-hidl-compat.service` rewrites
    generated linker config every boot so the HAL wrapper can resolve

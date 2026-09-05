@@ -1,0 +1,15 @@
+[Unit]
+Description=A50: unblock Samsung gpsd (waits for a boot animation that never runs)
+Documentation=https://github.com/sadatdaniel/a50-ubuntu-touch/blob/main/docs/experiments/009-gps-permissions.md
+After=lxc-android-config.service
+Wants=lxc-android-config.service
+Before=lomiri-location-service.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/a50-gnss-unblock.sh
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target
