@@ -1,72 +1,52 @@
 # Session handoff — Samsung A50 / Ubuntu Touch
 
-**Written 2026-09-04.** Everything a fresh session needs to pick this up.
-Read this first, then `docs/status.md` and
-`docs/experiments/006-what-we-missed.md`.
+**Written 2026-09-05.** Everything a fresh session needs to pick this up.
+Read this first, then `docs/status.md`, then the experiment you are touching.
 
 ---
 
-## 0. RIGHT NOW: the device is recovered and healthy
+## 0. RIGHT NOW: the device is healthy, everything is pushed
 
-**Updated 2026-09-04, later session.** The `boot-abox-bt.img` experiment
-described in earlier versions of this section is over. It did not boot, the
-device was recovered to the known-good image, and it now runs `uname #4` with
-`lightdm` active (`NRestarts=0`), container `sys.boot_completed=1`, `mali0`
-opening instantly and zero `misc_open` waiters.
+The phone boots and runs with **audio, Bluetooth, phone calls and mobile data
+all working**, verified across clean reboots. Both repositories are committed
+and pushed; nothing of value lives only on a local machine.
 
-### Flashing no longer needs TWRP
+The boot partition holds `53fe13b5…`, which is the published
+`boot-a50-2026-09-05.img`.
 
-The boot partition is writable from running Ubuntu Touch. It is **`/dev/sda14`**
-(the `/dev/block/bootdevice/by-name/` symlinks are an Android-init thing and do
-not exist on the UT side):
+### In flight right now
 
-```sh
-dd if=/userdata/<image>.img of=/dev/sda14 bs=4M; sync
-# then read it back and hash it before rebooting - always
-dd if=/dev/sda14 bs=1M count=52 2>/dev/null | head -c <image size> | sha256sum
-```
-
-A known-good image is staged **on the device** at
-`/userdata/boot-known-good.img` (sha256 `1fa490eb…`, identical to
-`boot-miscdbg2.img`), so a rollback is one `dd` with no host transfer and no
-TWRP.
-
-### If a flash does leave it unbootable
-
-TWRP (Power+VolUp+USB), then push from the host — `/tmp` in TWRP is a ramdisk
-and is wiped on reboot:
-
-```sh
-cd C:\Users\sadat\.zcode\workspace\default\a50-first-build
-adb push boot-miscdbg2.img /tmp/b.img
-adb shell 'dd if=/tmp/b.img of=/dev/block/bootdevice/by-name/boot bs=4M; sync'
-```
-
-`boot-miscdbg2.img` is the last known-good image. `boot-backup-preUT.img`
-returns the device to its pre-project state. Both are published in the GitHub
-release `boot-images-2026-09-04`.
-
-### Why `boot-abox-bt.img` told us nothing
-
-No kernel evidence of its failure survives: `/sys/fs/pstore` is empty and
-`/proc/last_kmsg` held only the S-Boot log, because the device was recovered
-with a forced button reset and Samsung's `sec_debug` clears its buffers on a
-PIN reset. Do not go looking for it again.
-
-It also moved **three** variables, not two. Its manifest is
-`0001..0004 + 0005-abox + 0006-bt`, which silently **drops**
-`misc-open-scope-and-tracing.patch` — the patch `d21f4fc` records as the source
-of `uname #4`, the kernel that runs all day. **Every experimental build must
-start from that patch set**, i.e. `kernel/patches/` *plus* the misc scope fix,
-not `kernel/patches/` alone.
-
-Bluetooth remains parked and remains the prime suspect for the older bootloop
-(a50-halium `kernel/patches-experimental/README.md` already isolated it). It
-stays out of every build until audio lands.
+A kernel build adding **AppArmor** was started and may or may not have
+finished. See §7 — it is the fix for GPS. If you are unsure whether it landed,
+just rebuild; the recipe is committed.
 
 ---
 
-## 1. How to talk to the device
+## 1. Where everything is
+
+| what | where |
+|---|---|
+| Kernel, patches, build recipe | `github.com/sadatdaniel/a50-halium` |
+| Device config, overlay, docs | `github.com/sadatdaniel/a50-ubuntu-touch` |
+| Prebuilt images + overlay tarball | this repo's releases — latest is **`a50-complete-2026-09-05`** |
+| Step-by-step rebuild from scratch | [`REPRODUCE.md`](../REPRODUCE.md) |
+| Honest inventory of what works | [`docs/status.md`](status.md) |
+
+Local working dirs on the dev machine (convenience only — everything is in git):
+
+```
+C:\Users\sadat\Development\a50-halium          kernel repo
+C:\Users\sadat\Development\a50-ubuntu-touch     port repo
+C:\Users\sadat\Development\a50-droidian         the earlier Droidian port - READ IT,
+                                                it solved several of these problems first
+C:\Users\sadat\Development\a50-ut-out\kbuild-*  build outputs
+C:\Users\sadat\.zcode\workspace\default\a50-first-build\boot-miscdbg2.img
+                                                the original known-good boot image
+```
+
+---
+
+## 2. How to talk to the device
 
 SSH over the USB RNDIS link. **Windows loses the static IP whenever the phone
 re-enumerates**, so if ping fails, re-add it from an **elevated** shell:
@@ -75,232 +55,170 @@ re-enumerates**, so if ping fails, re-add it from an **elevated** shell:
 netsh interface ip add address "Ethernet 9" 10.15.19.100 255.255.255.0
 ```
 
-Then (root password `1234`; `plink` is used because OpenSSH hangs here):
+Then (root password `1234`; `plink` because OpenSSH hangs here):
 
 ```
 plink -ssh -batch -hostkey "SHA256:BPpKdQdHCDAeDLdNFhWAXWN5Pfqxr9zNUb2gAiLk++4" -pw 1234 root@10.15.19.82 "uptime"
 ```
 
+From Git Bash, prefix with `MSYS_NO_PATHCONV=1` or paths get mangled. Use
+`pscp` (same flags) to copy files.
+
 Rules that cost time to learn:
 
-* Always wrap remote work in `timeout`, and background long jobs with
-  `</dev/null >/dev/null 2>&1 &` — a remote job holding the pipe hangs the
-  whole ssh session.
-* `mount -o remount,rw /` before writing anything to the rootfs.
-* **Android HAL errors appear only in logcat**, never in the journal:
+* Wrap remote work in `timeout`, and background long jobs with
+  `</dev/null >/dev/null 2>&1 &` — a remote job holding the pipe hangs the ssh
+  session.
+* `mount -o remount,rw /` before writing anything to the rootfs. **Check it
+  worked** — a silent read-only failure once made an upload look successful.
+* **Never `pkill -f <pattern>`** where the pattern also appears in your own ssh
+  command line — it kills your session. `killall <name>` is safe.
+* Android HAL errors appear only in logcat, never in the journal:
   `lxc-attach -n android -- /system/bin/logcat -d -b all`
-* logcat timestamps run ~2 h behind local time; don't mistake old lines for new.
-* dmesg is flooded by battery SELinux spam every 10 s and evicts boot messages
-  fast. For boot-time evidence read `/proc/last_kmsg` (previous boot).
-* From TWRP, use adb, and prefix pushes with `MSYS_NO_PATHCONV=1` **and** `cd`
-  into the file's directory, or Git Bash mangles the paths.
+* **dmesg cannot show you boot.** The container's ueventd `restorecon` storm
+  evicts the whole boot from the 8600-line ring buffer within a second. Read
+  `/userdata/dmesg-boot-first.txt`, written by `a50-dmesg-snap.service` at
+  t≈5.3 s. This is how the audio root cause was finally found.
+* The ABOX DSP has its own log: `/sys/kernel/debug/abox/log-00`. It is
+  authoritative about what the DSP thinks and it named the RDMA7 problem
+  outright.
+
+### Flashing — no TWRP needed
+
+The boot partition is `/dev/sda14` and is writable from running Ubuntu Touch:
+
+```sh
+dd if=/userdata/<image>.img of=/dev/sda14 bs=4M; sync
+# ALWAYS read back and verify before rebooting
+dd if=/dev/sda14 bs=1M count=53 2>/dev/null | head -c <exact size> | sha256sum
+```
+
+Keep a known-good image on `/userdata` before every experiment. If a flash
+does leave it unbootable, TWRP is Power+VolUp+USB, and `/tmp` there is a
+ramdisk wiped on reboot.
+
+**If it bootloops**, you can still win: SSH comes up for a few seconds each
+cycle. Loop the flash command until one attempt succeeds — that is how the
+Bluetooth bootloop was recovered.
 
 ---
 
-## 2. What works now
+## 3. The basic laws
 
-| Area | State |
-|---|---|
-| Boot chain | S-Boot → tools-packed image → halium-boot initramfs → `switch_root` → systemd. Solid. |
-| Display / Lomiri | Works. Boots to the UI. |
-| Wi-Fi | Works (associates on `swlan0`). |
-| Browser / DNS | Works. |
-| OpenStore | **Works** after co-installing old SONAMEs. |
-| Rotation | Works (`sensorfwd` unmasked). |
-| Shell scaling | `GRID_UNIT_PX=21`. |
-| Audio | **No sound.** Userspace fully fixed; DSP does not boot. See §4. |
-| Bluetooth | Not working; needs `CONFIG_BT`. Untested patch now flashed. |
+These are not style preferences. Every one of them was learned by losing hours.
 
----
-
-## 3. The big fixes, and why they were needed
-
-**Display blocker — `misc_list` corruption.** `f_conn_gadget.c` registers a
-single *static* `miscdevice` with no already-registered guard, so instantiating
-the configfs function twice makes `misc_list` circular and `misc_open()` spins
-forever holding `misc_mtx` — freezing every misc open on the system (mali0,
-ion, binder, HALs). It looks exactly like a hung GPU. Triggered because
-`usb_moded` and the container's `vendor_init` both drive USB gadget configfs.
-Worked around by keeping the container away from USB configfs; the real fix is
-`a50-halium/kernel/patches-experimental/conn-gadget-double-register.patch`.
-
-**Greeter blocker — `/dev/hwbinder` was `0600`.** The gralloc mapper is a HIDL
-HAL over hwbinder; the compositor runs as root and worked, the greeter (uid
-108) did not. Fixed by `overlay/usr/lib/udev/rules.d/99-a50-binder.rules`.
-
-**OpenStore.** 26.04 ships libxml2 2.15 (`libxml2.so.2` → `.so.16`), which
-breaks focal-framework clicks. Fixed by co-installing the **genuine** old
-libraries from the 24.04 image already on the device. Do **not** symlink a
-renamed library to the old name — that links, then corrupts the heap.
+1. **Search for the known fix before improvising.** Twice in the last session
+   guessing cost real time: inventing a `SlotCount` key crashed ofono, and not
+   searching for `abox_if.c` meant missing that the bug was upstream-wide. Read
+   `a50-droidian/docs/` first — that port solved audio and several other
+   problems on this exact phone.
+2. **Read the source that is actually installed.** The signal-strength bug was
+   invisible until `dpkg -l` showed ofono-binder-plugin **1.1.28** while the
+   reasoning had been done against upstream master. A differing debug format
+   string was the clue.
+3. **Verify, never assume.** "It returned 0" is not "it worked". A stub HAL
+   accepts every write and reports success. `paplay` exits 0 into silence.
+4. **An absent log line is not evidence of an absent event.** See the dmesg
+   note above.
+5. **Instrument rather than infer.** Two sessions of D-state sweeps could not
+   see an R-state holder by construction; one printk answered it.
+6. **One variable at a time**, and keep a known-good image within reach.
+7. **Check a patch's premise, not just that it applies.**
+   `abox-runtime-pm-get-sync.patch` applied cleanly, read plausibly, and was
+   wrong about what the driver does.
+8. **Do not poll hardware mixers.** Rewriting mixer controls mid-stream
+   corrupts playback — it sounds like fast-forward. Fix configuration at the
+   source instead.
+9. Keep replies short; do the work in the tools.
 
 ---
 
-## 4. Audio — where it actually stands
+## 4. What works, and what it took
 
-The **entire userspace chain is fixed and proven**:
+Full write-ups in `docs/experiments/`. Short version:
 
-* the GSI's `init.disabled.rc` disabled both audio HALs → overridden, so
-  `init.svc.vendor.audio-hal = running`;
-* the real Samsung HAL is 32-bit only → Android's 64-bit `audio.hidl_compat`
-  wrapper bind-mounted over `/vendor/lib64/hw/audio.primary.default.so`;
-* the wrapper needs `libaudiohal.so`, invisible in the vendor/sphal namespace →
-  **`HYBRIS_USE_VENDOR_NAMESPACE` must be UNSET** (not `0` — libhybris tests
-  presence). Drop-in must sort after `ubuntu-touch.conf`, hence `zz-`;
-* `use_legacy_stream_set_parameters=true` stops the droid module segfaulting.
+**Audio** ([007](experiments/007-abox-firmware-too-early.md)) — three faults:
+the DSP never booted because its firmware is requested at t=1.43 s and no
+filesystem exists until t=2.08 s (fixed with `CONFIG_EXTRA_FIRMWARE`);
+PulseAudio loaded a 12 KB **stub** HAL because the `hidl_compat` wrapper was
+bind-mounted only inside the container while PulseAudio runs on the host; and
+the vendor routes the speaker from `SIFS1 ← RDMA7`, a channel this DSP NACKs.
 
-Proof it works: logcat shows **real `adev_open_output_stream` / `out_write`
-calls** from PulseAudio's own PID — the exact end-to-end signal the Droidian
-port documents as "working".
+**Bluetooth** ([008](experiments/008-bluetooth-hci-sock.md)) — "CONFIG_BT
+bootloops this device" was a misdiagnosis. The vendor tree comments out ~700
+lines of `hci_sock.c`, so `hci_sock_create()` returns 0 without allocating a
+sock and `bt_sock_create()` hits `BUG_ON(!sk)`. Any AF_BLUETOOTH socket panics
+the kernel, and `bluebinder` opens one every boot.
 
-**The remaining blocker is in the kernel, below all of that.** The ABOX audio
-DSP never boots: `samsung-abox: Invalid calliope state: 0`, no `abox_enable`,
-no firmware download, and `speaker-test` straight to `hw:0,0` with PulseAudio
-stopped fails with `-EIO`. So it is *not* a PulseAudio or HAL problem.
-
-**Root cause, proven on hardware 2026-09-04** — and it is *not* what the parked
-patch says. See [experiment 007](experiments/007-abox-firmware-too-early.md)
-for the full log.
-
-`samsung_abox_probe()` requests `calliope_sram.bin` at **t = 1.43 s**, and this
-device has **no filesystem at all until t = 2.08 s** — the kernel rejects the
-boot image's ramdisk as an initramfs ("junk in compressed archive; looks like
-an initrd"), frees it, and Samsung's `SAR_RD` loader brings it up only at
-2.08 s. So the request fails `-ENOENT`,
-`abox_complete_sram_firmware_request()` returns early on `!fw` and **never
-retries**, and probe's `pm_runtime_get()` pins the usage count so the device
-can never idle and resume to try again. One shot, missed by 0.65 s.
-
-`abox-runtime-pm-get-sync.patch` is therefore **disproved**: its premise is
-that `pm_runtime_get()` never invokes the resume callback, but the boot log
-shows `abox_enable` running at 1.4249 s. Do not flash it as "the audio fix".
-
-The fix under test is `CONFIG_EXTRA_FIRMWARE` — link the calliope blobs into
-the kernel image, since `fw_get_builtin_firmware()` is checked before any
-filesystem. Putting the firmware in the initramfs was tried first and does
-**not** work, for the SAR_RD reason above.
-
-Ruled out along the way: firmware presence, the CP/`cass` daemon, `/dev/snd`
-permissions, the `calliope_cmd FAILSAFE` path, and PCM contention.
+**Telephony** — no kernel change. A missing `/etc/deviceinfo/devices/a50.yaml`
+meant ofono silently used the legacy RIL plugin; `binder.conf` needed slot
+paths, `radioInterface = 1.4`, and a `signalStrengthRange` suited to LTE RSRP
+instead of RSSI.
 
 ---
 
-## 5. Runtime state that is NOT in git
+## 5. Live hazards
 
-These live only on the device and are lost on a rootfs reflash. Re-apply with
-`scripts/apply-device-workarounds.sh`, plus, for audio:
+* **The camera driver panics the kernel.** `fimc_is_devicemgr_open` NULL-derefs
+  when anything enumerates V4L2, and `gst-plugin-scan` does. It presents as a
+  bootloop from the user session and is easy to misattribute to whatever you
+  just changed.
+* **Do not unbind the ABOX driver.** `echo … > /sys/bus/platform/drivers/samsung-abox/unbind`
+  panics. Rebind is not a usable test method.
+* **Getting back to TWRP is unreliable** — `systemctl reboot
+  --reboot-argument=recovery` works sometimes. Prefer flashing from running
+  Linux.
+* **Restarting ofono during a call** orphans the call and leaves PulseAudio's
+  droid card stuck in the `voicecall` profile, which has no sinks at all. Media
+  goes silent and the *next outgoing call* has no audio. `a50-audio-unstick.sh`
+  clears it.
 
-* `/lib/firmware/calliope_*.bin` (copied from `/vendor/firmware`)
-* `/etc/systemd/user/pulseaudio.service.d/zz-a50-hybris.conf` with
-  `UnsetEnvironment=HYBRIS_USE_VENDOR_NAMESPACE`
-* the `audio.hidl_compat` bind-mount over
-  `/android/vendor/lib64/hw/audio.primary.default.so`
-* OpenStore libs: `libxml2.so.2` + `libicu*.so.74` copied from
-  `/userdata/rootfs-24.04.img`
+---
+
+## 6. Runtime state that is NOT in git
+
+Re-apply with `scripts/apply-device-workarounds.sh` plus the `overlay/` tree.
+Also `/lib/firmware/calliope_*.bin`, and the OpenStore libs
+(`libxml2.so.2`, `libicu*.so.74`) copied from `/userdata/rootfs-24.04.img`.
 
 Images on `/userdata`: `rootfs.img` (live 26.04), `rootfs-26.04.img` (backup),
 `rootfs-24.04.img` (**bootloops at ~15 s — keep only as a library source**).
 
 ---
 
-## 6. Build and reproducibility
-
-**Never build on a Windows bind mount** — the kernel tree has case-colliding
-filenames (`xt_CONNMARK.c` / `xt_connmark.c`) that Docker Desktop's mount
-silently loses, producing `No rule to make target`. Build inside the container:
-
-```
-docker run --rm -v "C:/Users/sadat/Development/a50-ut-out/kbuild:/outdir" a50-halium-build bash -c \
- 'git clone -q https://github.com/sadatdaniel/a50-halium.git /w && cd /w && ./build/build-kernel.sh && cp out/* /outdir/'
-```
-
-Reproducibility is **verified**: a fresh GitHub clone built in-container gives
-`074aad86958de6b8a4914269826f87f70c7eeb5315bb3842e4d935dacd566be6`, matching
-`kernel/expected-artifacts.sha256` exactly.
-
-To test a patch, copy it from `kernel/patches-experimental/` into
-`kernel/patches/` before building. To pack a boot image, reuse the header from
-a working image and patch only `kernel_size`/`ramdisk_size` (S-Boot ignores the
-id digest — experiment 001/004). Boot partition limit: **57,671,680 bytes**.
-
-Host disk is tight (~5 GB). `docker system df`; stopped containers are the
-usual win.
-
----
-
 ## 7. Next steps, in order
 
-**Audio is done** — see [experiment 007](experiments/007-abox-firmware-too-early.md).
-The DSP boots, the speaker amp works, and audio plays through Ubuntu Touch's
-normal path with video unaffected, across reboots.
+1. **AppArmor — in flight, and it is the GPS fix.** GPS is not broken: the GNSS
+   HAL registers `android.hardware.gnss@1.0`–`@2.1`, `gpsd` and
+   `sec_gnss_service` run, and `lomiri-location-serviced` starts its
+   `gps::Provider`. But every session is refused with
 
-1. **Drop the `ld.config.txt` hack** — the one genuinely ugly thing left in the
-   audio fix. `a50-audio-hidl-compat.service` rewrites `/linkerconfig/ld.config.txt`
-   on every boot to allow `libaudiohal.so`, `libaudiohal@5.0.so` and
-   `libaudiohal_deathhandler.so` through the `sphal`→`default` link, because
-   otherwise the `hidl_compat` wrapper cannot resolve them and PulseAudio falls
-   back to a silent stub.
+       Error creating session: Client lacks permissions to access the service
 
-   **`HYBRIS_USE_VENDOR_NAMESPACE` is supposed to make this unnecessary.**
-   `/usr/lib/systemd/user/pulseaudio.service.d/ubuntu-touch.conf` sets it to
-   `1`; `/etc/systemd/user/pulseaudio.service.d/zz-a50-hybris.conf` unsets it
-   for exactly this reason. Verified on hardware: the variable really is absent
-   from the PulseAudio process environment (`tr '\0' '\n' < /proc/PID/environ`)
-   and `dlopen` still fails with *library "libaudiohal.so" not found*. So the
-   mechanism does not do what it is documented to do here. Find out why —
-   likely in how libhybris picks a namespace for a library loaded out of
-   `/vendor/lib64/hw/` — and the per-boot rewrite of generated linker state can
-   be deleted. Worth doing before this port is published.
+   because Ubuntu Touch identifies apps through AppArmor and **AppArmor is not
+   built** (`aa-status` → "apparmor not present"; zero AppArmor strings in the
+   kernel image against 10 for selinux). A build adding
+   `CONFIG_SECURITY_APPARMOR` with `CONFIG_DEFAULT_SECURITY="apparmor"` — the
+   option set from Halium's own `check-kernel-config` — was started at the end
+   of the session. **Boot-test it carefully**: on 4.14 the major LSMs are
+   mutually exclusive, so this makes SELinux non-default, and the Android
+   container is the thing to watch. The container already runs
+   `androidboot.selinux=permissive`, so nothing there should depend on SELinux
+   enforcing — but verify, do not assume. This also unblocks app confinement.
 
-2. **Bluetooth** — the parked `bluetooth-linux-stack.patch`. Its 2026-08-31
-   bootloop predates the `misc_list` corruption fix, and `hci_vhci.c` registers
-   `/dev/vhci` through `misc_register()` — i.e. it adds a node to the very list
-   that was being corrupted. That makes the old bootloop plausibly a symptom of
-   a bug that is now fixed. Userspace is already waiting: `bluebinder`
-   auto-restarts on `ENODEV` looking for `/dev/vhci`. **Note:** `bluebinder` is
-   currently `systemctl mask`ed (it was flooding the kernel log); unmask it
-   before testing.
+2. **Camera.** The NULL-deref above. A stability bug, not just a missing
+   feature.
 
-3. **Camera** — not merely missing, actively **panicking the kernel**:
-   `fimc_is_devicemgr_open+0x1e8/0x3a0` NULL-derefs whenever anything
-   enumerates V4L2, and `gst-plugin-scan` does. It presents as a bootloop from
-   the user session. This is a stability bug, not just a missing feature.
+3. **Drop the `ld.config.txt` hack.** `a50-audio-hidl-compat.service` rewrites
+   generated linker config every boot so the HAL wrapper can resolve
+   `libaudiohal.so`. `HYBRIS_USE_VENDOR_NAMESPACE` exists to make that
+   unnecessary and demonstrably does not work here — verified, the variable is
+   absent from PulseAudio's environment and the load still fails. Understanding
+   why deletes the hack. Worth doing before publishing.
 
-4. **Telephony / mobile data** — the CP boots (`cbd: start_shannon310_boot`)
-   and `rild` runs, but the modem link reports
-   `umts_cass<-shmem: ERR! rx_demux fail (err -19)`. Untouched so far.
+4. Bluetooth **HFP** (calls over BT) and **headphone/earpiece** audio: both
+   untested. Only the speaker path and A2DP are proven.
 
-5. ~~`CONFIG_RFKILL`~~ — **not needed.** Wi-Fi works including the UI: it
-   connects and lists networks with **no** `/dev/rfkill` present and `urfkilld`
-   inactive. That falsifies experiment 006's claim that the indicator needed
-   `CONFIG_RFKILL`, and removes the rebuild it implied.
-
-6. Remaining: AppArmor (needed for confinement; apps do launch without it),
-   `usb-tethering.service` and `ssh.service` failures (expected — an sshd
-   started by the boot script owns port 22; do **not** "fix" `ssh.service`, it
-   is the one service that could lock you out).
-
----
-
-## 8. Working agreements
-
-* **Search for a known fix before improvising.** The OpenStore SONAME break and
-  its fix were publicly documented; not checking first cost a rootfs build and
-  a bootloop.
-* **Sanity-check every decision before acting** — verify a URL resolves, a
-  patch applies, a path exists.
-* Verify, never assume. "It returned 0" is not "it worked": `paplay` exits 0
-  into a stub HAL that makes no sound, and sinks appear even when the HAL is a
-  stub.
-* **An absent log line is not evidence of an absent event.** The kernel ring
-  buffer holds ~8,600 lines and the container's `ueventd` `restorecon` storm
-  wipes the whole boot out of it within a second of starting. Two sessions
-  concluded "`abox_enable` never runs" from a `dmesg | grep` that could not
-  physically have contained it. Before drawing a conclusion from a missing
-  line, check what the buffer actually still covers (`dmesg | head -1`).
-  `a50-dmesg-snap.service` on the device now snapshots the buffer at t ≈ 5.3 s,
-  before the flood, into `/userdata/dmesg-boot-first.txt` — read that, not
-  live `dmesg`, for anything about boot.
-* Check a patch's *premise* against the source before building it, not just
-  whether it applies. `abox-runtime-pm-get-sync.patch` applied cleanly, read
-  plausibly, and was wrong about what the driver does.
-* Keep replies short; do the work in the tools.
+5. `usb-tethering.service` and `ssh.service` failures are expected — an sshd
+   started by the boot script owns port 22. Do **not** "fix" `ssh.service`; it
+   is the one service that could lock you out.
