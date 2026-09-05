@@ -146,3 +146,54 @@ PulseAudio, ofono `Status = registered`, lightdm `NRestarts=0`.
 * `/dev/vhci` is `0600 root:root`. `bluebinder` runs as root so it works, but
   that is worth checking against the same class of bug as the `/dev/hwbinder`
   `0600` greeter blocker in experiment 006.
+
+---
+
+# Appendix — AppArmor as default LSM does NOT boot (2026-09-05)
+
+**Result: failed.** Recorded here so it is not retried blind.
+
+A kernel was built with Halium's AppArmor option set on top of the working
+audio+Bluetooth kernel:
+
+    CONFIG_SECURITY_APPARMOR=y
+    CONFIG_SECURITY_APPARMOR_HASH=y
+    CONFIG_SECURITY_APPARMOR_BOOTPARAM_VALUE=1
+    CONFIG_DEFAULT_SECURITY_APPARMOR=y
+    CONFIG_DEFAULT_SECURITY="apparmor"
+    CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE=0
+    # CONFIG_DEFAULT_SECURITY_SELINUX is not set
+
+It built cleanly (AppArmor strings present in the image, SELinux still built)
+and flashed with a verified read-back, but **the device does not boot at all**:
+no ping, no adb, and no USB gadget enumerating on the host — so it fails
+before userspace brings up RNDIS, i.e. earlier than the Android container.
+
+That rules out the hypothesis this test was designed around. The concern was
+that making AppArmor the default LSM would upset the Android container, which
+would have shown as a boot that reaches Ubuntu Touch with a dead container.
+Failing before USB comes up means something much earlier objects — a panic in
+LSM init, or `CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE=0` disabling SELinux
+while this kernel's Android bits still require it.
+
+Recovery needed TWRP: with no USB enumeration there is no SSH window to race,
+unlike the Bluetooth bootloop.
+
+## Next time, split the variables
+
+The option set above changes several things at once. Try them separately:
+
+1. `CONFIG_SECURITY_APPARMOR=y` **only**, leaving SELinux as the default LSM.
+   AppArmor will not be active, but if this boots it proves the AppArmor code
+   itself is harmless here and isolates the LSM-default switch as the culprit.
+2. Then add `CONFIG_DEFAULT_SECURITY="apparmor"` alone, leaving
+   `CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE` at its existing value.
+3. Only then touch the SELinux boot parameter.
+
+Also worth checking before rebuilding: whether this tree's Samsung additions
+reference SELinux unconditionally, the way the Bluetooth HCI socket layer was
+gutted — this vendor tree has form for that.
+
+Capture the failure properly next time: `/proc/last_kmsg` after a forced
+reboot from TWRP should hold the panic, the same way it did for
+`bt_sock_create`.
