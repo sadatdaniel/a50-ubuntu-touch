@@ -229,14 +229,50 @@ usual win.
 
 ## 7. Next steps, in order
 
-1. **Boot-test the flashed kernel** (§0). Audio and BT both hinge on it.
-2. If it loops → revert (§0), rebuild with the ABOX patch alone.
-3. If audio works → make the runtime bits persistent (§5) in
-   `scripts/apply-device-workarounds.sh` and `overlay/`, then promote
-   `abox-runtime-pm-get-sync.patch` to `kernel/patches/`.
-4. If BT works → `bluebinder` should stop failing with `ENODEV`; promote that
-   patch too.
-5. Remaining: AppArmor (needed for confinement; apps do launch without it),
+**Audio is done** — see [experiment 007](experiments/007-abox-firmware-too-early.md).
+The DSP boots, the speaker amp works, and audio plays through Ubuntu Touch's
+normal path with video unaffected, across reboots.
+
+1. **Drop the `ld.config.txt` hack** — the one genuinely ugly thing left in the
+   audio fix. `a50-audio-hidl-compat.service` rewrites `/linkerconfig/ld.config.txt`
+   on every boot to allow `libaudiohal.so`, `libaudiohal@5.0.so` and
+   `libaudiohal_deathhandler.so` through the `sphal`→`default` link, because
+   otherwise the `hidl_compat` wrapper cannot resolve them and PulseAudio falls
+   back to a silent stub.
+
+   **`HYBRIS_USE_VENDOR_NAMESPACE` is supposed to make this unnecessary.**
+   `/usr/lib/systemd/user/pulseaudio.service.d/ubuntu-touch.conf` sets it to
+   `1`; `/etc/systemd/user/pulseaudio.service.d/zz-a50-hybris.conf` unsets it
+   for exactly this reason. Verified on hardware: the variable really is absent
+   from the PulseAudio process environment (`tr '\0' '\n' < /proc/PID/environ`)
+   and `dlopen` still fails with *library "libaudiohal.so" not found*. So the
+   mechanism does not do what it is documented to do here. Find out why —
+   likely in how libhybris picks a namespace for a library loaded out of
+   `/vendor/lib64/hw/` — and the per-boot rewrite of generated linker state can
+   be deleted. Worth doing before this port is published.
+
+2. **Bluetooth** — the parked `bluetooth-linux-stack.patch`. Its 2026-08-31
+   bootloop predates the `misc_list` corruption fix, and `hci_vhci.c` registers
+   `/dev/vhci` through `misc_register()` — i.e. it adds a node to the very list
+   that was being corrupted. That makes the old bootloop plausibly a symptom of
+   a bug that is now fixed. Userspace is already waiting: `bluebinder`
+   auto-restarts on `ENODEV` looking for `/dev/vhci`. **Note:** `bluebinder` is
+   currently `systemctl mask`ed (it was flooding the kernel log); unmask it
+   before testing.
+
+3. **Camera** — not merely missing, actively **panicking the kernel**:
+   `fimc_is_devicemgr_open+0x1e8/0x3a0` NULL-derefs whenever anything
+   enumerates V4L2, and `gst-plugin-scan` does. It presents as a bootloop from
+   the user session. This is a stability bug, not just a missing feature.
+
+4. **Telephony / mobile data** — the CP boots (`cbd: start_shannon310_boot`)
+   and `rild` runs, but the modem link reports
+   `umts_cass<-shmem: ERR! rx_demux fail (err -19)`. Untouched so far.
+
+5. **`CONFIG_RFKILL`** — one Kconfig line, fixes the Wi-Fi indicator showing
+   nothing. Every layer below the UI already works.
+
+6. Remaining: AppArmor (needed for confinement; apps do launch without it),
    `usb-tethering.service` and `ssh.service` failures (expected — an sshd
    started by the boot script owns port 22; do **not** "fix" `ssh.service`, it
    is the one service that could lock you out).
