@@ -255,5 +255,38 @@ systemctl daemon-reload
 systemctl enable a50-gnss-unblock.service >/dev/null 2>&1 || true
 echo "gps: gpsd unblock service installed"
 
+# ---------------------------------------------------------------------------
+# 7. Fingerprint: let biometryd operate without kernel AppArmor.
+#
+# REAL FIX: a kernel with AppArmor built in. When one boots, delete this
+# drop-in and the caller-profile check works normally.
+#
+# biometryd gates enroll/identify/clear behind an AppArmor credentials check on
+# the D-Bus caller (DaemonCredentialsResolver via libapparmor). With no
+# AppArmor that resolution fails and every call returns
+# com.ubports.biometryd.Error.NotPermitted - which also crashes System Settings
+# (SIGABRT) the instant the Fingerprint page opens, because it does not catch
+# the exception. BIOMETRYD_DBUS_SKELETON_IS_RUNNING_UNDER_TESTING makes the
+# skeleton permit the call before resolving a profile - the same mechanism as
+# the location-service trust-store bypass in block 5.
+#
+# See docs/experiments/012-fingerprint.md.
+# ---------------------------------------------------------------------------
+if [ ! -f /etc/systemd/system/biometryd.service.d/50-a50-testing.conf ]; then
+    mkdir -p /etc/systemd/system/biometryd.service.d
+    cat > /etc/systemd/system/biometryd.service.d/50-a50-testing.conf <<'EOF'
+# See docs/experiments/012-fingerprint.md. Lets biometryd operate with no
+# kernel AppArmor; without it every op returns NotPermitted and opening the
+# Settings fingerprint page crashes System Settings. Delete once AppArmor boots.
+[Service]
+Environment=BIOMETRYD_DBUS_SKELETON_IS_RUNNING_UNDER_TESTING=1
+EOF
+    systemctl daemon-reload
+    systemctl restart biometryd
+    echo "fingerprint: biometryd testing drop-in installed"
+else
+    echo "fingerprint: biometryd testing drop-in already present"
+fi
+
 sync
 echo "done."
