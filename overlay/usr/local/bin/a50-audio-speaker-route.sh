@@ -1,86 +1,55 @@
 #!/bin/sh
-# Bring up speaker audio on the Galaxy A50: route ABOX to the speaker
-# amplifier, and pin playback to the output that can actually sustain it.
+# Pin Ubuntu Touch playback to the droid output that this device can sustain.
 #
-# ---------------------------------------------------------------- routing ---
-# UAIF2 is the speaker amplifier (TFA9872): the vendor HAL's own
-# /vendor/etc/mixer_paths.xml says so ("UAIF2 - Speaker AMP"), and the kernel
-# confirms it at boot with "tfa98xx-aif-7-34 <-> UAIF2 mapping ok".
-#
-# The working chain is
-#     RDMA0 (hw:0,0) -> SPUS OUT0 -> SIFS0 -> UAIF2 -> TFA9872
-# i.e. the vendor's own "route-sifs0-to-uaif2", driven from playback_link 0.
-#
-# NOT the vendor's "media-speaker" path, which uses route-rdma7-to-sifs1 +
-# route-sifs1-to-uaif2. The ABOX DSP firmware NACKs every PCMOUT command for
-# channel 7 - its own log (/sys/kernel/debug/abox/log-00) says
-#     [PCMOUT:WARNING] ret(-110), param(7), NACK REPLIED: 20
-# and RDMA7_STATUS stays 0, so the DMA never advances and userspace gets -EIO
-# out of ALSA's wait_for_avail(). Channel 0 is accepted.
-#
-# APPLY THE ROUTE ONCE, LATE. Nothing in Ubuntu Touch sets ABOX routing and the
-# mixer does not persist (there is no /var/lib/alsa/asound.state here), but do
-# NOT poll and re-apply: the audio HAL also owns these controls, and rewriting
-# UAIF2 SPK or the rate/width controls while a stream is running corrupts
-# playback - it sounds like the audio is being fast-forwarded. One application
-# after the HAL has settled is enough.
-#
-# ------------------------------------------------------------ sink choice ---
 # The droid card exposes sink.primary-out and sink.fast. After a PulseAudio
 # restart the default drifts to sink.fast, the low-latency output, whose small
-# buffer this path cannot sustain - playback then breaks up in bursts, the same
-# fast-forward artefact. sink.primary-out is the one verified good
-# (pcm0p tstamp advancing, avail_max healthy, no xruns), so pin it.
+# buffer the ABOX path cannot sustain: playback then breaks up in bursts and
+# sounds like it is being fast-forwarded. sink.primary-out is the verified-good
+# one - pcm0p tstamp advancing, avail_max healthy, no xruns, and no NACKs in
+# the ABOX DSP log at /sys/kernel/debug/abox/log-00.
+#
+# NOTE: this script deliberately does NOT touch the ABOX mixer.
+#
+# Earlier versions set the speaker route by hand
+# (ABOX UAIF2 SPK = SIFS0, the vendor's route-sifs0-to-uaif2). That was needed
+# only while PulseAudio was loading a *stub* audio HAL and nothing was
+# programming the mixer at all. Once the real hidl_compat wrapper loads - see
+# a50-audio-hidl-compat.service - the HAL programs its own routing from
+# /vendor/etc/mixer_paths.xml, and it wins, because it re-routes on every
+# stream change:
+#
+#     SPUS OUT0 = SIFS0   UAIF0 SPK = SIFS0        (codec)
+#     SPUS OUT7 = SIFS1   SIFS1 = SPUS OUT7   UAIF2 SPK = SIFS1   (speaker)
+#
+# Writing the mixer from here is therefore both redundant and harmful: the HAL
+# owns those controls, and rewriting UAIF2 SPK or the rate/width controls while
+# a stream is running corrupts playback - the same fast-forward artefact.
+# Verified on hardware: with the HAL working and this script touching nothing
+# but the default sink, audio is correct.
 set -u
 
-C=${1:-0}
-SETTLE=${2:-25}
 PH_UID=32011
 
 log() { echo "a50-audio-route: $*"; }
-
-set_ctl() { amixer -c "$C" cset "$1" "$2" >/dev/null 2>&1; }
 
 pa() {
     su - phablet -c "XDG_RUNTIME_DIR=/run/user/$PH_UID pactl $1" 2>/dev/null
 }
 
-# Wait for the sound card to exist at all.
+# Wait for PulseAudio to be up with the droid card loaded.
 i=0
-while [ ! -e "/proc/asound/card${C}" ] && [ $i -lt 60 ]; do
-    sleep 1
+while ! pa 'list short sinks' | grep -q 'sink.primary-out'; do
     i=$((i + 1))
+    if [ $i -ge 60 ]; then
+        log "sink.primary-out never appeared - is the droid card loaded?"
+        exit 0
+    fi
+    sleep 2
 done
-[ -e "/proc/asound/card${C}" ] || { log "card $C never appeared"; exit 0; }
 
-# Let PulseAudio load the droid card and let the HAL program the mixer from its
-# own mixer_paths.xml first; it leaves UAIF2 SPK at RESERVED and we set it
-# afterwards. Applying before that happens is silently undone.
-sleep "$SETTLE"
+pa 'set-default-sink sink.primary-out' >/dev/null
+for s in $(pa 'list short sink-inputs' | awk '{print $1}'); do
+    pa "move-sink-input $s sink.primary-out" >/dev/null
+done
 
-# --- the route ---
-set_ctl "name='ABOX UAIF2 width'"   16
-set_ctl "name='ABOX UAIF2 channel'" 2
-set_ctl "name='ABOX UAIF2 rate'"    48000
-set_ctl "name='ABOX SPUS OUT0'" SIFS0
-set_ctl "name='ABOX UAIF2 SPK'" SIFS0
-# ERAP/DSM is the TFA smart-amp reference the tfadsp IPC needs. It must be
-# addressed by numid - amixer cannot match this control by name.
-set_ctl numid=136 1
-
-if amixer -c "$C" cget name='ABOX UAIF2 SPK' 2>/dev/null | grep -q ': values=1'; then
-    log "speaker route applied: ABOX UAIF2 SPK = SIFS0"
-else
-    log "WARNING: ABOX UAIF2 SPK did not take; there will be no sound"
-fi
-
-# --- pin playback to the output that works ---
-if pa 'list short sinks' | grep -q 'sink.primary-out'; then
-    pa 'set-default-sink sink.primary-out' >/dev/null
-    for i in $(pa 'list short sink-inputs' | awk '{print $1}'); do
-        pa "move-sink-input $i sink.primary-out" >/dev/null
-    done
-    log "default sink pinned to sink.primary-out"
-else
-    log "sink.primary-out absent - is the droid card loaded?"
-fi
+log "default sink pinned to sink.primary-out"
