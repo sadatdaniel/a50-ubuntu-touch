@@ -102,6 +102,9 @@ it carries:
 | `etc/ofono/binder.conf` | slot paths, `radioInterface = 1.4`, and the signal-strength range |
 | `usr/local/bin/a50-dmesg-snap.sh` + service | boot logs are otherwise evicted before you can read them |
 | `usr/lib/udev/rules.d/99-a50-binder.rules` | the greeter cannot reach the graphics HAL without it |
+| `usr/lib/udev/rules.d/99-a50-gnss.rules` | `/dev/gnss_ipc` comes up `0600 root:root`; the vendor `init.gps.rc` wants `0660 system system` and `gpsd` runs as user `gps` |
+| `etc/systemd/system/lomiri-location-service.service.d/50-a50-trust-store.conf` | AppArmor profile resolution cannot work with no AppArmor, so every location session is refused |
+| `usr/local/bin/a50-gnss-unblock.sh` + service | **`gpsd` waits forever on `service.bootanim.exit`**, which a Halium container never sets - the single reason GPS produced nothing |
 
 Reboot. Verify with step 5.
 
@@ -124,6 +127,16 @@ dbus-send --system --print-reply --dest=org.ofono /ril_0 \
 
 # mobile data
 nmcli -t -f DEVICE,STATE device | grep ril_0                  # connected
+
+# GPS: the unblock ran, gpsd is alive, and its socket is bound
+systemctl is-active a50-gnss-unblock.service                  # active
+GP=$(pgrep -x gpsd)     # NOT pgrep -f: that matches your own ssh command line
+ls /proc/$GP/task | wc -l                                     # 12, not 1
+ls -l /proc/$GP/fd | grep gnss_ipc                            # open
+grep -c GNSSND /proc/net/unix                                 # 2
+
+# GPS: real satellites (hold a location session open while this runs)
+lxc-attach -n android -- /system/bin/logcat -d | grep -E "num_svs|gnssLocationCb"
 ```
 
 ---
