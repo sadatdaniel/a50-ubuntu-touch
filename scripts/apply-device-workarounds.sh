@@ -288,5 +288,51 @@ else
     echo "fingerprint: biometryd testing drop-in already present"
 fi
 
+# ---------------------------------------------------------------------------
+# 8. Waydroid: start the session with the user's own bus.
+#
+# REAL FIX: none needed - this is packaging, not a workaround for a bug. The
+# kernel half (the anbox-* binder nodes) lives in a50-halium.
+#
+# Waydroid needs XDG_RUNTIME_DIR, DBUS_SESSION_BUS_ADDRESS and WAYLAND_DISPLAY.
+# Starting it as root, or with `su phablet -c`, fails with
+#   org.freedesktop.DBus.Error.AccessDenied: /run/user/0/bus: Permission denied
+# because the bus address is still root's. A systemd *user* unit inherits the
+# correct values from the user manager, so it just works.
+#
+# Without a running session the desktop entries Waydroid generates
+# (~/.local/share/applications/waydroid.*.desktop) fail after a reboot, since
+# `waydroid app launch` needs one. waydroid-container.service is static and
+# starts on demand, so only the session needs arranging.
+#
+# See docs/experiments/013-waydroid.md.
+# ---------------------------------------------------------------------------
+if [ -x /usr/bin/waydroid ] && [ ! -f /usr/lib/systemd/user/waydroid-session.service ]; then
+    echo "waydroid: session unit missing - install it from overlay/" >&2
+elif [ -x /usr/bin/waydroid ]; then
+    P_UID=$(id -u phablet 2>/dev/null || echo 32011)
+    su phablet -c "XDG_RUNTIME_DIR=/run/user/$P_UID \
+        DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$P_UID/bus \
+        systemctl --user enable waydroid-session.service" >/dev/null 2>&1 \
+        && echo "waydroid: session unit enabled" \
+        || echo "waydroid: could not enable session unit (is the user session up?)"
+fi
+
+# Waydroid marks every generated app entry NoDisplay=true, which hides them all
+# from the Lomiri app drawer. Unhide them so installed Android apps are usable.
+D=/home/phablet/.local/share/applications
+if [ -d "$D" ]; then
+    n=0
+    for f in "$D"/waydroid.*.desktop; do
+        [ -e "$f" ] || continue
+        if grep -q '^NoDisplay=true' "$f"; then
+            sed -i 's/^NoDisplay=true/NoDisplay=false/' "$f"
+            chown phablet:phablet "$f"
+            n=$((n + 1))
+        fi
+    done
+    [ "$n" -gt 0 ] && echo "waydroid: unhid $n app entries" || echo "waydroid: app entries already visible"
+fi
+
 sync
 echo "done."

@@ -1,0 +1,33 @@
+# Start the Waydroid session with the user's own bus and Wayland display.
+#
+# Waydroid needs three things that are easy to get wrong by hand:
+#   XDG_RUNTIME_DIR, DBUS_SESSION_BUS_ADDRESS and WAYLAND_DISPLAY.
+# Starting it with `su phablet -c ...` fails with
+#   org.freedesktop.DBus.Error.AccessDenied: /run/user/0/bus: Permission denied
+# because the bus address is still root's. A *user* unit inherits the right
+# XDG_RUNTIME_DIR and DBUS_SESSION_BUS_ADDRESS from the user manager, so the
+# problem disappears.
+#
+# Without this the desktop entries Waydroid generates
+# (~/.local/share/applications/waydroid.*.desktop, which just run
+# `waydroid app launch <pkg>`) fail after a reboot, because launching an app
+# requires a running session.
+#
+# waydroid-container.service is `static` and started on demand, so only the
+# session needs arranging here.
+#
+# See docs/experiments/013-waydroid.md.
+[Unit]
+Description=Waydroid session (Android apps)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+Environment=WAYLAND_DISPLAY=wayland-0
+ExecStart=/usr/bin/waydroid session start
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=graphical-session.target
