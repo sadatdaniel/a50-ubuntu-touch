@@ -256,3 +256,35 @@ kernel kill messages over 15 s, and Waydroid plus F-Droid still running.
 
 This costs nothing real — the camera was never usable in Waydroid, because it
 is not usable on the host either.
+
+## The entries are rewritten on every session start, not just on install
+
+The reboot test caught this, and it is why "tap the icon and the window appears
+for a split second then vanishes" came back after a reboot.
+
+Waydroid regenerates `~/.local/share/applications/waydroid.*.desktop` **every
+time the session starts**, not only when an app is installed — putting back
+both `NoDisplay=true` and the bare `Exec=waydroid app launch <pkg>`. So the
+one-off repair did not survive, and with the bare Exec the launcher has no
+`DBUS_SESSION_BUS_ADDRESS`, fails to find the running session, and dies
+immediately: the window flashes and disappears.
+
+A single repair pass from the session unit's `ExecStartPost` also loses a race
+— it fires as soon as waydroid is spawned, while waydroid writes the entries
+somewhat later and overwrites the repair. Observed exactly that: the unit was
+`active` yet the entries were still broken after a reboot.
+
+`a50-waydroid-fix-desktop.sh` therefore sweeps repeatedly (up to ~4 minutes)
+and only stops once three consecutive passes find nothing left to fix. It is
+idempotent — it edits only entries that still carry the bad values. Hooked in
+as:
+
+```ini
+ExecStartPost=-/bin/sh -c '/usr/local/bin/a50-waydroid-fix-desktop.sh &'
+```
+
+backgrounded so it cannot delay or fail the session unit.
+
+Verified: `repaired 14 entries (pass 0)` then `entries settled after 3 passes`,
+with `Exec=/usr/local/bin/a50-waydroid-launch.sh …` and `NoDisplay=false` on
+both `Waydroid.desktop` and the app entries.

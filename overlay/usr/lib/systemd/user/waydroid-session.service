@@ -26,6 +26,7 @@ PartOf=graphical-session.target
 Type=simple
 Environment=WAYLAND_DISPLAY=wayland-0
 ExecStart=/usr/bin/waydroid session start
+ExecStartPost=-/bin/sh -c '/usr/local/bin/a50-waydroid-fix-desktop.sh &'
 Restart=on-failure
 RestartSec=15
 
