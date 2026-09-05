@@ -210,44 +210,91 @@ Either way the missing piece is now identified precisely, with the exact
 kernel symbols and the file/line that gate it — this is no longer "compositor
 work, unknown scope".
 
-## In flight — kernel patch exposing the mask layer (2026-09-05)
+## Result — HBM solved, capture still blocked in the trustlet
 
-Option 1 above is being tried. `a50-halium` gains
-`kernel/patches-experimental/decon-force-mask-layer.patch`, generated from a
-real diff against the pinned tree (not hand-written), and added to `EXTRA` in
-`build/build-a50-release-kernel.sh`.
+The kernel patch works. Boot-tested in two stages because the flag defaults off:
 
-It adds 13 lines to `decon_core.c`: a module parameter, and one OR into the
-existing decision.
+**Stage 1 (flag off)** — the patched kernel is indistinguishable from the old
+one: boots, `/sys/module/decon/parameters/force_mask_layer` exists reading `N`,
+`actual_mask_brightness` still 0, and lightdm, the Android container, GPS
+(`@GNSSND` bound) and Bluetooth all unaffected.
 
-```c
-bool decon_force_mask_layer = false;
-module_param_named(force_mask_layer, decon_force_mask_layer, bool, 0644);
-...
-	if (decon_force_mask_layer)
-		mask = true;
+**Stage 2 (flag on)** — HBM engages for the first time on this port:
+
+```
+actual_mask_brightness: 0 -> 255
+decon: mask_te_0 / mask_te_1
+lcd panel: dsim_panel_mask_brightness: current(0) to mask(255)
+lcd panel: dsim_panel_set_brightness: brightness: 0 -> 255 mask_layer: 1
+decon: mask_brightness / mask_te_2 / mask_te_3
+lcd panel: panel_set_brightness: skip! MASK LAYER
 ```
 
-Everything downstream is untouched — the transition still runs through
-`decon_set_mask_layer()` on the regs path, keeping its TE/vsync wait, its
-`call_panel_ops(mask_brightness)` and the `wait_mask_layer_trigger` handshake.
-Only the trigger is new, so the vendor's own tested sequence does the work.
+Writing 0 puts it back. The vendor's own TE-synchronised sequence runs exactly
+as on stock — only the trigger is ours.
 
-**It defaults to false**, so the patched kernel with the parameter untouched
-should behave exactly like the current one. That gives a two-stage test instead
-of one:
+**The earlier claim in this file that HBM needed compositor work is therefore
+wrong, and is corrected: a 13-line kernel patch was enough.**
 
-1. Boot the patched kernel with the flag unset. Expect *no* change at all:
-   boots, lightdm up, container `sys.boot_completed=1`, audio/Bluetooth/GPS
-   unaffected, display normal. This proves the patch is inert.
-2. Only then `echo 1 > /sys/module/decon/parameters/force_mask_layer` and check
-   `actual_mask_brightness` becomes non-zero (it has never been anything but 0).
-   With the screen lit, arm enrollment and watch whether `nd cnt` finally rises.
+### But the sensor still reports no finger
 
-The known-good image is staged at `/userdata/boot-known-good.img`
-(`53fe13b5…`, verified equal to the running boot partition) before any flash.
+With HBM on and enrollment armed, pressing the sensor produces nothing:
+`bauth_FPBAuthService: ... nd cnt : 0` for every sample, across many presses.
 
-If stage 2 works, the remaining piece is raising the flag automatically while a
-fingerprint operation is in flight — biometryd's D-Bus operations are the
-natural trigger — and dropping it afterwards, since the mask brightness is very
-bright and must not be left on.
+Tracing the HAL's init explains why. `preEnroll()` succeeds in the TEE:
+
+```
+TLC_BAUTH: Call FP cmd 0xc (22)
+TLC_BAUTH: set_enroll_session : gSession_Flag = 1
+check_opcode status = 5, func_ret_val = 0, function_status = 0
+```
+
+and the kernel is asked to power the sensor:
+
+```
+etspi_ioctl FP_SET_SPI_CLOCK, clock = 20000000
+etspi_ioctl ENABLE_SPI_CLOCK
+etspi_ioctl FP_POWER_CONTROL, status = 1
+        (150 ms later)
+etspi_ioctl FP_DISABLE_SPI_CLOCK
+etspi_ioctl DISABLE_SPI_CLOCK
+```
+
+Then nothing. The HAL polls for 60 s and gives up with `adlg 76 failed 21`.
+
+**The decisive detail: the DRDY interrupt is never armed.** `/proc/interrupts`
+has no `etspi_irq` entry at all. Reading `drivers/fingerprint/et7xx-spi.c`, the
+IRQ is registered only inside `etspi_Interrupt_Init()`, which is reached only
+from the `INT_TRIGGER_INIT` (0xa4) ioctl — and the HAL never issues it. Without
+that interrupt the sensor has no way to signal a finger, so `nd cnt` can never
+leave 0 regardless of illumination.
+
+So the HAL opens a ~150 ms SPI window for the trustlet to bring the sensor up,
+that evidently fails, and it therefore never proceeds to arm interrupt-driven
+detection. Consistent with `etspi_work_func_debug ... tz: 1, spi_value: 0x0`.
+
+Possibly related, not proven: there is **no fingerprint calibration data
+anywhere** — nothing matching fp/finger/bauth under `/mnt/vendor/efs`, and
+`/data/vendor/fingerprint` is empty. Samsung keeps per-unit optical sensor
+calibration in EFS, and a trustlet that cannot find it would be expected to
+refuse to initialise the sensor.
+
+### Honest status
+
+| layer | state |
+|---|---|
+| kernel driver (`etspi`, ET713) | works — responds to ioctls, powers the sensor |
+| TrustZone / trustlet | works — `tzdaemon` up, `TLC_BAUTH` commands return success |
+| biometryd permission wall | fixed (`BIOMETRYD_..._UNDER_TESTING`) |
+| Settings fingerprint page | fixed, no longer crashes |
+| **HBM / mask layer** | **fixed by `decon-force-mask-layer.patch`** |
+| sensor initialisation in the TEE | **fails** — SPI window closes after 150 ms |
+| DRDY interrupt | never armed, so no finger detection is possible |
+
+What remains is inside Samsung's closed HAL and trustlet. The next thing worth
+checking, and the cheapest, is whether EFS fingerprint calibration exists on a
+stock A50 and is simply missing here — if so, restoring it may let the trustlet
+bring the sensor up, after which the interrupt would be armed and HBM (already
+solved) would matter.
+
+Not worth retrying: illumination. That is done and proven.
