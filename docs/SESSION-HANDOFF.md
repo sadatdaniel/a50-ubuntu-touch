@@ -14,11 +14,86 @@ and pushed; nothing of value lives only on a local machine.
 The boot partition holds `53fe13b5…`, which is the published
 `boot-a50-2026-09-05.img`.
 
-### In flight right now
+### In flight right now: the AppArmor kernel build
 
-A kernel build adding **AppArmor** was started and may or may not have
-finished. See §7 — it is the fix for GPS. If you are unsure whether it landed,
-just rebuild; the recipe is committed.
+A kernel build adding **AppArmor** was started at the end of the session and
+was **not boot-tested**. It is the fix for GPS (§7.1). Treat it as unverified.
+
+**What it is:** the shipped kernel plus `CONFIG_SECURITY_APPARMOR`,
+`CONFIG_DEFAULT_SECURITY="apparmor"` and the rest of Halium's option set.
+
+**Where the output is:** `a50-ut-out/kbuild-aa/Image-aa` on the dev machine.
+That path is *convenience only*. If the machine is gone, rebuild — the recipe
+is committed and needs nothing local:
+
+```sh
+git clone https://github.com/sadatdaniel/a50-halium && cd a50-halium
+docker build -t a50-halium-build build/
+# firmware blobs come off the device, see REPRODUCE.md step 2
+docker run --rm -v "$PWD:/src" -v /path/to/a50-fw:/fw a50-halium-build \
+    ./build/build-a50-release-kernel.sh --firmware /fw --out /src/out
+```
+
+then add the AppArmor options with `build/apply-apparmor.py` (it patches the
+kernel tree's `build.sh` before the build; see the header of
+`build-a50-release-kernel.sh` for how the other option sets are injected).
+
+**Pack and flash:**
+
+```sh
+./build/pack-boot-image.py <known-good-boot.img> out/Image - new-boot.img
+# on the device
+dd if=/userdata/new-boot.img of=/dev/sda14 bs=4M; sync
+dd if=/dev/sda14 bs=1M count=53 2>/dev/null | head -c <exact size> | sha256sum
+```
+
+**Before flashing, stage the fallback on the device** — this is the whole
+safety net:
+
+```sh
+dd if=/dev/sda14 of=/userdata/boot-known-good.img bs=1M count=53
+truncate -s 55384064 /userdata/boot-known-good.img
+```
+
+**What to check on the boot test**, in this order:
+
+1. Does it boot at all, and does `lightdm` come up with `NRestarts=0`?
+2. **Is the Android container alive?** `lxc-ls -f` and
+   `lxc-attach -n android -- /system/bin/getprop sys.boot_completed`.
+   This is the real risk: making AppArmor the default LSM makes SELinux
+   non-default on a 4.14 kernel, and the container is what could object.
+3. `aa-status` should now report profiles instead of "apparmor not present",
+   and `/sys/kernel/security/apparmor` should exist.
+4. Audio, Bluetooth and telephony should all still work — they are unaffected
+   in principle, but check rather than assume.
+5. Only then: GPS. Open a map app and watch
+   `journalctl -u lomiri-location-service -f` for the "Client lacks
+   permissions" error to be gone.
+
+**If it fails — fall back:**
+
+```sh
+dd if=/userdata/boot-known-good.img of=/dev/sda14 bs=4M; sync; reboot
+```
+
+If it bootloops, SSH still answers for a few seconds each cycle: loop that
+command until one attempt succeeds (that is how the Bluetooth bootloop was
+recovered). If SSH never answers, TWRP is Power+VolUp+USB, then push
+`boot-a50-2026-09-05.img` from the release and `dd` it to
+`/dev/block/bootdevice/by-name/boot`.
+
+**Where the last known-good things are:**
+
+| | |
+|---|---|
+| Last fully working boot image | release `a50-complete-2026-09-05` → `boot-a50-2026-09-05.img`, sha256 `53fe13b5…` |
+| Same image, on the device | `/userdata/boot-bt4.img` (if still present) |
+| Audio-only fallback (no Bluetooth) | same release → `boot-rollback-audio-only.img`, `97d2f644…` |
+| Original pre-audio known-good | `a50-first-build/boot-miscdbg2.img`, `1fa490eb…` |
+| Userspace half | same release → `a50-overlay-2026-09-05.tar.gz` |
+
+The userspace fixes are independent of this kernel change — flashing back an
+older kernel does **not** require reverting the overlay.
 
 ---
 
