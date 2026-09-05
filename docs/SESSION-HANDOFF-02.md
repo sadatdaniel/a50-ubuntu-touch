@@ -266,8 +266,19 @@ Images on `/userdata`: `rootfs.img` (live 26.04), `rootfs-26.04.img` (backup),
 
 ## 7. Next steps, in order
 
-1. **Camera.** The NULL-deref below. A stability bug, not just a missing
-   feature — it presents as a bootloop and is easy to misattribute.
+1. **Fingerprint — finish enrollment.** The hard part is done: biometryd's
+   `NotPermitted` wall (the AppArmor twin of the GPS one) is bypassed, so the
+   Settings fingerprint page no longer crashes and the HAL enrolls
+   (`preenroll_flag:1`, waiting for touches). What is left is real on-screen
+   enrollment through Settings → Security & Privacy → Fingerprint on the
+   under-display EGISTEC ET713, then confirming greeter unlock. See
+   [experiment 012](experiments/012-fingerprint.md). If a CLI enroll aborts at
+   0 %, retry — it is neither the permission wall nor a token problem.
+
+2. **Camera.** `fimc_is_devicemgr_open` NULL-derefs when anything enumerates
+   V4L2 (e.g. `gst-plugin-scan`), panicking the kernel. Presents as a bootloop
+   from the user session and is easy to misattribute. A stability bug, not just
+   a missing feature.
 
 3. **Drop the `ld.config.txt` hack.** `a50-audio-hidl-compat.service` rewrites
    generated linker config every boot so the HAL wrapper can resolve
