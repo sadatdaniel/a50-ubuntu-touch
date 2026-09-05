@@ -1,0 +1,21 @@
+# The GNSS IPC node must be reachable by the vendor GPS daemon.
+#
+# /dev/gnss_ipc is created by this kernel's Exynos GNSS interface driver
+# ("gif", KEPLER) and comes up 0600 root:root. The vendor's own
+# /vendor/etc/init/init.gps.rc disagrees:
+#
+#     on post-fs-data
+#         chmod 0660 /dev/gnss_ipc
+#         chown system system /dev/gnss_ipc
+#
+# and its gpsd service runs as "user gps" with "group system", i.e. it reaches
+# the node through the system group, never as root. That post-fs-data block
+# does not run in the Halium container, so the node keeps its root-only
+# permissions and gpsd (uid 1021) cannot open it.
+#
+# The rootfs has a real system user at uid/gid 1000, so the vendor's intended
+# ownership can be expressed directly. Same class of bug as the binder nodes in
+# 99-a50-binder.rules.
+#
+# See docs/experiments/009-gps-permissions.md.
+KERNEL=="gnss_ipc", SUBSYSTEM=="misc", OWNER="system", GROUP="system", MODE="0660"

@@ -1,106 +1,96 @@
-# Session handoff — Samsung A50 / Ubuntu Touch
+# Session handoff 02 — Samsung A50 / Ubuntu Touch
 
-> **SUPERSEDED — this is handoff 01, kept for history.** The current handoff is
-> [`SESSION-HANDOFF-02.md`](SESSION-HANDOFF-02.md). Read that first. Two things
-> below are now known to be wrong: the AppArmor kernel in §0 **does not boot**,
-> and §7.1 is wrong that AppArmor is required to fix GPS — it is not.
+**Written 2026-09-05, later the same day.** Everything a fresh session needs to
+pick this up. Read this first, then `docs/status.md`, then the experiment you
+are touching.
 
-**Written 2026-09-05.** Everything a fresh session needs to pick this up.
-Read this first, then `docs/status.md`, then the experiment you are touching.
+Handoff 01 is kept at [`SESSION-HANDOFF.md`](SESSION-HANDOFF.md) so the two can
+be compared side by side. It is **superseded** — where they disagree, this file
+is right. What changed: the AppArmor kernel was boot-tested and failed, the
+device was recovered, and GPS turned out not to need that kernel at all.
 
 ---
 
-## 0. RIGHT NOW: the device is healthy, everything is pushed
+## 0. RIGHT NOW: the device is healthy, on the known-good kernel
 
-The phone boots and runs with **audio, Bluetooth, phone calls and mobile data
-all working**, verified across clean reboots. Both repositories are committed
-and pushed; nothing of value lives only on a local machine.
+The phone boots and runs with **audio, Bluetooth (incl. A2DP), phone calls and
+mobile data** all working, verified across clean reboots. Nothing is in flight.
 
-The boot partition holds `53fe13b5…`, which is the published
-`boot-a50-2026-09-05.img`.
+The boot partition holds
+`53fe13b58818d56c2610c6a6fcc4a7596689b2b3bc53b91440d29cb0573c0f7d` — the
+published `boot-a50-2026-09-05.img`.
 
-### In flight right now: the AppArmor kernel build
+### The AppArmor kernel was tested. It does not boot. It has been reverted.
 
-A kernel build adding **AppArmor** was started at the end of the session and
-was **not boot-tested**. It is the fix for GPS (§7.1). Treat it as unverified.
+Built cleanly (AppArmor strings present, SELinux still built) and flashed with a
+verified read-back, but **the device did not boot at all** — no ping, no adb, no
+USB gadget enumerating, so it failed *before* userspace, earlier than the
+Android container this test was designed to stress. That rules out the
+hypothesis it was built on.
 
-**What it is:** the shipped kernel plus `CONFIG_SECURITY_APPARMOR`,
-`CONFIG_DEFAULT_SECURITY="apparmor"` and the rest of Halium's option set.
+Recovery needed TWRP, because with no USB enumeration there is no SSH window to
+race. Before restoring, the boot partition was confirmed to still hold the
+AppArmor image (`ef68eced…`), so the flash had landed and the kernel is
+genuinely at fault. `/userdata/boot-known-good.img` and `/userdata/boot-bt4.img`
+both hold `53fe13b5…`.
 
-**Where the output is:** `a50-ut-out/kbuild-aa/Image-aa` on the dev machine.
-That path is *convenience only*. If the machine is gone, rebuild — the recipe
-is committed and needs nothing local:
+Two process failures worth naming: that build changed **four** options at once,
+against this project's own one-variable rule; and no forensic evidence
+survived, because a forced power-off makes S-Boot clear its buffers
+(`sec_debug_init_buffer: this is PIN RESET, clear all`), so `/proc/last_kmsg`
+read in TWRP holds TWRP's own boot, not the failed one.
 
-```sh
-git clone https://github.com/sadatdaniel/a50-halium && cd a50-halium
-docker build -t a50-halium-build build/
-# firmware blobs come off the device, see REPRODUCE.md step 2
-docker run --rm -v "$PWD:/src" -v /path/to/a50-fw:/fw a50-halium-build \
-    ./build/build-a50-release-kernel.sh --firmware /fw --out /src/out
-```
+**If you retry it, split the variables** — `CONFIG_SECURITY_APPARMOR=y` alone
+first, leaving SELinux the default LSM. But it is no longer urgent: see below.
 
-then add the AppArmor options with `build/apply-apparmor.py` (it patches the
-kernel tree's `build.sh` before the build; see the header of
-`build-a50-release-kernel.sh` for how the other option sets are injected).
+### GPS: AppArmor was never required, and two real fixes landed
 
-**Pack and flash:**
+The inherited claim was that `lomiri-location-service` refuses every session
+with *"Client lacks permissions"* because AppArmor is missing, so GPS needed
+that kernel. Re-derived from scratch — see
+[experiment 009](experiments/009-gps-permissions.md):
 
-```sh
-./build/pack-boot-image.py <known-good-boot.img> out/Image - new-boot.img
-# on the device
-dd if=/userdata/new-boot.img of=/dev/sda14 bs=4M; sync
-dd if=/dev/sda14 bs=1M count=53 2>/dev/null | head -c <exact size> | sha256sum
-```
+* That message appears in **no** journal. It is returned to the *caller* as a
+  DBus error, which is why the service side looks silent. The real error is
+  `Error.CreatingSession`. **The diagnosis was right; the quoted message was
+  not.**
+* `TrustStorePermissionManager` checks
+  `TRUST_STORE_PERMISSION_MANAGER_IS_RUNNING_UNDER_TESTING` **before** it reads
+  any AppArmor profile. `lxc-android-config`'s own wrapper already sets it from
+  an Android property. A systemd drop-in makes sessions work with **no kernel
+  change** — verified as `phablet` on a clean boot, and Pure Maps now registers
+  as a client.
+* `/dev/gnss_ipc` came up `0600 root:root` while the vendor's own
+  `init.gps.rc` says `0660 system system` and runs `gpsd` as user `gps` /
+  group `system`. Fixed with a udev rule; verified across a reboot.
 
-**Before flashing, stage the fallback on the device** — this is the whole
-safety net:
+Both ship in `overlay/` and are installed on an existing device by
+`scripts/apply-device-workarounds.sh`.
 
-```sh
-dd if=/dev/sda14 of=/userdata/boot-known-good.img bs=1M count=53
-truncate -s 55384064 /userdata/boot-known-good.img
-```
+**GPS still does not produce a fix** — §7.1 says exactly where it stops. The
+point is that AppArmor is off its critical path.
 
-**What to check on the boot test**, in this order:
+### Also fixed: Google Maps in Morph
 
-1. Does it boot at all, and does `lightdm` come up with `NRestarts=0`?
-2. **Is the Android container alive?** `lxc-ls -f` and
-   `lxc-attach -n android -- /system/bin/getprop sys.boot_completed`.
-   This is the real risk: making AppArmor the default LSM makes SELinux
-   non-default on a 4.14 kernel, and the container is what could object.
-3. `aa-status` should now report profiles instead of "apparmor not present",
-   and `/sys/kernel/security/apparmor` should exist.
-4. Audio, Bluetooth and telephony should all still work — they are unaffected
-   in principle, but check rather than assume.
-5. Only then: GPS. Open a map app and watch
-   `journalctl -u lomiri-location-service -f` for the "Client lacks
-   permissions" error to be gone.
+"cannot open intent addresses" is **not** a location bug — Morph's UA claims
+`like Android 9`, so Google serves Android `intent://` deep links. Measured: 2
+such links with the token, 0 without. See
+[experiment 010](experiments/010-morph-intent-urls.md) and
+`scripts/morph-google-ua.sh`.
 
-**If it fails — fall back:**
-
-```sh
-dd if=/userdata/boot-known-good.img of=/dev/sda14 bs=4M; sync; reboot
-```
-
-If it bootloops, SSH still answers for a few seconds each cycle: loop that
-command until one attempt succeeds (that is how the Bluetooth bootloop was
-recovered). If SSH never answers, TWRP is Power+VolUp+USB, then push
-`boot-a50-2026-09-05.img` from the release and `dd` it to
-`/dev/block/bootdevice/by-name/boot`.
-
-**Where the last known-good things are:**
+### Where the last known-good things are
 
 | | |
 |---|---|
 | Last fully working boot image | release `a50-complete-2026-09-05` → `boot-a50-2026-09-05.img`, sha256 `53fe13b5…` |
-| Same image, on the device | `/userdata/boot-bt4.img` (if still present) |
+| Same image, on the device | `/userdata/boot-bt4.img` **and** `/userdata/boot-known-good.img` |
+| The kernel that does not boot | `/userdata/boot-aa.img`, `ef68eced…` — keep for bisection, do not flash |
 | Audio-only fallback (no Bluetooth) | same release → `boot-rollback-audio-only.img`, `97d2f644…` |
 | Original pre-audio known-good | `a50-first-build/boot-miscdbg2.img`, `1fa490eb…` |
 | Userspace half | same release → `a50-overlay-2026-09-05.tar.gz` |
 
-The userspace fixes are independent of this kernel change — flashing back an
-older kernel does **not** require reverting the overlay.
-
----
+The userspace fixes are independent of the kernel: flashing an older kernel
+does **not** require reverting the overlay.
 
 ## 1. Where everything is
 
@@ -268,23 +258,40 @@ Images on `/userdata`: `rootfs.img` (live 26.04), `rootfs-26.04.img` (backup),
 
 ## 7. Next steps, in order
 
-1. **AppArmor — in flight, and it is the GPS fix.** GPS is not broken: the GNSS
-   HAL registers `android.hardware.gnss@1.0`–`@2.1`, `gpsd` and
-   `sec_gnss_service` run, and `lomiri-location-serviced` starts its
-   `gps::Provider`. But every session is refused with
+1. **GPS — the last mile, and it is `gpsd`, not permissions.** Sessions are
+   created, real apps (Pure Maps) register as clients, and `/dev/gnss_ipc` is
+   correct. Still no satellites and no position. The fault is inside the vendor
+   stack:
 
-       Error creating session: Client lacks permissions to access the service
+   * The kernel side is healthy — the Exynos GNSS driver (`gif`, KEPLER) probes
+     cleanly in `/userdata/dmesg-boot-first.txt`, reserves memory at
+     `0xFB000000` and creates `gnss_ipc`. No kernel GNSS errors, ever.
+   * The HAL registers `android.hardware.gnss@2.1::IGnss/default` and
+     `vendor.samsung.hardware.gnss@2.0::ISehGnss/default` cleanly, then spins
+     `lal_state_handle_transition: curST:1 pendingST:2` three times a second
+     for as long as a session is open. That string is undocumented anywhere
+     online — do not go looking for it.
+   * **`gpsd` is inert.** One thread, sleeping in `hrtimer_nanosleep`, fds are
+     `/dev/null` ×3 plus a zero-byte `gnssd.pid`. It has loaded **no** vendor
+     library — notably not `/vendor/lib64/libwrappergps.so`, which its own
+     strings reference — never opens `/dev/gnss_ipc`, and logs nothing at all.
+   * `/data/vendor/gps/chip.info` read `S.LSI,UNKOWN`. Deleting it did not make
+     `gpsd` re-probe; it is simply never rewritten.
 
-   because Ubuntu Touch identifies apps through AppArmor and **AppArmor is not
-   built** (`aa-status` → "apparmor not present"; zero AppArmor strings in the
-   kernel image against 10 for selinux). A build adding
-   `CONFIG_SECURITY_APPARMOR` with `CONFIG_DEFAULT_SECURITY="apparmor"` — the
-   option set from Halium's own `check-kernel-config` — was started at the end
-   of the session. **Boot-test it carefully**: on 4.14 the major LSMs are
-   mutually exclusive, so this makes SELinux non-default, and the Android
-   container is the thing to watch. The container already runs
-   `androidboot.selinux=permissive`, so nothing there should depend on SELinux
-   enforcing — but verify, do not assume. This also unblocks app confinement.
+   **Ruled out** (verify before re-testing any of these):
+   `/dev/gnss_ipc` permissions (fixed); `/dev/umts_boot0` permissions — they are
+   `0660 system radio`, exactly what `/vendor/ueventd.rc` specifies, and `cbd`
+   holds it open; `/sys/devices/soc0/machine` and `revision` (both readable);
+   `/sys/power/wake_lock` (gpsd holds gid 3010); `/mnt/vendor/efs` and
+   `/data/vendor/gps/sgee` (both present); the stale `chip.info`; and
+   `vendor.gsm.sim.state` — it is empty on this port because ofono drives the
+   modem from the host, but setting it to `LOADED` changed nothing.
+
+   **Next single variable: install `strace`.** Every remaining question is a
+   syscall question — what `gpsd` polls in that nanosleep loop, and what it
+   fails before giving up. It is not installed, and `curl`, `gdb` and
+   `ltrace` are absent too. Note `pgrep -f 'bin/hw/gpsd'` **matches your own
+   ssh command line** and will report the wrong pid — use `pgrep -x gpsd`.
 
 2. **Camera.** The NULL-deref above. A stability bug, not just a missing
    feature.

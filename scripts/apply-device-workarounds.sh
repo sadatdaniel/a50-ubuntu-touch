@@ -148,5 +148,58 @@ else
     echo "audio: mixer_paths bind already in mount.sh"
 fi
 
+# ---------------------------------------------------------------------------
+# 5. GPS: the two things that stopped a location session ever starting.
+#
+# REAL FIX (a): none needed beyond this rule - overlay/ ships it for new builds;
+#               this block installs it on an already-flashed device.
+# REAL FIX (b): a kernel with AppArmor built in. When one boots, delete the
+#               drop-in and the trust-store prompt comes back.
+#
+# (a) /dev/gnss_ipc comes up 0600 root:root. The vendor's own
+#     /vendor/etc/init/init.gps.rc says "chmod 0660 / chown system system", and
+#     its gpsd service runs as "user gps" with "group system" - so gpsd
+#     (uid 1021) reaches the node through the system group and cannot open it
+#     as shipped. That post-fs-data block never runs in the Halium container.
+#
+# (b) lomiri-location-service resolves each client's AppArmor profile before it
+#     will open a session. With no AppArmor in this kernel that resolution
+#     fails and CreateSessionForCriteria returns Error.CreatingSession for
+#     every client, so no app can ever get a position.
+#
+# See docs/experiments/009-gps-permissions.md.
+# ---------------------------------------------------------------------------
+if [ ! -f /etc/udev/rules.d/99-a50-gnss.rules ]; then
+    cat > /etc/udev/rules.d/99-a50-gnss.rules <<'EOF'
+# See docs/experiments/009-gps-permissions.md - vendor init.gps.rc wants
+# 0660 system system on /dev/gnss_ipc; the container never applies it.
+KERNEL=="gnss_ipc", SUBSYSTEM=="misc", OWNER="system", GROUP="system", MODE="0660"
+EOF
+    udevadm control --reload-rules 2>/dev/null || true
+    echo "gps: gnss_ipc udev rule installed"
+else
+    echo "gps: gnss_ipc udev rule already present"
+fi
+# Apply to the node that already exists, so no reboot is needed.
+if [ -e /dev/gnss_ipc ]; then
+    chown system:system /dev/gnss_ipc && chmod 0660 /dev/gnss_ipc
+fi
+
+if [ ! -f /etc/systemd/system/lomiri-location-service.service.d/50-a50-trust-store.conf ]; then
+    mkdir -p /etc/systemd/system/lomiri-location-service.service.d
+    cat > /etc/systemd/system/lomiri-location-service.service.d/50-a50-trust-store.conf <<'EOF'
+# See docs/experiments/009-gps-permissions.md. Grants location without the
+# trust-store prompt, because AppArmor profile resolution cannot work on a
+# kernel with no AppArmor. Delete once such a kernel boots.
+[Service]
+Environment=TRUST_STORE_PERMISSION_MANAGER_IS_RUNNING_UNDER_TESTING=1
+EOF
+    systemctl daemon-reload
+    systemctl try-restart lomiri-location-service
+    echo "gps: location-service trust-store drop-in installed"
+else
+    echo "gps: location-service trust-store drop-in already present"
+fi
+
 sync
 echo "done."
