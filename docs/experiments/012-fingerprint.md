@@ -298,3 +298,50 @@ bring the sensor up, after which the interrupt would be armed and HBM (already
 solved) would matter.
 
 Not worth retrying: illumination. That is done and proven.
+
+## Ruled out: illumination, including the white flash Android draws
+
+A fair objection to the first HBM test: on Android, touching the sensor draws a
+**white flashing circle** as well as raising HBM. The earlier test forced the
+panel to mask brightness but never checked what was being *displayed* over the
+sensor — at maximum backlight, black pixels are still black to an optical
+sensor. So the test was repeated properly.
+
+**And a white overlay is entirely possible under Lomiri.** `qmlscene` with
+`QT_QPA_PLATFORM=ubuntumirclient` displays a full-screen QML surface fine
+(`wayland` is not among this build's Qt platform plugins; `ubuntumirclient`
+is). The sensor rectangle is known from the kernel —
+`/sys/devices/virtual/fingerprint/fingerprint/position` = `13.77, 0.00, 7.29,
+7.29` mm — so the circle can be placed correctly. A custom flash animation is
+straightforward; that was never the hard part.
+
+Two traps found while setting the test up, both of which had invalidated the
+first attempt:
+
+* **The screen had gone to sleep.** `backlight=0`, so the "white screen" was
+  dark and `actual_mask_brightness` stayed 0. The idle timeouts set earlier
+  that day did it. Disabled for the test, restored after.
+* **A static window never triggers HBM.** decon only evaluates the mask layer
+  when the compositor submits a frame (`decon_get_mask_layer()` runs from
+  `decon_set_win_config`). A completely static white window submits none, so
+  the flag has no effect. The QML needs a continuous animation. This also
+  means the mask does not *clear* until another frame arrives.
+
+With all of that right — white pixels over the sensor, `actual_mask_brightness
+= 255` confirmed with the full TE sequence in the kernel log, enrollment armed
+(`preenroll_flag : 1`), and the user pressing repeatedly:
+
+```
+     62 nd cnt : 0
+bauth_FPBAuthService: FPBAuthService::enrollTimerHandler call cancel functions
+```
+
+**Every sample still zero.** Illumination is not the missing piece.
+
+This strengthens the existing conclusion rather than changing it: with no DRDY
+interrupt registered (`/proc/interrupts` has no `etspi_irq`, because the HAL
+never issues `INT_TRIGGER_INIT`), the sensor has no mechanism to report a
+finger at all — so no amount of light can produce a detection. The blocker is
+sensor bring-up inside Samsung's trustlet, not the screen.
+
+**Do not re-test illumination.** It is settled.
