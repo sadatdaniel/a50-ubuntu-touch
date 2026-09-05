@@ -126,7 +126,8 @@ hci0:	Type: Primary  Bus: Virtual
 	UP RUNNING
 ```
 
-and a scan finds real devices with live RSSI:
+Earbuds pair and play audio over A2DP, confirmed on the device. A scan finds
+real devices with live RSSI:
 
 ```
 [NEW] Device 60:98:66:FF:B6:D1 AM405X
@@ -140,7 +141,8 @@ PulseAudio, ofono `Status = registered`, lightdm `NRestarts=0`.
 
 ## 5. Still open
 
-* Pairing and profiles (A2DP, HFP) are untested — only discovery is proven.
+* **Pairing and A2DP work** — real earbuds paired and played audio, confirmed
+  by the user. HFP (calls over Bluetooth) is still untested.
 * `/dev/vhci` is `0600 root:root`. `bluebinder` runs as root so it works, but
   that is worth checking against the same class of bug as the `/dev/hwbinder`
   `0600` greeter blocker in experiment 006.
