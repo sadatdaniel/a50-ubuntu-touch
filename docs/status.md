@@ -1,7 +1,7 @@
 # Status
 
-**Last updated: 2026-09-03.** Ubuntu Touch now boots on the device and reaches
-the first-boot wizard. This file is the honest inventory.
+**Last updated: 2026-09-05.** Ubuntu Touch boots, reaches the UI, and now has
+working audio. This file is the honest inventory.
 
 ## Proven
 
@@ -18,7 +18,8 @@ the first-boot wizard. This file is the honest inventory.
 | Every boot image header value in `deviceinfo` | Read out of an image that has booted this device |
 | No SEAndroid footer, no AVB footer | Last 32 bytes of every known-good A50 boot image are zeros |
 | The three artifacts the tools will download all exist | HTTP 200 on the 26.04 rootfs, the Halium 11 GSI and the halium-boot ramdisk, 2026-09-01 |
-| **The audio DSP boots and the speaker amplifier works** | `calliope_version` reads `rSK1`, `Invalid calliope state: 0` is gone, and `speaker-test -D hw:0,0` is **audible** — confirmed by ear. Two fixes: `CONFIG_EXTRA_FIRMWARE`, so the DSP gets `calliope_*.bin` at probe (t = 1.43 s, before any filesystem exists here), and the `ABOX UAIF2 SPK` route, which nothing in Ubuntu Touch sets. [experiment 007](experiments/007-abox-firmware-too-early.md) |
+| **Audio works** | Sound out of the speaker through Ubuntu Touch's normal path, with video unaffected — confirmed by ear across clean reboots. Two fixes: `CONFIG_EXTRA_FIRMWARE`, so the DSP gets `calliope_*.bin` at probe (t = 1.43 s, before any filesystem exists here), and presenting the real `hidl_compat` wrapper to PulseAudio host-side, which needed a linker-namespace change to resolve `libaudiohal.so`. The ABOX mixer is left entirely to the HAL. [experiment 007](experiments/007-abox-firmware-too-early.md) |
+| **Wi-Fi works, including the UI** | Connects and lists networks. Note this happens with **no** `/dev/rfkill` and `urfkilld` inactive, which falsifies the earlier claim that the indicator needed `CONFIG_RFKILL` — that rebuild is not required. `swlan0` is the interface that carries traffic. |
 
 ## Not proven, and blocking
 
@@ -31,10 +32,9 @@ the first-boot wizard. This file is the honest inventory.
 | **Does S-Boot check the boot header `id` digest?** | The one field experiment 001 could not reproduce. One boot test. |
 | **AppArmor** | Untouched. Ubuntu Touch needs it to run apps. |
 | **The initramfs fixes have not been ported** | Four are expected to be needed. `ramdisk-overlay/README.md`. |
-| **Wi-Fi has no UI: `CONFIG_RFKILL` is not built** | Every layer below the UI works — `wlan0` up, `wpa_supplicant` running, NetworkManager scans and lists APs. But with no `/dev/rfkill`, `urfkilld` enumerates nothing and reports WLAN killswitch `state = -1` (no adapter), so the indicator shows no Wi-Fi. One rebuild. [experiment 006](experiments/006-what-we-missed.md) |
 | **`conn_gadget` double-registration is avoided, not fixed** | The container is kept away from USB gadget configfs. The real fix is an idempotency guard in `conn_gadget_setup()`, still unwritten to the kernel branch. |
-| **Audio through PulseAudio / the droid HAL** | The HAL accepts writes and returns success while nothing reaches the card, and no PulseAudio playback has ever been confirmed audible. Everything below it is proven working, so this is a userspace question. **Do not "fix" it with a raw ALSA sink** — that takes `hw:0,0` from the media stack and stops video playing at all. [experiment 007](experiments/007-abox-firmware-too-early.md) §14, §18 |
-| **Headphones / earpiece** | Only the speaker (UAIF2) is routed. UAIF0 is the codec path and is untested. |
+| **The `ld.config.txt` rewrite in the audio fix** | `a50-audio-hidl-compat.service` patches generated linker config on every boot so the HAL wrapper can resolve `libaudiohal.so`. `HYBRIS_USE_VENDOR_NAMESPACE` is supposed to make that unnecessary and demonstrably does not work here. Find out why and the hack can be deleted. [experiment 007](experiments/007-abox-firmware-too-early.md) §26 |
+| **Headphones / earpiece** | Only the speaker path has been exercised. UAIF0 is the codec path and is untested. |
 | **Camera** | `fimc_is_devicemgr_open` NULL-derefs when anything enumerates V4L2 (`gst-plugin-scan` does), panicking the kernel. Looks like a bootloop. Unrelated to audio. |
 
 ## Deliberately not started
@@ -48,7 +48,9 @@ the first-boot wizard. This file is the honest inventory.
   Worth a fresh test now: that bootloop predates experiment 006, its own README
   named an Android-init fatal error as the leading hypothesis, and `hci_vhci.c`
   registers `/dev/vhci` via `misc_register()` — adding a node to the very list
-  that was being corrupted. One variable at a time: land `CONFIG_RFKILL` first.
+  that was being corrupted, so the old bootloop is plausibly a symptom of a bug
+  that is now fixed. Retest it. **`bluebinder` is currently `systemctl mask`ed**
+  (it was flooding the kernel log with MISCDBG lines) — unmask it first.
 * UBports recovery and the UBports installer. The guide adds both at
   finalization, and TWRP is currently the only reliable way back.
 

@@ -269,8 +269,10 @@ normal path with video unaffected, across reboots.
    and `rild` runs, but the modem link reports
    `umts_cass<-shmem: ERR! rx_demux fail (err -19)`. Untouched so far.
 
-5. **`CONFIG_RFKILL`** — one Kconfig line, fixes the Wi-Fi indicator showing
-   nothing. Every layer below the UI already works.
+5. ~~`CONFIG_RFKILL`~~ — **not needed.** Wi-Fi works including the UI: it
+   connects and lists networks with **no** `/dev/rfkill` present and `urfkilld`
+   inactive. That falsifies experiment 006's claim that the indicator needed
+   `CONFIG_RFKILL`, and removes the rebuild it implied.
 
 6. Remaining: AppArmor (needed for confinement; apps do launch without it),
    `usb-tethering.service` and `ssh.service` failures (expected — an sshd
