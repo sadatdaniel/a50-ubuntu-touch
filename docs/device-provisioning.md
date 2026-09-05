@@ -67,9 +67,16 @@ df -h /
 
 Result here: `4.0G/211M free` → `7.9G/4.0G free`.
 
-**8 GB, not 32 or 64.** Nothing on the rootfs grows without bound (see the
-table above), so a larger image would just take space from the partition that
-actually stores data. Growing again later is easy; shrinking is not.
+**8 GB was the right size until Waydroid.** Nothing in the base system grows
+without bound (see the table above), so a larger image would just take space
+from the partition that actually stores data. Growing again later is easy;
+shrinking is not.
+
+**Grown to 16 GB on 2026-09-05** for Waydroid, which puts its Android images
+(~2 GB) and all its app data under `/var/lib/waydroid` on the rootfs. Same
+procedure, `truncate -s 16G`; it took the rootfs from 3.6 GB free to 12 GB
+free, online, with no reboot. If you are not running Waydroid, 8 GB is still
+the right answer.
 
 Confirm the loop device before running this — it is `loop0` here, but
 `losetup -a` is the authority:
