@@ -216,3 +216,49 @@ device-specific — the missing `onPreviewReady` slot points the same way. Worth
 checking against another 26.04 device before spending more effort here.
 
 **Not attempted:** patching or rebuilding `qtubuntu-media`.
+
+## Why Waydroid's camera works but Ubuntu Touch's does not
+
+Waydroid's camera works. That is decisive: the sensor, kernel driver, Samsung
+HAL and the whole hardware path are fine. Waydroid uses Android's own Camera2
+stack inside the container and never touches Qt.
+
+The Ubuntu Touch app fails in Qt, and the mismatch is exact:
+
+```
+$ nm -DC .../mediaservice/libaalcamera.so | grep -c ViewfinderSettingsControl2
+0
+$ strings .../libaalcamera.so | grep cameraviewfindersettingscontrol
+org.qt-project.qt.cameraviewfindersettingscontrol/5.0      <- legacy interface
+
+$ nm -DC .../mediaservice/libgstcamerabin.so | grep -c ViewfinderSettingsControl2
+6
+```
+
+`qtubuntu-camera` 0.5.1 implements only the **legacy**
+`QCameraViewfinderSettingsControl`. Qt 5.15 routes
+`camera.supportedViewfinderResolutions()` — which the app calls in
+`updateViewfinderResolution()` — through **`QCameraViewfinderSettingsControl2`**,
+which the plugin does not implement. So Qt returns an empty list:
+
+```
+supportedViewfinderResolutions.length === 0
+  -> "updateViewfinderResolution: viewfinder resolutions is not known yet."
+  -> AalImageEncoderControl::setSize: QSize(-1, -1) is not supported
+  -> SIGSEGV
+```
+
+even though the HAL plainly offers 16 preview sizes for camera 0, verified
+directly from Ubuntu Touch via libhybris.
+
+The dangling `QObject::connect: No such slot
+AalImageCaptureControl::onPreviewReady()` is the same story: that slot does not
+exist in the shipped build.
+
+**So this is an upstream qtubuntu-camera bug, not a device problem.** Fixing it
+means implementing `ViewfinderSettingsControl2` in qtubuntu-camera and
+rebuilding it — nothing on the device can work around a missing Qt interface.
+
+Not attempted: forcing Qt to the `gstcamerabin` backend instead. It does
+implement Control2, but it drives V4L2 directly, and on this device the sensor
+is only usable through the Android HAL, so it is unlikely to produce frames.
