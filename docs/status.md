@@ -45,7 +45,7 @@ working audio, Bluetooth, mobile data and GPS. This file is the honest inventory
 | **`conn_gadget` double-registration is avoided, not fixed** | The container is kept away from USB gadget configfs. The real fix is an idempotency guard in `conn_gadget_setup()`, still unwritten to the kernel branch. |
 | **The `ld.config.txt` rewrite in the audio fix** | `a50-audio-hidl-compat.service` patches generated linker config on every boot so the HAL wrapper can resolve `libaudiohal.so`. `HYBRIS_USE_VENDOR_NAMESPACE` is supposed to make that unnecessary and demonstrably does not work here. Find out why and the hack can be deleted. [experiment 007](experiments/007-abox-firmware-too-early.md) §26 |
 | **Headphones / earpiece** | Only the speaker path has been exercised. UAIF0 is the codec path and is untested. |
-| **Camera** | `fimc_is_devicemgr_open` NULL-derefs when anything enumerates V4L2 (`gst-plugin-scan` does), panicking the kernel. Looks like a bootloop. Unrelated to audio. |
+| **Camera does not work** | **The panic no longer reproduces** - all 50 V4L2 nodes opened + QUERYCAP with no crash, and `gst-plugin-scan` is not even installed; the old hazard is stale (likely fixed with the `misc_list` corruption). What is actually broken: the sensor peripheral is never bound (`sensor peri is not yet probed`, `sub module is NULL`, `BCM bin has not been loaded`), so there is no image path. [experiment 014](experiments/014-camera.md) |
 
 ## Deliberately not started
 
