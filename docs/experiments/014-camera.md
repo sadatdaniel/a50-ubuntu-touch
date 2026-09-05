@@ -1,6 +1,6 @@
 # Experiment 014 — camera: the kernel panic does not reproduce
 
-**Date:** 2026-09-05 · **Status:** 🟡 hazard retired, camera still not working
+**Date:** 2026-09-05 · **Status:** 🟡 hazard retired; HAL proven working; app crashes in the UT media layer
 · **Device needed:** yes
 
 ## The claim being tested
@@ -126,3 +126,93 @@ started.
   of this kernel it does not.
 * `gst-plugin-scan` is not present, so it cannot be the trigger for anything
   observed now.
+
+## The app: one fix, then a crash localised to the UT media layer
+
+### Fixed — the app could not load its own plugin
+
+Opening Camera showed a spinner forever. The reason was not the camera:
+
+```
+plugin cannot be loaded for module "CameraApp": Cannot load library
+.../CameraApp/libcamera-qml.so: (libexiv2.so.27: cannot open shared object
+file: No such file or directory)
+```
+
+26.04 ships `libexiv2.so.28`; `camera.ubports` 4.1.1 was built against `.so.27`.
+Fixed with **`libexiv2-27-compat`** — a real UBports 26.04 package that provides
+the old SONAME alongside the new one, rather than copying a `.so` out of the
+24.04 rootfs image. Same class as the OpenStore SONAME problem in
+`docs/device-provisioning.md`. Installed by
+`scripts/apply-device-workarounds.sh`; afterwards `ldd` reports **0** unresolved
+libraries for both `libcamera-qml.so` and `libaalcamera.so`.
+
+### The whole camera stack below the app is proven working
+
+Each layer was checked separately rather than inferred:
+
+| layer | evidence |
+|---|---|
+| kernel sensor drivers | `cis_2x5_probe done`; `/sys/kernel/debug/devices_deferred` empty |
+| Samsung HAL | `ExynosCameraInterface: Number of cameras(3)` |
+| Android CameraService | `Camera provider legacy/0 ready with 3 camera devices` |
+| libhybris, **from Ubuntu Touch** | `android_camera_get_number_of_devices() = 3` |
+| **HAL query, from Ubuntu Touch** | camera 0 connects; **16 preview sizes**, 33 picture sizes (to 5760×4320); camera 1: 12 preview, 16 picture |
+
+That last one matters most: `android_camera_connect_by_id()` succeeds and
+`android_camera_enumerate_supported_preview_sizes()` returns a full list. **The
+viewfinder resolutions the app claims not to have are available one layer
+below it.**
+
+### Where it actually breaks
+
+The app now reaches the camera — it logs the real sensor picture sizes and
+renders a frame ("Last frame took 32 ms") — then dies:
+
+```
+lomiri-app-launch--...camera.ubports_camera_4.1.1--.service:
+    Main process exited, code=killed, status=11/SEGV
+```
+
+Preceded, every run, by:
+
+```
+qml: updateViewfinderResolution: viewfinder resolutions is not known yet.   (repeatedly)
+QObject::connect: No such slot AalImageCaptureControl::onPreviewReady()
+(AalImageEncoderControl::setSize) Size QSize(-1, -1) is not supported by the camera
+virtual QSGVideoNode* ShaderVideoNodePlugin::createNode(const QVideoSurfaceFormat&)
+```
+
+A core dump was captured (`systemd-coredump` + `gdb` installed for this). The
+faulting PC is in **unmapped memory** — not a plain null dereference but a jump
+through a stale or corrupted pointer, consistent with a video node built from
+the invalid `QSize(-1, -1)`.
+
+And the missing slot is real, not a stale message:
+
+```
+$ nm -DC .../mediaservice/libaalcamera.so | grep -i previewReady
+  T StorageManager::previewReady(int, QImage)
+  T AalVideoRendererControl::previewReady()
+```
+
+`AalImageCaptureControl::onPreviewReady()` **does not exist** in the installed
+plugin. So something connects to a slot this build does not have.
+
+Installed versions: `camera.ubports` 4.1.1, `cameraplugin-aal` 0.5.1,
+`qtubuntu-media` 0.8.4, `qtvideonode-plugin` 0.2.3.
+
+### Conclusion
+
+The camera hardware, kernel drivers, Samsung HAL and libhybris compat layer all
+work on this device. The remaining fault is **above** them, in Ubuntu Touch's
+own camera stack (`qtubuntu-media` / `cameraplugin-aal` / `camera.ubports`):
+the AAL viewfinder control never picks up the preview resolutions that the HAL
+plainly offers, and the app then segfaults building a video node from an
+invalid size.
+
+That looks like an upstream UBports 26.04 mismatch rather than anything
+device-specific — the missing `onPreviewReady` slot points the same way. Worth
+checking against another 26.04 device before spending more effort here.
+
+**Not attempted:** patching or rebuilding `qtubuntu-media`.

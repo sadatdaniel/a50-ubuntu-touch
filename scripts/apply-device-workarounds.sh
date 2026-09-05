@@ -347,5 +347,36 @@ if [ -d "$D" ]; then
     echo "waydroid: fixed $n app entries (visible + working Exec)"
 fi
 
+# ---------------------------------------------------------------------------
+# 9. Camera app: the SONAME it was built against.
+#
+# REAL FIX: none needed here - libexiv2-27-compat is a real UBports package for
+# 26.04 that exists precisely for this.
+#
+# 26.04 ships libexiv2.so.28, but camera.ubports 4.1.1 was built against
+# libexiv2.so.27. Its QML plugin therefore fails to load:
+#
+#   plugin cannot be loaded for module "CameraApp": Cannot load library
+#   .../CameraApp/libcamera-qml.so: (libexiv2.so.27: cannot open shared object
+#   file: No such file or directory)
+#
+# and the app sits on a spinner forever with no visible error. Same class as
+# the OpenStore SONAME problem in docs/device-provisioning.md.
+#
+# See docs/experiments/014-camera.md.
+# ---------------------------------------------------------------------------
+if [ -e /usr/share/click/preinstalled/camera.ubports ]; then
+    if [ -e /usr/lib/aarch64-linux-gnu/libexiv2.so.27 ]; then
+        echo "camera: libexiv2.so.27 already present"
+    else
+        # apt's _apt sandbox user cannot resolve DNS on this device.
+        DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            -o APT::Sandbox::User=root -o Acquire::ForceIPv4=true \
+            libexiv2-27-compat >/dev/null 2>&1 \
+            && echo "camera: installed libexiv2-27-compat" \
+            || echo "camera: could not install libexiv2-27-compat (no network?)" >&2
+    fi
+fi
+
 sync
 echo "done."
