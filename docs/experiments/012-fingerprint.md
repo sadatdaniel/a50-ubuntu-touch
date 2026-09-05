@@ -209,3 +209,45 @@ Samsung mask layers. Two workable options, cheapest first:
 Either way the missing piece is now identified precisely, with the exact
 kernel symbols and the file/line that gate it — this is no longer "compositor
 work, unknown scope".
+
+## In flight — kernel patch exposing the mask layer (2026-09-05)
+
+Option 1 above is being tried. `a50-halium` gains
+`kernel/patches-experimental/decon-force-mask-layer.patch`, generated from a
+real diff against the pinned tree (not hand-written), and added to `EXTRA` in
+`build/build-a50-release-kernel.sh`.
+
+It adds 13 lines to `decon_core.c`: a module parameter, and one OR into the
+existing decision.
+
+```c
+bool decon_force_mask_layer = false;
+module_param_named(force_mask_layer, decon_force_mask_layer, bool, 0644);
+...
+	if (decon_force_mask_layer)
+		mask = true;
+```
+
+Everything downstream is untouched — the transition still runs through
+`decon_set_mask_layer()` on the regs path, keeping its TE/vsync wait, its
+`call_panel_ops(mask_brightness)` and the `wait_mask_layer_trigger` handshake.
+Only the trigger is new, so the vendor's own tested sequence does the work.
+
+**It defaults to false**, so the patched kernel with the parameter untouched
+should behave exactly like the current one. That gives a two-stage test instead
+of one:
+
+1. Boot the patched kernel with the flag unset. Expect *no* change at all:
+   boots, lightdm up, container `sys.boot_completed=1`, audio/Bluetooth/GPS
+   unaffected, display normal. This proves the patch is inert.
+2. Only then `echo 1 > /sys/module/decon/parameters/force_mask_layer` and check
+   `actual_mask_brightness` becomes non-zero (it has never been anything but 0).
+   With the screen lit, arm enrollment and watch whether `nd cnt` finally rises.
+
+The known-good image is staged at `/userdata/boot-known-good.img`
+(`53fe13b5…`, verified equal to the running boot partition) before any flash.
+
+If stage 2 works, the remaining piece is raising the flag automatically while a
+fingerprint operation is in flight — biometryd's D-Bus operations are the
+natural trigger — and dropping it afterwards, since the mask brightness is very
+bright and must not be left on.
