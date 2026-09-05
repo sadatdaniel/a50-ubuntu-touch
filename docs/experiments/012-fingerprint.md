@@ -1,7 +1,6 @@
 # Experiment 012 — fingerprint reader
 
-**Date:** 2026-09-05 · **Status:** 🟡 unblocked — HAL enrolls, needs on-screen
-enrollment confirmed · **Device needed:** yes
+**Date:** 2026-09-05 · **Status:** 🟠 permission wall fixed; capture blocked by optical-sensor HBM · **Device needed:** yes
 
 ## Hardware
 
@@ -86,25 +85,68 @@ bauth_FPBAuthService: thread id : 0, preenroll_flag : 1, nd cnt : 0, cso : 0, et
 authentication-token path works — no gatekeeper HAT problem, which was the
 next-most-likely blocker.
 
-## What is left
+## The real wall — it is an optical sensor and nothing lights the finger
 
-Actual enrollment needs real touches on the under-display sensor, which the
-Settings UI drives with visual feedback (the `position` rectangle). The CLI
-`test` clears the template store and enrolls blind, which is fine for proving
-the HAL but poor for a real finger. Next:
+After the permission bypass, enrollment still captures nothing. Traced end to
+end, the sensor never sees a finger:
 
-1. Open Security & Privacy → Fingerprint (it no longer crashes) and enroll a
-   finger with the on-screen target.
-2. Confirm the HAL logs `nd cnt` rising and the enroll progressing past 0 %.
-3. Confirm unlock from the greeter uses it.
+* biometryd arms the HAL and the Samsung auth service polls once a second, but
+  the finger-down count never moves:
 
-One observed flake: an early CLI run aborted at 0 % ("Failed to enroll
-template") once, then a later run armed correctly. If enrollment aborts
-instantly, retry — it is not the permission wall (that is fixed) and not a
-missing token (preenroll succeeds).
+  ```
+  bauth_FPBAuthService: preenroll_flag : 1, nd cnt : 0, cso : 0, et : 0
+  ```
 
-## Not done
+* The kernel driver is alive and does power the sensor on each poll:
 
-* Whether the greeter actually offers fingerprint unlock end to end.
-* No `strace`/HAT-token forensics were needed — preEnroll succeeding rules that
-  class of bug out.
+  ```
+  etspi_ioctl FP_POWER_CONTROL, status = 1
+  etspi_ioctl FP_SET_SPI_CLOCK, clock = 20000000 ; ENABLE_SPI_CLOCK
+  etspi_work_func_debug ldo: 1, sleep: 1, tz: 1, spi_value: 0x0, type: et7xx
+  ```
+
+  `tz: 1` — the real image transfer is owned by TrustZone (tzdaemon and its
+  `tz_worker` threads are running, so the TEE itself is up). `spi_value: 0x0`
+  and `nd cnt : 0` together mean the sensor captured no usable image.
+
+**Why: the ET713 is optical, and an optical under-display sensor can only image
+a finger when the screen shines a bright spot through it (High Brightness Mode).
+Nothing on this port turns that on.** The panel exposes the Samsung mask-layer
+HBM control:
+
+```
+/sys/devices/platform/148e0000.dsim/lcd/panel/mask_brightness         (target)
+/sys/devices/platform/148e0000.dsim/lcd/panel/actual_mask_brightness  (applied)
+```
+
+`mask_brightness` reads 255 but `actual_mask_brightness` reads **0** — the mask
+is configured but never applied. Writing 255/300/319 to it is accepted by the
+kernel (`lcd panel: mask_brightness_store: 255, 319`) yet `actual_mask_brightness`
+stays 0, and `nd cnt` stays 0 with a finger held on the sensor.
+
+That is the crux: Samsung's decon applies the mask HBM only when the
+**compositor composites a dedicated "mask layer"** frame — on stock Android,
+SurfaceFlinger draws the white fingerprint circle with that layer flag and
+decon lights it. This port's compositor is **Lomiri/Mir**, which knows nothing
+about Samsung's mask layer, so decon never enters mask mode, the finger stays
+dark, and the optical sensor returns an empty image. There is no sysfs toggle
+for the mask layer (searched: no `mask_layer` / `self_mask` / decon control), so
+it cannot be forced from userspace alone.
+
+## Status and what it would take
+
+* **Fixed and shipped:** the permission wall — biometryd no longer returns
+  `NotPermitted`, System Settings no longer crashes opening the Fingerprint
+  page, the HAL enrolls, and the kernel/TEE path is live. Survives reboot.
+* **Blocked, and it is a real project:** actual capture needs the HBM mask
+  layer lit during fingerprint operations. That requires driving Samsung's
+  decon mask layer from the Lomiri/Mir side in step with the HAL's
+  finger-down/HBM requests — compositor-level work, not a config file. This is
+  the known reason optical under-display sensors generally do not work on
+  Halium/UBports ports, whereas capacitive/rear sensors do. Until then the
+  sensor cannot read a fingerprint no matter how the enrollment is driven.
+
+The earlier "add fingerprint shows nothing / reader not working" is exactly
+this: the UI arms enrollment, the sensor is powered, but with no illuminated
+spot it detects no finger. It is not a permission, template-store, or
+gatekeeper problem — all of those are working.

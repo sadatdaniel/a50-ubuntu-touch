@@ -15,7 +15,8 @@ device was recovered, and GPS was fixed outright - it never needed that kernel.
 
 The phone boots and runs with **audio, Bluetooth (incl. A2DP), phone calls,
 mobile data and GPS** all working, verified across clean reboots. Nothing is
-in flight.
+in flight. (Fingerprint is half-done — Settings no longer crashes and the HAL
+enrolls, but the optical sensor cannot capture without HBM; see #0 and #7.)
 
 The boot partition holds
 `53fe13b58818d56c2610c6a6fcc4a7596689b2b3bc53b91440d29cb0573c0f7d` — the
@@ -266,14 +267,24 @@ Images on `/userdata`: `rootfs.img` (live 26.04), `rootfs-26.04.img` (backup),
 
 ## 7. Next steps, in order
 
-1. **Fingerprint — finish enrollment.** The hard part is done: biometryd's
-   `NotPermitted` wall (the AppArmor twin of the GPS one) is bypassed, so the
-   Settings fingerprint page no longer crashes and the HAL enrolls
-   (`preenroll_flag:1`, waiting for touches). What is left is real on-screen
-   enrollment through Settings → Security & Privacy → Fingerprint on the
-   under-display EGISTEC ET713, then confirming greeter unlock. See
-   [experiment 012](experiments/012-fingerprint.md). If a CLI enroll aborts at
-   0 %, retry — it is neither the permission wall nor a token problem.
+1. **Fingerprint — the sensor is optical and nothing lights it.** Two layers,
+   one fixed and one not:
+   * **Fixed:** biometryd's `NotPermitted` wall (the AppArmor twin of the GPS
+     one) is bypassed, so Security & Privacy → Fingerprint no longer crashes
+     System Settings, the HAL enrolls, and the TEE is up.
+   * **Blocked, and it is real work:** the EGISTEC ET713 is an *optical
+     under-display* sensor — it can only image a finger when the screen shines
+     a bright spot through it (HBM). That HBM is Samsung's decon "mask layer",
+     applied only when the **compositor** composites a mask-flagged frame.
+     Stock Android's SurfaceFlinger does it; this port's Lomiri/Mir does not, so
+     `actual_mask_brightness` stays 0 (writing `mask_brightness` sets the
+     target but decon never applies it), the finger stays dark, and the HAL's
+     `nd cnt` never leaves 0. No sysfs toggle forces the mask layer. Making
+     fingerprint actually read means driving the decon mask layer from the
+     Lomiri/Mir side in step with the HAL's finger-down/HBM requests —
+     compositor work, the known reason optical under-display sensors don't work
+     on Halium/UBports. See [experiment 012](experiments/012-fingerprint.md).
+
 
 2. **Camera.** `fimc_is_devicemgr_open` NULL-derefs when anything enumerates
    V4L2 (e.g. `gst-plugin-scan`), panicking the kernel. Presents as a bootloop
