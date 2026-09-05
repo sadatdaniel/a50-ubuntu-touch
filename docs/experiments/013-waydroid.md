@@ -222,3 +222,37 @@ Whether it predates Waydroid could **not** be determined: the kernel ring
 buffer had already rotated (79 entries ≈ 6 minutes), so the earliest visible
 timestamp is not the real start. Not attributed to Waydroid without evidence.
 It burns CPU and battery continuously and is worth fixing on its own.
+
+## Waydroid's camera provider crash-loops — disabled
+
+**Correction to an earlier note in this file.** The 5-second
+`libprocessgroup: killed process cgroup uid 1047` loop was first attributed to
+the Halium container's Samsung camera provider. That was wrong. Measured
+directly:
+
+| provider | pid over 12 s | verdict |
+|---|---|---|
+| Waydroid `vendor.camera-provider-2-4` | 3214 → 3217 → 3221 | **restarting every ~6 s** |
+| Halium `sec-camera-provider-4-0` | 186, unchanged | fine |
+
+Waydroid's vendor image ships its own
+`android.hardware.camera.provider@2.4-service`. This device's camera does not
+work under the port at all — the Exynos FIMC-IS driver NULL-derefs in
+`fimc_is_devicemgr_open` and can panic the kernel — so that provider dies and
+Android init restarts it forever.
+
+Two reasons to stop it rather than tolerate it: it burns CPU and battery
+continuously, and it repeatedly pokes a driver known to be able to panic the
+kernel.
+
+`overlay/usr/local/bin/a50-waydroid-nocamera.sh` waits for
+`sys.boot_completed` inside the container and stops both
+`vendor.camera-provider-2-4` and `cameraserver`. It runs as root from a
+`waydroid-container.service` drop-in, because `waydroid shell` needs root while
+the session unit is a *user* unit.
+
+Verified: provider `stopped` with no pid across repeated checks, zero new
+kernel kill messages over 15 s, and Waydroid plus F-Droid still running.
+
+This costs nothing real — the camera was never usable in Waydroid, because it
+is not usable on the host either.
