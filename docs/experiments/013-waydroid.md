@@ -1,6 +1,6 @@
 # Experiment 013 — Waydroid, and Android apps on this port
 
-**Date:** 2026-09-05 · **Status:** ✅ working — F-Droid installed and running
+**Date:** 2026-09-05 · **Status:** ✅ working — F-Droid installed, running, and launchable from the drawer
 · **Device needed:** yes
 
 ## What was actually missing
@@ -155,3 +155,70 @@ most likely to break — everything still works:
 * Auto-starting the session is enabled but **not yet verified across a reboot**.
 * Battery and thermal impact of running two Android containers is unmeasured.
 * Google Play / Play Integrity is not attempted; this is the `VANILLA` image.
+
+## Tapping the icons did nothing — the launcher environment
+
+Reported after the first install: launching F-Droid from the command line
+worked and the app appeared, but **tapping either the Waydroid or F-Droid icon
+in the app drawer did nothing at all** — no window, no error the user could see.
+
+Lomiri did start the unit:
+
+```
+systemd[4276]: Started lomiri-app-launch--application-legacy--Waydroid--...service
+```
+
+so the launch reached systemd and then vanished silently.
+
+**Cause.** Waydroid's generated entries run `waydroid app launch <pkg>`
+directly. Started from the launcher they inherit no
+`DBUS_SESSION_BUS_ADDRESS`, so waydroid cannot see the running session,
+concludes there is none, and tries to start one — which fails. Reproduced
+exactly by stripping the environment:
+
+```
+$ env -i PATH=/usr/bin:/bin HOME=/home/phablet waydroid app launch org.fdroid.fdroid
+[20:15:26] Starting waydroid session
+[20:15:26] ERROR: org.freedesktop.DBus.Error.NotSupported: Unable to autolaunch
+                  a dbus-daemon without a $DISPLAY for X11
+rc=1
+```
+
+versus `rc=0` with the variables set. Note the giveaway "Starting waydroid
+session" — it never saw the session that was already running.
+
+**Fix.** `overlay/usr/local/bin/a50-waydroid-launch.sh` supplies
+`XDG_RUNTIME_DIR`, `DBUS_SESSION_BUS_ADDRESS` and `WAYLAND_DISPLAY`, defaulting
+them from `id -u` rather than hardcoding a uid, and without overriding a caller
+that already set them. Every generated entry is pointed at it:
+
+```
+Exec=/usr/local/bin/a50-waydroid-launch.sh org.fdroid.fdroid
+Exec=/usr/local/bin/a50-waydroid-launch.sh --full-ui      (Waydroid.desktop)
+```
+
+Verified: the identical stripped-environment invocation that returned `rc=1`
+now returns `rc=0` with F-Droid running in the container.
+
+`scripts/apply-device-workarounds.sh` applies both this and the `NoDisplay`
+fix. **Re-run it after installing new Android apps** — Waydroid regenerates the
+entries and they come back hidden and pointing at the bare command.
+
+## Separately: Samsung's camera provider crash-loops
+
+While investigating, `dmesg` showed a process being killed every 5 seconds:
+
+```
+libprocessgroup: Successfully killed process cgroup uid 1047 pid 2402 in 0ms
+libprocessgroup: ... pid 2405   (5s later)
+```
+
+uid 1047 is `cameraserver`. It is **not** Waydroid's — Waydroid's is `stopped`
+with no processes. It is the **Halium** container running
+`vendor.samsung.hardware.camera.provider@4.0-service`, i.e. the port's
+long-known broken camera (see the camera entry in `docs/status.md`).
+
+Whether it predates Waydroid could **not** be determined: the kernel ring
+buffer had already rotated (79 entries ≈ 6 minutes), so the earliest visible
+timestamp is not the real start. Not attributed to Waydroid without evidence.
+It burns CPU and battery continuously and is worth fixing on its own.

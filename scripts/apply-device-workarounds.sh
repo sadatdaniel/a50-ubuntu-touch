@@ -318,20 +318,33 @@ elif [ -x /usr/bin/waydroid ]; then
         || echo "waydroid: could not enable session unit (is the user session up?)"
 fi
 
-# Waydroid marks every generated app entry NoDisplay=true, which hides them all
-# from the Lomiri app drawer. Unhide them so installed Android apps are usable.
+# Waydroid's generated app entries are broken in two ways for Lomiri:
+#
+#   1. Every one is written NoDisplay=true, hiding all Android apps from the
+#      app drawer.
+#   2. Their Exec runs `waydroid app launch <pkg>` directly. Started from the
+#      launcher they inherit no DBUS_SESSION_BUS_ADDRESS, so waydroid cannot
+#      find the running session, tries to start a new one, and fails with
+#      "Unable to autolaunch a dbus-daemon without a $DISPLAY". Tapping the
+#      icon silently does nothing.
+#
+# a50-waydroid-launch.sh supplies the environment; point every entry at it.
+# Re-run this after installing new Android apps - Waydroid regenerates them.
 D=/home/phablet/.local/share/applications
 if [ -d "$D" ]; then
     n=0
     for f in "$D"/waydroid.*.desktop; do
         [ -e "$f" ] || continue
-        if grep -q '^NoDisplay=true' "$f"; then
-            sed -i 's/^NoDisplay=true/NoDisplay=false/' "$f"
-            chown phablet:phablet "$f"
-            n=$((n + 1))
-        fi
+        sed -i 's|^Exec=waydroid app launch |Exec=/usr/local/bin/a50-waydroid-launch.sh |' "$f"
+        sed -i 's/^NoDisplay=true/NoDisplay=false/' "$f"
+        chown phablet:phablet "$f"
+        n=$((n + 1))
     done
-    [ "$n" -gt 0 ] && echo "waydroid: unhid $n app entries" || echo "waydroid: app entries already visible"
+    if [ -e "$D/Waydroid.desktop" ]; then
+        sed -i 's|^Exec=waydroid show-full-ui|Exec=/usr/local/bin/a50-waydroid-launch.sh --full-ui|' "$D/Waydroid.desktop"
+        chown phablet:phablet "$D/Waydroid.desktop"
+    fi
+    echo "waydroid: fixed $n app entries (visible + working Exec)"
 fi
 
 sync
