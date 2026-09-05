@@ -133,20 +133,79 @@ dark, and the optical sensor returns an empty image. There is no sysfs toggle
 for the mask layer (searched: no `mask_layer` / `self_mask` / decon control), so
 it cannot be forced from userspace alone.
 
-## Status and what it would take
+## Exactly what gates HBM — read from the kernel source, not inferred
 
-* **Fixed and shipped:** the permission wall — biometryd no longer returns
-  `NotPermitted`, System Settings no longer crashes opening the Fingerprint
-  page, the HAL enrolls, and the kernel/TEE path is live. Survives reboot.
-* **Blocked, and it is a real project:** actual capture needs the HBM mask
-  layer lit during fingerprint operations. That requires driving Samsung's
-  decon mask layer from the Lomiri/Mir side in step with the HAL's
-  finger-down/HBM requests — compositor-level work, not a config file. This is
-  the known reason optical under-display sensors generally do not work on
-  Halium/UBports ports, whereas capacitive/rear sensors do. Until then the
-  sensor cannot read a fingerprint no matter how the enrollment is driven.
+An earlier draft of this file said optical under-display sensors "generally do
+not work on Halium/UBports". **That was too strong and is wrong** — the
+OnePlus 6T, Xiaomi Mi A3 and Volla Phone all have optical in-display sensors
+with Ubuntu Touch support. Those are Qualcomm/Goodix designs where HBM is a
+plain panel control the driver or HAL toggles directly, so nothing above the
+kernel has to cooperate. Samsung's Exynos design is different, and that
+difference is the whole problem here.
 
-The earlier "add fingerprint shows nothing / reader not working" is exactly
-this: the UI arms enrollment, the sensor is powered, but with no illuminated
-spot it detects no finger. It is not a permission, template-store, or
-gatekeeper problem — all of those are working.
+Read from the pinned kernel tree
+(`FreshROMs/android_kernel_samsung_exynos9610_mint`, commit `bec0c2af`):
+
+`drivers/video/fbdev/exynos/dpu20/panels/ea8076_a50_lcd_ctrl.c` — the panel
+only substitutes the mask brightness when decon says the mask layer is active:
+
+```c
+#if defined(CONFIG_SUPPORT_MASK_LAYER)
+    if (decon && decon->current_mask_layer) {
+        lcd->brightness = lcd->mask_brightness;
+    }
+#endif
+```
+
+and `drivers/video/fbdev/exynos/dpu20/decon_core.c` — what sets
+`current_mask_layer`:
+
+```c
+static bool decon_get_mask_layer(struct decon_device *decon,
+        struct decon_win_config_data *win_data)
+{
+    for (i = 0; i < decon->dt.max_win; i++) {
+        config = &win_config[i];
+        if (config && (config->state == DECON_WIN_STATE_FINGERPRINT)) {
+            config->state = DECON_WIN_STATE_BUFFER;
+            mask = true;
+        }
+    }
+    ...
+}
+```
+
+**So HBM engages only when the compositor submits a window whose state is
+`DECON_WIN_STATE_FINGERPRINT` through decon's win-config ioctl.** On stock
+Android the Samsung HWC/SurfaceFlinger flags the fingerprint overlay that way.
+Lomiri/Mir never sets it, so `decon->current_mask_layer` stays false,
+`actual_mask_brightness` stays 0 no matter what is written to
+`mask_brightness`, the finger is never lit, and the sensor's `nd cnt` never
+leaves 0.
+
+`CONFIG_SUPPORT_MASK_LAYER` **is** compiled into this kernel — both sysfs nodes
+exist, and they only exist inside that `#if`. So the machinery is present and
+simply never triggered.
+
+## A concrete way forward
+
+This is fixable, and it does not need the whole compositor to learn about
+Samsung mask layers. Two workable options, cheapest first:
+
+1. **Kernel patch exposing the mask layer to userspace.** Add a sysfs write
+   (e.g. `force_mask_layer`) that sets `decon->current_mask_layer` and runs the
+   same brightness update path `decon_set_mask_layer()` already performs, then
+   have a small helper raise it while a fingerprint operation is in flight and
+   drop it afterwards. This port already maintains a kernel patch series, so
+   the mechanism is routine; the risk is that the panel expects the change to
+   land in step with a frame/TE signal (note `wait_mask_layer_trigger` and the
+   TE wait in `decon_set_mask_layer`), so it must be done on the vsync path
+   rather than asynchronously.
+2. **Set the window state from the compositor side** — have Lomiri/Mir mark its
+   fingerprint overlay window `DECON_WIN_STATE_FINGERPRINT` when it reaches the
+   Android HWC. Closer to how stock behaves, but it means touching the
+   Mir/hwcomposer path, which is a much larger change.
+
+Either way the missing piece is now identified precisely, with the exact
+kernel symbols and the file/line that gate it — this is no longer "compositor
+work, unknown scope".
