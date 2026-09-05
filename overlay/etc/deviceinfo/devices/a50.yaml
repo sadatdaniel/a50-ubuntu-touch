@@ -1,0 +1,35 @@
+# Samsung Galaxy A50 (SM-A505F), Ubuntu Touch port.
+#
+# device-info reports Name: a50, and without this file it logs
+# "No device yaml config found!" and every prop reads "Unknown prop".
+#
+# OfonoPlugin is the one that matters here. /usr/libexec/lxc-android-config/
+# ofonod-wrapper picks the telephony stack from it:
+#
+#     if [ "$(device-info get OfonoPlugin)" = "binder" ]; then
+#         disabled_plugins="$disabled_plugins,ril"     # use ofono-binder-plugin
+#     else
+#         disabled_plugins="$disabled_plugins,binder"  # use ofono-ril-plugin
+#     fi
+#
+# Unset means the legacy RIL plugin, which talks to the old rild socket. This
+# device is Halium 11 / Android 11 and exposes telephony over HIDL binder -
+# android.hardware.radio@1.0::IRadio/slot1 and /slot2 are registered - so the
+# binder plugin is the correct one. With the RIL plugin ofono logs "Excluding
+# Binder adaptation plugin" and org.ofono.Manager.GetModems returns an empty
+# array: no modem at all.
+a50:
+  Names:
+    - Samsung Galaxy A50
+  PrettyName: SM-A505F
+  DeviceType: phone
+  DriverType: halium
+  GridUnit: 21
+  WebkitDpr: 2
+  SupportedOrientations:
+    - Portrait
+    - InvertedPortrait
+    - Landscape
+    - InvertedLandscape
+  PrimaryOrientation: Portrait
+  OfonoPlugin: binder
