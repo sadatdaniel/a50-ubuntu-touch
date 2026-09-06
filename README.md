@@ -286,8 +286,18 @@ docker build -t a50-halium-build build/
 #   ./build/extract-vendor-firmware.sh /tmp/a50-fw
 docker run --rm -v a50-ksrc:/src/kernel/src -v "$PWD:/src" -v /path/to/a50-fw:/fw \
     a50-halium-build ./build/build-a50-release-kernel.sh --firmware /fw --out /src/out
+
+# known-good-boot.img is any boot image that has booted this device - take
+# `boot.img` from this repository's releases. Only its header and ramdisk are
+# reused; the kernel is replaced.
 ./build/pack-boot-image.py known-good-boot.img out/Image - boot.img
 ```
+
+Checked, not assumed: repacking the published `boot.img` with the published
+`Image` and `-` for the ramdisk reproduces `90c281f8…` byte for byte. So a
+third party needs only this repository, a50-halium, the public kernel fork,
+and one release asset — plus the eight firmware blobs, which come off their
+own phone.
 
 The kernel tree cannot be checked out on Windows (`aux.c` is a reserved name)
 and an NTFS checkout mangles its symlinks - build with the source on a Docker
