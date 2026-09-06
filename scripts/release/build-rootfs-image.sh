@@ -34,6 +34,7 @@ while [ $# -gt 0 ]; do
         --out)   OUT="$2"; shift 2 ;;
         --cache) CACHE="$2"; shift 2 ;;
         --size)  SIZE="$2"; shift 2 ;;
+        --no-compat) NO_COMPAT=1; shift ;;
         *) echo "E: unknown argument: $1" >&2; exit 2 ;;
     esac
 done
@@ -98,30 +99,36 @@ tar -cJf "$CACHE/version.tar.xz" --owner=root --group=root -C "$VER" system
 
 # --- 4. the image -----------------------------------------------------------
 IMG="$OUT/rootfs.img"
-MNT="$(mktemp -d)"
-cleanup() { mountpoint -q "$MNT" && umount "$MNT"; rmdir "$MNT" 2>/dev/null || true; }
+# The image is mounted at $STAGE/system and the tarballs are unpacked from
+# $STAGE, so their "system/..." members land in the image with no copy and no
+# second copy of the data. That is upstream's trick in
+# system-image-from-ota.sh, and it is the reason a 3.5 GB image can be built
+# without 3.5 GB of scratch space. $STAGE therefore has to be on a filesystem
+# with room for partitions/boot.img - not the container's overlayfs /tmp.
+STAGE="$OUT/.stage"
+rm -rf "$STAGE"; mkdir -p "$STAGE/system"
+cleanup() { mountpoint -q "$STAGE/system" && umount "$STAGE/system"; }
 trap cleanup EXIT
 
 rm -f "$IMG"
 truncate -s "$SIZE" "$IMG"
 mkfs.ext4 -q -F -L ubuntu-touch \
     ${deviceinfo_rootfs_image_sector_size:+-b 4096} "$IMG"
-mount -o loop "$IMG" "$MNT"
+mount -o loop "$IMG" "$STAGE/system"
+MNT="$STAGE/system"
 
 for t in "$ROOTFS_TAR" "$GSI_TAR" "$DEVICE_TARBALL" "$CACHE/version.tar.xz"; do
     echo "I: unpacking $(basename "$t")"
-    # The tarballs are in system-image OTA layout: a top-level system/ holding
-    # the rootfs root, plus (for the device tarball) partitions/.
-    tar --numeric-owner -xJf "$t" -C "$MNT" --strip-components=0
-    if [ -d "$MNT/system" ]; then
-        cp -a "$MNT/system/." "$MNT/"
-        rm -rf "$MNT/system"
-    fi
-    if [ -d "$MNT/partitions" ]; then
-        cp -a "$MNT/partitions/." "$OUT/"
-        rm -rf "$MNT/partitions"
-    fi
+    # system-image OTA layout: a top-level system/ holding the rootfs root,
+    # plus, for a device tarball, partitions/.
+    tar --numeric-owner -xJf "$t" -C "$STAGE"
+    df -h --output=avail "$MNT" | tail -1
 done
+
+if [ -d "$STAGE/partitions" ]; then
+    cp -a "$STAGE/partitions/." "$OUT/"
+    rm -rf "$STAGE/partitions"
+fi
 
 # UBports CI still names the Halium GSI system.img; lxc-android-config looks
 # for android-rootfs.img. Upstream's system-image-from-ota.sh does the same.
@@ -134,9 +141,17 @@ fi
 # present; a UBports release image ships it, a hand-built one has to add it.
 touch "$MNT/.writable_image"
 
+# Ubuntu 26.04 renamed libxml2's SONAME, which stops the preinstalled OpenStore
+# and Morph from starting at all. Co-install the old one. --no-compat skips it.
+if [ -z "${NO_COMPAT:-}" ]; then
+    "$HERE/scripts/release/add-openstore-compat.sh" "$MNT" \
+        || echo "W: OpenStore SONAME compat failed - OpenStore will not start"
+fi
+
 sync
 df -h "$MNT" | tail -1
 cleanup
+rm -rf "$STAGE"
 trap - EXIT
 
 echo "I: $IMG"

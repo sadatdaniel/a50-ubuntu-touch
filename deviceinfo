@@ -194,9 +194,19 @@ deviceinfo_ramdisk_compression="gzip"
 #     gitlab.com/uports/h10/oneplus-nord-n100.
 # deviceinfo_use_overlaystore="true"
 
-# [V] userdata is /dev/block/sda32 on this device and is where rootfs.img
-#     goes during bringup. 3584M is the tools' own default; not yet exercised.
-deviceinfo_system_partition_size="3584M"
+# [V] The size of rootfs.img, which on this device is a plain file at the root
+#     of userdata (/dev/block/sda32, 111 GB) and is loop-mounted as /. It is
+#     not a partition size, so it is free to be generous.
+#
+#     MEASURED, 2026-09-06: the tools' 3584M default does not fit this port.
+#     Ubuntu Touch 26.04's own rootfs leaves 103 MB free in a 3584M image, and
+#     the Halium 11 GSI that goes in next is a 452 MB android-rootfs.img, so
+#     the build fails with "Wrote only 5632 of 10240 bytes". Contents come to
+#     about 3.9 GB; 6144M leaves ~2 GB free, which is enough for apt and for
+#     ordinary use. Waydroid wants roughly 2.5 GB more than that - grow the
+#     image afterwards, it is online and takes no reboot. See
+#     docs/device-provisioning.md.
+deviceinfo_system_partition_size="6144M"
 
 # [?] The device has UFS storage (13520000.ufs), so 4096 is the expected
 #     sector size, but this has not been read back off the device.

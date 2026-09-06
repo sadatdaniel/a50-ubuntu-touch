@@ -1,0 +1,2 @@
+# Present only because some recoveries look for it. All of the work is in
+# update-binary, which is a shell script, not an edify binary.

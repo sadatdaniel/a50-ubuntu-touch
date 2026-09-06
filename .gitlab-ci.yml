@@ -1,6 +1,21 @@
 # UBports community ports live on GitLab and build through this shared CI
-# configuration. This repository is currently mirrored on GitHub next to
-# a50-halium and a50-droidian; this file is here so that moving it under
+# configuration. This repository is mirrored on GitHub next to a50-halium and
+# a50-droidian; this file is here so that moving it under
 # gitlab.com/ubports/porting/community-ports/ is a push, not a rewrite.
+#
+# Pinned to halium-11 to match deviceinfo_halium_version. The shared file's
+# `main` branch tracks a different Halium generation, and picking the wrong one
+# fetches the wrong GSI.
+#
+# WHAT THIS CI DOES AND DOES NOT DO. The `build` job runs upstream's build.sh,
+# which builds the kernel with Google's prebuilt Clang from
+# deviceinfo_kernel_source. That kernel has never been boot-tested on this
+# device - see docs/kernel.md - so this pipeline is a compile check and a way
+# to keep the port honest against upstream, NOT the source of releases.
+# Releases are built by scripts/release/, from a50-halium's boot-verified
+# kernel. See docs/RELEASING.md.
 include:
-    - https://gitlab.com/ubports/porting/community-ports/halium-generic-adaptation-build-tools/-/raw/main/gsi-port-ci.yml
+    - https://gitlab.com/ubports/porting/community-ports/halium-generic-adaptation-build-tools/-/raw/halium-11/gsi-port-ci.yml
+
+variables:
+    ADAPTATION_TOOLS_BRANCH: halium-11

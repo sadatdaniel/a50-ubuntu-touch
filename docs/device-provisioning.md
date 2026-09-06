@@ -72,11 +72,26 @@ without bound (see the table above), so a larger image would just take space
 from the partition that actually stores data. Growing again later is easy;
 shrinking is not.
 
-**Grown to 16 GB on 2026-09-05** for Waydroid, which puts its Android images
-(~2 GB) and all its app data under `/var/lib/waydroid` on the rootfs. Same
-procedure, `truncate -s 16G`; it took the rootfs from 3.6 GB free to 12 GB
-free, online, with no reboot. If you are not running Waydroid, 8 GB is still
-the right answer.
+**Grown to 16 GB on 2026-09-05**, at the time believed to be needed for
+Waydroid. Same procedure, `truncate -s 16G`; it took the rootfs from 3.6 GB
+free to 12 GB free, online, with no reboot.
+
+**CORRECTION, 2026-09-06: Waydroid did not need it.** `/var/lib/waydroid` is
+already a mount from `/dev/sda32` — Ubuntu Touch's writable-paths mechanism
+puts it at `/userdata/system-data/var/lib/waydroid` — so its 3.9 GB of images
+and app data never touch the rootfs at all:
+
+```
+$ mount | grep -m1 waydroid
+/dev/sda32 on /var/lib/waydroid type ext4 (rw,noatime,...)
+$ du -sh /var/lib/waydroid
+3.9G	/var/lib/waydroid
+```
+
+The 16 GB is harmless headroom, not a requirement. The release image is
+6144M ([`deviceinfo`](../deviceinfo) explains that number) and Waydroid runs
+inside it. Grow it if `apt` runs out of room; nothing else on this system grows
+without bound.
 
 Confirm the loop device before running this — it is `loop0` here, but
 `losetup -a` is the authority:

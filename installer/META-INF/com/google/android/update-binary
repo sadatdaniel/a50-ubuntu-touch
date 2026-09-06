@@ -1,0 +1,39 @@
+#!/sbin/sh
+#
+# Ubuntu Touch for the Samsung Galaxy A50 (SM-A505F) - recovery installer.
+#
+# TWRP calls this with:
+#   $1  updater API version   $2  fd to write ui_print on   $3  path to this zip
+#
+# It writes two things and nothing else:
+#   boot.img    -> the boot partition (by-name/boot, 55 MB into 57,671,680)
+#   rootfs.img  -> /data/rootfs.img, which the Halium initramfs loop-mounts as /
+#
+# It does NOT touch vendor, system, efs, modem or the bootloader. Ubuntu Touch
+# runs against Samsung's own stock Android 11 vendor partition, which is why
+# the firmware requirement in the README is not optional.
+#
+# https://github.com/sadatdaniel/a50-ubuntu-touch
+
+OUTFD=$2
+ZIP=$3
+
+ui_print() { echo "ui_print $1" >>/proc/self/fd/"$OUTFD"; echo "ui_print" >>/proc/self/fd/"$OUTFD"; }
+abort()    { ui_print "!! $1"; ui_print "!! Nothing further was written."; exit 1; }
+
+ui_print " "
+ui_print "==============================================="
+ui_print " Ubuntu Touch 26.04 - Samsung Galaxy A50 (a50)"
+ui_print "==============================================="
+ui_print " "
+
+TMP=/tmp/a50-install
+rm -rf "$TMP"; mkdir -p "$TMP" || abort "cannot create $TMP"
+
+# --- unpack just the installer script, and hand over to it -----------------
+# Everything else is streamed straight out of the zip by that script, so a
+# 1.7 GB payload never has to exist twice.
+unzip -o "$ZIP" install/a50-install.sh -d "$TMP" >/dev/null 2>&1 \
+    || abort "this zip is incomplete (no install/a50-install.sh)"
+
+. "$TMP/install/a50-install.sh"
