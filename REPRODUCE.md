@@ -78,20 +78,30 @@ firmware at **t = 1.43 s**, and this device has no filesystem of any kind until
 ### 3. Build the kernel and pack a boot image
 
 ```sh
-docker run --rm -v "$PWD:/src" -v /path/to/a50-fw:/fw a50-halium-build \
-    ./build/build-a50-release-kernel.sh --firmware /fw --out /src/out
+docker run --rm -v a50-ksrc:/src/kernel/src -v "$PWD:/src" -v /path/to/a50-fw:/fw \
+    a50-halium-build ./build/build-kernel.sh --profile full --firmware /fw --out /src/out
 
-# pack it into a bootable image, reusing a known-good header + ramdisk
-./build/pack-boot-image.py known-good-boot.img out/Image - new-boot.img
+# pack it, reusing a known-good header + the Halium ramdisk from the donor
+./build/make-boot-image.sh --port ubports --image out/Image --donor boot.img
 ```
 
-`build-a50-release-kernel.sh` is the single authoritative recipe for what the
-port ships. `build-kernel.sh` alone builds only the *base* kernel.
+`--profile full` is what this port ships: the four base patches plus five more,
+`CONFIG_EXTRA_FIRMWARE`, `CONFIG_RFKILL` and the `anbox-*` binder devices. The
+default, `--profile base`, builds only the base kernel — which is what Droidian
+runs, and which has no Bluetooth and no built-in audio firmware.
+(`build-a50-release-kernel.sh` still exists as a wrapper for `--profile full`;
+older manifests name it.)
 
-`pack-boot-image.py` reuses the donor image's header and ramdisk and patches
-only `kernel_size` / `ramdisk_size` — S-Boot ignores the header `id` digest
-(experiment 001). Boot partition limit is **57,671,680 bytes**; the script
-refuses to write a larger image rather than let `dd` truncate it silently.
+`make-boot-image.sh` takes the donor's header and ramdisk and replaces only the
+kernel, and **refuses a donor belonging to the other port** — the two ramdisks
+are not interchangeable and the wrong pairing reaches the bootloader and then
+stops silently. Take the donor from a50-halium's `a50-ubports-halium-*`
+release.
+
+Underneath, `pack-boot-image.py` patches only `kernel_size` / `ramdisk_size` —
+S-Boot ignores the header `id` digest (experiment 001). Boot partition limit is
+**57,671,680 bytes**; the script refuses to write a larger image rather than let
+`dd` truncate it silently.
 
 ### 4. Apply the userspace fixes
 

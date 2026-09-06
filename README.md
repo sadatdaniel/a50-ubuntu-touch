@@ -284,20 +284,24 @@ cd a50-halium
 docker build -t a50-halium-build build/
 # once, on the phone, for the eight proprietary blobs:
 #   ./build/extract-vendor-firmware.sh /tmp/a50-fw
-docker run --rm -v a50-ksrc:/src/kernel/src -v "$PWD:/src" -v /path/to/a50-fw:/fw \
-    a50-halium-build ./build/build-a50-release-kernel.sh --firmware /fw --out /src/out
 
-# known-good-boot.img is any boot image that has booted this device - take
-# `boot.img` from this repository's releases. Only its header and ramdisk are
-# reused; the kernel is replaced.
-./build/pack-boot-image.py known-good-boot.img out/Image - boot.img
+# --profile full is what this port ships: nine patches, the ABOX firmware
+# compiled in, RFKILL, and the anbox binder devices Waydroid needs.
+docker run --rm -v a50-ksrc:/src/kernel/src -v "$PWD:/src" -v /path/to/a50-fw:/fw \
+    a50-halium-build ./build/build-kernel.sh --profile full --firmware /fw --out /src/out
+
+# The donor supplies the boot header and the Halium initramfs; only the kernel
+# is replaced. Take boot.img from a50-halium's `a50-ubports-halium-*` release -
+# and note that --port refuses a donor belonging to the other port, because the
+# two ramdisks are not interchangeable.
+./build/make-boot-image.sh --port ubports --image out/Image --donor boot.img
 ```
 
 Checked, not assumed: repacking the published `boot.img` with the published
-`Image` and `-` for the ramdisk reproduces `90c281f8…` byte for byte. So a
-third party needs only this repository, a50-halium, the public kernel fork,
-and one release asset — plus the eight firmware blobs, which come off their
-own phone.
+`Image` reproduces `90c281f8…` byte for byte, and a clean `--profile full`
+build on a wiped source tree reproduces `Image` `04b2442d…`. So a third party
+needs only this repository, a50-halium, the public kernel fork and one release
+asset — plus the eight firmware blobs, which come off their own phone.
 
 The kernel tree cannot be checked out on Windows (`aux.c` is a reserved name)
 and an NTFS checkout mangles its symlinks - build with the source on a Docker

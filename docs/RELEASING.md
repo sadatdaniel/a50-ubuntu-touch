@@ -50,8 +50,11 @@ that is what the installer reads back and compares.
 
 * Docker, or any Linux host where you can be root and use a loop device.
 * A boot image built by [a50-halium](https://github.com/sadatdaniel/a50-halium)
-  — `build/build-a50-release-kernel.sh` then `build/pack-boot-image.py`.
-  **The kernel that ships must be one that has been booted on the device.**
+  — `build/build-kernel.sh --profile full --firmware DIR`, then
+  `build/make-boot-image.sh --port ubports`. Or take one straight from that
+  repository's `a50-ubports-halium-*` release, which is also the donor the
+  packer wants. **The kernel that ships must be one that has been booted on
+  the device.**
 * About 10 GB of scratch space. The rootfs image is 6 GB and is compressed to
   roughly 1.3 GB.
 
