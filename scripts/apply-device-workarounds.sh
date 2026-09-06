@@ -1,6 +1,14 @@
 #!/bin/sh
 # Re-apply the runtime workarounds this port needs, after a rootfs reflash.
 #
+# SINCE 2026-09-06 A FRESH INSTALL DOES NOT NEED THIS. Everything below now
+# ships in overlay/system and applies itself at boot:
+#   a50-container-prepare.service  before the Android container starts
+#   device-hacks -> a50-device-setup.sh   after it is up
+# This script is for a device that was flashed BEFORE that change, and as a
+# way to run any single block by hand. It stays idempotent so running it on a
+# current image is a no-op.
+#
 # These are STOPGAPS. Each one names the real fix it stands in for; when that
 # real fix lands in the kernel, delete the corresponding block here.
 #

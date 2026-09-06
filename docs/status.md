@@ -1,15 +1,34 @@
 # Status
 
-**Last updated: 2026-09-05.** Ubuntu Touch boots, reaches the UI, and now has
-working audio, Bluetooth, mobile data and GPS. This file is the honest inventory.
+**Last updated: 2026-09-06.** Ubuntu Touch boots, reaches the UI, and has
+working audio, Bluetooth, calls, mobile data, GPS and Waydroid. There is now a
+recovery-flashable installer, and **it has not been flashed on a phone yet**.
+This file is the honest inventory.
+
+> **The one claim not to make.** The release
+> [`installer-2026-09-06`](https://github.com/sadatdaniel/a50-ubuntu-touch/releases/tag/installer-2026-09-06)
+> is **untested on hardware.** Its kernel is boot-proven - it is byte-for-byte
+> the image the development device runs - and the rootfs has been mounted and
+> checked file by file, and the installer has been run against loop devices
+> under `busybox sh`. What nobody has done is flash that zip in TWRP on a phone
+> that was on stock Android beforehand, and boot it. Until someone has, the
+> release says so and so does this file.
 
 ## Proven
 
 | Claim | How it was checked |
 |---|---|
+| **A release image can be built from git plus published UBports artifacts** | `scripts/release/` produces `device_a50.tar.xz`, a 6144M `rootfs.img` (Ubuntu 26.04.1 + the Halium 11 GSI + this port) and a flashable zip. The image was mounted and every port file checked present, executable and correctly targeted; `/etc/resolv.conf` points at NetworkManager and not at a build host's DNS; `android-rootfs.img` is in place; 0 failures. |
+| **The installer does what it claims, under the toolbox a recovery has** | The finished zip was run against loop devices - a 57,671,680-byte fake boot partition and an 8 GB ext4 `/data` - with `busybox --install` applets first on `PATH` and `busybox sh` as the interpreter. It found both partitions by name, verified the payload against the shipped `SHA256SUMS`, wrote the boot partition and **read it back** to `90c281f8…`, wrote the rootfs and hashed it. Exit 0. |
+| **The shipped boot image is the kernel this device runs** | `sha256(boot.img)` = `90c281f8da080f7bc1a9ec9aa822e0ae10bd19a77804717e0c3f6ea83cffd03b`, the same image staged at `/userdata/boot-known-good-waydroid.img` and running now. |
+| **`overlay/` was never reaching the device tarball** | The tools do `cp -av overlay/* "${TMP}/"` and then pack only `partitions/ system/`; with the tree laid out as `overlay/etc`, `overlay/usr`, `overlay/var`, all of it landed beside those roots and was dropped. Confirmed by listing a tarball built the old way: 31 entries, all kernel-module metadata. Fixed by moving to `overlay/system/`. |
+| **`use_overlaystore` would have silently dropped this port's userspace** | `/usr/libexec/lxc-android-config/mount-halium-overlay`, read on the device, skips any file whose target does not already exist (`WARNING: $targetfile doesn't exist, cannot overlay`). Most of `overlay/` is new files. Option removed, with the quoted code in `deviceinfo`. |
+| **A 3584M rootfs image does not fit this port** | Measured: the 26.04 rootfs alone leaves 103 MB free in it, and unpacking the 452 MB Halium GSI then fails with `tar: … Wrote only 5632 of 10240 bytes`. `deviceinfo_system_partition_size` is 6144M, which leaves 2.0 GB free. |
+| **Waydroid does not live on the rootfs** | `mount` shows `/dev/sda32 on /var/lib/waydroid`, via Ubuntu Touch's writable-paths mechanism (`/userdata/system-data/var/lib/waydroid`); `du -sh` there is 3.9 GB, none of it on `/`. The 16 GB rootfs grow done for Waydroid on 2026-09-05 was not needed. `docs/device-provisioning.md` corrected. |
+| **The kernel branch `ubuntu-touch-26.04` exists** | Listed by the GitHub API on `sadatdaniel/android_kernel_samsung_exynos9610_mint`, 2026-09-06. The earlier `[?]` was stale. |
 | **Ubuntu Touch boots to its UI on this device** | Wizard (language selection) renders; Mir drives the panel at 1080x2340; container `sys.boot_completed=1`; lightdm `NRestarts=0`; verified across a clean reboot. [experiment 006](experiments/006-what-we-missed.md) |
 | The display blocker was misc-list corruption, not CMA and not the mutex design | Unguarded double `misc_register()` on a static `miscdevice` in `f_conn_gadget.c` makes `misc_list` circular; `MISCDBG` instrumentation caught `GOTLOCK` with no release. CMA falsified directly: 50 MB freed via `drop_caches`, `mali0` still hung. [experiment 006](experiments/006-what-we-missed.md) |
-| The greeter needed `/dev/hwbinder` at `0666` | Compositor (root) worked while greeter (uid 108) failed with `gralloc-mapper is missing`; fixed by `overlay/usr/lib/udev/rules.d/99-a50-binder.rules` |
+| The greeter needed `/dev/hwbinder` at `0666` | Compositor (root) worked while greeter (uid 108) failed with `gralloc-mapper is missing`; fixed by `overlay/system/usr/lib/udev/rules.d/99-a50-binder.rules` |
 | a50-halium reproduces `074aad86…` from a clean checkout | Fresh `git clone`, fresh container, `sha256sum -c kernel/expected-artifacts.sha256` passes. The toolchain used for this port is therefore the right one. |
 | UBports' `mkbootimg` (`LineageOS/android_system_tools_mkbootimg`, `lineage-20.0`) can pack this device's boot image | Repacked `halium-boot-canonical.img`'s own parts with the `deviceinfo` offsets: identical except the 20-byte `id` digest. [experiment 001](experiments/001-bootimg-header.md) |
 | a50-droidian's overflowing offsets are genuinely rejected by that tool | `struct.error: 'I' format requires 0 <= number <= 4294967295` |
@@ -37,7 +56,6 @@ working audio, Bluetooth, mobile data and GPS. This file is the honest inventory
 | **A bare `make <defconfig>` kernel does not boot this device** | It is how the tools build kernels. [`kernel.md`](kernel.md) risk 1 — the largest single risk in the port. |
 | **`console=tty0` cannot be delivered via `deviceinfo_kernel_cmdline`** | S-Boot ignores the boot image command line. [`kernel.md`](kernel.md) risk 2. |
 | **The tools use Google's prebuilt Clang, not the pinned Proton Clang** | A second changed variable sitting under risk 1. [`kernel.md`](kernel.md) risk 3. |
-| **The kernel branch `ubuntu-touch-26.04` does not exist yet** | `deviceinfo_kernel_source_branch` points at it. Marked `[?]`. |
 | **Does S-Boot check the boot header `id` digest?** | The one field experiment 001 could not reproduce. One boot test. |
 | **AppArmor** | Not built, and a kernel adding it as default LSM **does not boot** — fails before USB enumeration. No longer blocks GPS. [experiment 009](experiments/009-gps-permissions.md), [008 appendix](experiments/008-bluetooth-hci-sock.md) |
 | **Fingerprint capture** | HBM is **solved** - a 13-line kernel patch (`decon-force-mask-layer`) makes `actual_mask_brightness` go 0-&gt;255 on demand, running the vendor's own TE-synced sequence. But the sensor still reports no finger: the HAL opens a ~150 ms SPI window for the trustlet to bring the ET713 up, that fails, and it therefore never issues `INT_TRIGGER_INIT` - so no DRDY interrupt is registered and `nd cnt` can never leave 0. No fingerprint calibration data exists under `/mnt/vendor/efs`, which may be why. [experiment 012](experiments/012-fingerprint.md) |
@@ -49,8 +67,16 @@ working audio, Bluetooth, mobile data and GPS. This file is the honest inventory
 
 ## Deliberately not started
 
-* UBports recovery and the UBports installer. The guide adds both at
-  finalization, and TWRP is currently the only reliable way back.
+* **UBports recovery.** `deviceinfo_has_recovery_partition` is false. TWRP is
+  well tested on this device and is the only reliable way back, and building a
+  second recovery would put that at risk for no gain.
+* **The UBports Installer.** It flashes over fastboot or heimdall against a
+  registered device in `ubports/installer-configs`; this port has neither a
+  system-image channel nor an upstream device entry. The flashable zip is the
+  substitute, and `installer/README.md` explains why the shape differs.
+* **An OTA channel.** Nothing serves `26.04-1.x/.../a50`, so Settings ->
+  Updates finds nothing. Updating means reflashing - or, for a kernel-only
+  change, `dd` from a running system.
 
 ## A standing hazard, not a task
 

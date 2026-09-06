@@ -16,7 +16,16 @@ from the device itself — see step 2.
 
 ---
 
-## Fast path: flash the published image
+## Fastest path: the installer
+
+Since 2026-09-06 there is a recovery-flashable zip that does the whole thing —
+boot partition and rootfs, from a phone on stock Android. That is the
+[README](README.md), not this file, and it needs nothing below.
+
+**It has not been flashed on a phone yet.** Everything in this document has,
+which is why it is still here.
+
+## Fast path: a new kernel on an existing install
 
 ```sh
 # on the device, over SSH
@@ -28,8 +37,10 @@ dd if=/dev/sda14 bs=1M count=53 2>/dev/null | head -c <size> | sha256sum
 `/dev/sda14` is the boot partition and is writable from running Ubuntu Touch —
 no TWRP round trip. Keep a known-good image on `/userdata` first.
 
-Then apply the userspace fixes (step 4). The kernel alone is not enough:
-audio, telephony and the speaker routing are userspace configuration.
+Then apply the userspace fixes (step 4) **if the install predates
+2026-09-06**. Newer images ship them: the overlay is installed into the rootfs
+and applies itself at boot. The kernel alone is not enough — audio, telephony
+and the speaker routing are userspace configuration.
 
 ---
 
@@ -90,7 +101,7 @@ On the device, from this repo:
 sudo ./scripts/apply-device-workarounds.sh
 ```
 
-and install the `overlay/` tree (it mirrors `/`). This is **not optional** —
+and install the `overlay/system/` tree (it mirrors `/`). This is **not optional** -
 it carries:
 
 | file | why |
