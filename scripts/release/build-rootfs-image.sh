@@ -35,6 +35,7 @@ while [ $# -gt 0 ]; do
         --cache) CACHE="$2"; shift 2 ;;
         --size)  SIZE="$2"; shift 2 ;;
         --no-compat) NO_COMPAT=1; shift ;;
+        --devel) DEVEL=1; shift ;;
         *) echo "E: unknown argument: $1" >&2; exit 2 ;;
     esac
 done
@@ -146,6 +147,14 @@ touch "$MNT/.writable_image"
 if [ -z "${NO_COMPAT:-}" ]; then
     "$HERE/scripts/release/add-openstore-compat.sh" "$MNT" \
         || echo "W: OpenStore SONAME compat failed - OpenStore will not start"
+fi
+
+# --devel turns this into a debug image: sshd on, root password set, adb
+# unlocked, USB networking up. Kept out of the release image on purpose.
+if [ -n "${DEVEL:-}" ]; then
+    "$HERE/scripts/release/add-devel-access.sh" "$MNT"
+else
+    printf 'variant=release\nssh=off\n' > "$MNT/etc/a50-image-variant"
 fi
 
 sync

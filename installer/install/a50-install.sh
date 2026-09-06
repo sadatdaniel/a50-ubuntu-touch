@@ -127,6 +127,20 @@ else
     ui_print "  rootfs verified ($ROOTFS_SHA)"
 fi
 
+# --- 6. debug image: ask usb-moded for developer mode -----------------------
+# /usr/libexec/force-adb, in the rootfs, honours a marker on userdata:
+#   /userdata/.force-ssh  -> developer_mode
+#   /userdata/.force-adb  -> charging_only_adb
+# It is the supported way for a porter to force this, and it is needed because
+# the phablet user has no password until the wizard runs, which otherwise makes
+# force-adb turn ADB off.
+VARIANT=$(grep '^variant=' "$TMP/install/manifest.txt" | cut -d= -f2)
+if [ "$VARIANT" = "devel" ] && [ -z "$DRYRUN" ]; then
+    : > /data/.force-ssh
+    sync
+    ui_print "  debug image: /userdata/.force-ssh written"
+fi
+
 rm -rf "$TMP"
 sync
 
@@ -137,6 +151,14 @@ ui_print "Reboot to System. First boot takes 2-5 minutes: the port"
 ui_print "generates its Android-container overrides before the container"
 ui_print "starts, and Ubuntu Touch then runs its own first-boot setup."
 ui_print " "
+if [ "$VARIANT" = "devel" ]; then
+    ui_print "THIS IS THE DEBUG IMAGE."
+    ui_print "  SSH is on, root's password is 1234, adb host-key"
+    ui_print "  verification is off. Over USB:"
+    ui_print "      ssh root@10.15.19.82      or      adb shell"
+    ui_print "  Anyone who can reach this phone can be root on it."
+    ui_print " "
+fi
 ui_print "If it does not reach the wizard, plug in USB and telnet to"
 ui_print "192.168.2.15 - the Halium initramfs runs a debug shell there."
 ui_print " "

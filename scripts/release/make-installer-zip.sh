@@ -13,13 +13,14 @@
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")/../.." && pwd)"
-OUT="$HERE/out"; VERSION="$(date -u +%Y-%m-%d)"; MANIFEST=""
+OUT="$HERE/out"; VERSION="$(date -u +%Y-%m-%d)"; MANIFEST=""; VARIANT="release"
 
 while [ $# -gt 0 ]; do
     case "$1" in
         --out)      OUT="$2"; shift 2 ;;
         --version)  VERSION="$2"; shift 2 ;;
         --manifest) MANIFEST="$2"; shift 2 ;;
+        --variant)  VARIANT="$2"; shift 2 ;;
         *) echo "E: unknown argument: $1" >&2; exit 2 ;;
     esac
 done
@@ -53,6 +54,7 @@ fi
     echo "release=${deviceinfo_ubuntu_touch_release}"
     echo "halium=${deviceinfo_halium_version}"
     echo "version=${VERSION}"
+    echo "variant=${VARIANT}"
     echo "rootfs_bytes=$(stat -c%s "$ROOTFS")"
     echo "boot_bytes=$(stat -c%s "$BOOT")"
     [ -n "$MANIFEST" ] && [ -f "$MANIFEST" ] && sed 's/^/kernel_/' "$MANIFEST"
@@ -62,7 +64,9 @@ fi
 # ends up on the partition, not what sat in the zip.
 ( cd "$OUT" && sha256sum boot.img rootfs.img ) > "$STAGE/install/SHA256SUMS"
 
-ZIPNAME="ubuntu-touch-${deviceinfo_codename}-${deviceinfo_ubuntu_touch_release}-${VERSION}.zip"
+SUFFIX=""
+[ "$VARIANT" = release ] || SUFFIX="-$VARIANT"
+ZIPNAME="ubuntu-touch-${deviceinfo_codename}-${deviceinfo_ubuntu_touch_release}${SUFFIX}-${VERSION}.zip"
 rm -f "$OUT/$ZIPNAME"
 # The rootfs payload is added with -0: it is already gzipped, and deflating it
 # a second time would cost minutes on the build host and save nothing.
