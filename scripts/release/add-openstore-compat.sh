@@ -41,11 +41,13 @@ fetch_pkg() {
     # update - and the exact filename ends up in the build log either way.
     local pkg="$1" path
     for comp in main universe; do
+        # No early exit in awk: it would close the pipe under curl and make it
+        # report "Failure writing output to destination" on every lookup.
         path=$(curl -fsSL "$MIRROR/dists/$SUITE/$comp/binary-arm64/Packages.gz" \
                | gzip -dc \
                | awk -v p="$pkg" '
-                   /^Package: /   { cur = $2 }
-                   /^Filename: /  { if (cur == p) { print $2; exit } }') || true
+                   /^Package: /  { cur = $2 }
+                   /^Filename: / { if (cur == p && !seen++) print $2 }')
         [ -n "$path" ] && break
     done
     [ -n "$path" ] || { echo "E: $pkg not found in $SUITE" >&2; return 1; }
@@ -64,9 +66,10 @@ i=$(fetch_pkg libicu74)
 cp -a "$i/$L/"libicu*.so.74* "$ROOT/$L/"
 
 echo "I: co-installed:"
-ls -l "$ROOT/$L/"libxml2.so.2* "$ROOT/$L/"libicuuc.so.74* | sed 's/^/    /'
+ls -l "$ROOT/$L/"libxml2.so.2* "$ROOT/$L/"libicu*.so.74* | sed 's/^/    /'
 
-# ldconfig runs against the target rootfs, not the build host's.
-if command -v ldconfig >/dev/null 2>&1; then
-    ldconfig -r "$ROOT" 2>/dev/null || echo "W: ldconfig -r failed; it will run at boot"
-fi
+# No ldconfig here: `ldconfig -r` chroots and execs the target's own binaries,
+# which cannot work when the build host is x86 and the rootfs is arm64. It is
+# not needed either - /usr/lib/<triplet> is in glibc's compiled-in search path,
+# so the loader finds these without a cache entry - but a50-device-setup.sh
+# runs ldconfig on the device at first boot so the cache is right as well.

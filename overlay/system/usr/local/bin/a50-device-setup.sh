@@ -34,6 +34,16 @@ if [ -f /etc/pulse/touch.pa ] && ! grep -q 'use_legacy_stream_set_parameters' /e
     log "touch.pa: use_legacy_stream_set_parameters=true"
 fi
 
+# --- ld.so cache -----------------------------------------------------------
+# The image build co-installs the pre-26.04 libxml2 and ICU SONAMEs, without
+# which the preinstalled OpenStore and Morph cannot start. The loader would
+# find them anyway - /usr/lib/<triplet> is in its compiled-in search path - but
+# the build host cannot run the target's ldconfig, so do it here once.
+if [ -e /usr/lib/aarch64-linux-gnu/libxml2.so.2 ] && \
+   ! ldconfig -p 2>/dev/null | grep -q 'libxml2\.so\.2 '; then
+    ldconfig && log "ld.so cache rebuilt for the co-installed SONAMEs"
+fi
+
 # --- /dev/gnss_ipc on a node that already exists ----------------------------
 # usr/lib/udev/rules.d/99-a50-gnss.rules handles it at hotplug time; this
 # catches the node udev created before the rule was in place.
