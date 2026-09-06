@@ -14,8 +14,11 @@
 #   [?] unverified - a best guess that has NOT been tested. Treat as a bug
 #       until it is either confirmed or replaced.
 #
-# Nothing in this file has yet produced a booting Ubuntu Touch image. See
-# docs/status.md.
+# This file HAS produced a booting Ubuntu Touch image: everything the release
+# installer writes is derived from the values below. What it has NOT yet done
+# is produce a booting *kernel* through the adaptation tools' own build path -
+# the shipped kernel is built by a50-halium. See docs/status.md and
+# docs/kernel.md for exactly which values are on which side of that line.
 
 ##########
 # Basic device information
@@ -171,8 +174,25 @@ deviceinfo_ramdisk_compression="gzip"
 ##########
 # Rootfs
 
-# [C] Required for Ubuntu Touch 20.04 and later.
-deviceinfo_use_overlaystore="true"
+# [V] NOT SET, deliberately. `use_overlaystore` makes build-tarball-mainline.sh
+#     move the WHOLE device tarball under /opt/halium-overlay, which
+#     lxc-android-config's mount-halium-overlay then bind-mounts file by file
+#     onto /. Read that script (`/usr/libexec/lxc-android-config/mount-halium-
+#     overlay`, on the device): for a plain file it does
+#
+#         elif ! [ -e "$targetfile" ]; then
+#             log "WARNING: $targetfile doesn't exist, cannot overlay."
+#             continue
+#
+#     - so it can only shadow files the rootfs ALREADY has. This port's overlay
+#     is mostly NEW files (a50-*.service, /usr/local/bin/a50-*), so under
+#     overlaystore every one of them would be skipped, with a warning nobody
+#     reads, and the port would install as a kernel with none of its userspace.
+#     Unset, the tarball is built in "usrmerge" mode and its system/ tree is
+#     unpacked straight into the rootfs, which installs new files correctly.
+#     That is also what the reference community port does -
+#     gitlab.com/uports/h10/oneplus-nord-n100.
+# deviceinfo_use_overlaystore="true"
 
 # [V] userdata is /dev/block/sda32 on this device and is where rootfs.img
 #     goes during bringup. 3584M is the tools' own default; not yet exercised.

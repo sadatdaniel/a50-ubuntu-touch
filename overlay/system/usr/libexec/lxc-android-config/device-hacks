@@ -1,0 +1,7 @@
+#!/bin/sh
+# Ubuntu Touch's device-hacks hook, overlaid by the a50 port.
+#
+# device-hacks.service runs this with /bin/sh after lxc-android-config.service,
+# i.e. once the Android container is up.  Keep the real work in a script of its
+# own so it can be run by hand and read in git.
+exec /usr/local/bin/a50-device-setup.sh

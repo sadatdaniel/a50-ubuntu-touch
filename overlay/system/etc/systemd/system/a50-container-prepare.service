@@ -1,0 +1,15 @@
+[Unit]
+Description=A50: generate the Android container overrides this port needs
+Documentation=https://github.com/sadatdaniel/a50-ubuntu-touch/blob/main/docs/experiments/006-what-we-missed.md
+DefaultDependencies=no
+After=mount-android-system.service mount-android-partitions.service
+Requires=mount-android-partitions.service
+Before=lxc-android-config.service
+Conflicts=shutdown.target
+Before=shutdown.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/a50-container-prepare.sh
+TimeoutStartSec=120
