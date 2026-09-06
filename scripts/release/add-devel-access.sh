@@ -42,7 +42,10 @@ EOF
 # cannot run the target's own passwd.
 HASH=$(openssl passwd -6 -salt a50develimg "$PASSWORD")
 sed -i "s|^root:[^:]*:|root:${HASH}:|" "$ROOT/etc/shadow"
-grep -q "^root:\$6\$" "$ROOT/etc/shadow" || { echo "E: root password not set" >&2; exit 1; }
+case "$(grep "^root:" "$ROOT/etc/shadow")" in
+    root:'$6$'*) ;;
+    *) echo "E: root password not set" >&2; exit 1 ;;
+esac
 
 # --- 3. enable sshd at boot -------------------------------------------------
 # ssh.service, not ssh.socket: lxc-android-config-disable-ssh-socket.service is
