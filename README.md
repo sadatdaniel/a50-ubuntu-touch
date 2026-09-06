@@ -110,6 +110,77 @@ First boot takes two to five minutes. If it does not reach the setup wizard,
 plug in USB and `telnet 192.168.2.15` - the Halium initramfs runs a debug shell
 there when the rootfs will not mount.
 
+### Two builds: pick one
+
+| zip | what it is |
+| --- | --- |
+| `ubuntu-touch-a50-26.04-1.x-<date>.zip` | the normal one. SSH off, ADB locked, exactly the published Ubuntu Touch rootfs plus this port |
+| `ubuntu-touch-a50-26.04-1.x-devel-<date>.zip` | **the debug one.** Same port, but you can get a shell into it before it has finished booting |
+
+**Use the debug build if you are testing the port**, which right now is
+everybody — see the warning at the top of the
+[release](https://github.com/sadatdaniel/a50-ubuntu-touch/releases). It is the
+difference between a bug report that says "it did not boot" and one that has a
+journal in it.
+
+The debug build differs in exactly five things, all of them in
+[`scripts/release/add-devel-access.sh`](scripts/release/add-devel-access.sh):
+
+* `sshd` is enabled at boot, with password authentication and root login
+  allowed (a drop-in over the shipped `PasswordAuthentication no`)
+* **root's password is `1234`**
+* `usb-tethering.service` is enabled, so USB networking comes up on its own
+* `ADBD_SECURE=0` — ADB works without host-key verification
+* `/etc/motd` and `/etc/a50-image-variant` say all of this on the device itself
+
+> **It is not a daily driver.** Anyone who can reach the phone over USB can be
+> root on it. Do not put a SIM you care about in it, and do not leave it on a
+> network you do not control. `passwd root` and
+> `rm /etc/ssh/sshd_config.d/99-a50-devel.conf` turn most of it off.
+
+### Getting a shell on the debug build
+
+Plug in USB. The phone brings up an RNDIS interface and answers on
+**10.15.19.82** — that is `usb-tethering`'s own default, not a local choice —
+so from the PC:
+
+```sh
+ssh root@10.15.19.82         # password: 1234
+adb shell                    # or this; no key to authorise
+```
+
+On Windows, if the interface comes up without an address, give the PC the other
+end from an elevated shell:
+
+```
+netsh interface ip set address "Ethernet 2" static 10.15.19.100 255.255.255.0
+```
+
+(substitute the adapter's real name from `netsh interface show interface`; it
+has to be re-added when the phone re-enumerates).
+
+What to collect for a bug report:
+
+```sh
+journalctl -b --no-pager                 # everything, this boot
+journalctl -b -p warning --no-pager      # just the complaints
+systemctl --failed
+dmesg | tail -100
+lxc-attach -n android -- /system/bin/logcat -d -b all    # Android HAL errors
+                                                         # appear NOWHERE else
+systemctl status a50-container-prepare.service   # did the port's own setup run?
+cat /etc/a50-image-variant
+```
+
+`lxc-attach … logcat` is the one people miss. HAL failures do not reach the
+journal or `dmesg` at all, and processes outside the container that load
+Android libraries through libhybris log there too.
+
+**If it never gets that far** — no `10.15.19.82`, no ADB — the Halium
+initramfs runs a telnet debug shell on **192.168.2.15** over USB when the
+rootfs will not mount. `telnet 192.168.2.15`, then look at `/proc/last_kmsg`
+and whether `/tmpmnt/rootfs.img` is there.
+
 ### Going back to Android
 
 TWRP, Wipe, Format Data, then flash stock firmware with Odin as usual. The port
@@ -229,6 +300,11 @@ cd a50-ubuntu-touch
 sudo ./scripts/release/build-device-tarball.sh --boot ../a50-halium/out/boot.img
 sudo ./scripts/release/build-rootfs-image.sh  --device-tarball out/device_a50.tar.xz
      ./scripts/release/make-installer-zip.sh  --version "$(date -u +%F)"
+
+# ...or the debug build: same thing, plus sshd, a root password, USB
+# networking and unlocked ADB
+sudo ./scripts/release/build-rootfs-image.sh  --device-tarball out/device_a50.tar.xz --devel
+     ./scripts/release/make-installer-zip.sh  --version "$(date -u +%F)" --variant devel
 ```
 
 Needs root and a loop device, so run it in a container if the host cannot

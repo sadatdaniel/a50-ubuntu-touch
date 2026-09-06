@@ -24,7 +24,10 @@ Everything is committed and pushed to `github.com/sadatdaniel/a50-halium` and
 **There is now an installer, and it is UNTESTED on hardware.** Release
 `installer-2026-09-06` is a single recovery-flashable zip
 (`ubuntu-touch-a50-26.04-1.x-2026-09-06.zip`, 1.32 GB, sha `35e835e0…`) that
-writes the boot partition and a 6144M rootfs. Its boot image is `90c281f8…`,
+writes the boot partition and a 6144M rootfs. The release also ships a
+`-devel-` zip (sha `80ade5e9…`) - the same port with sshd on, root's password
+`1234`, usb-tethering on and `ADBD_SECURE=0`, so a tester can attach a journal
+to a bug report. Its boot image is `90c281f8…`,
 byte-for-byte the kernel the device is running. Its rootfs has been mounted and
 checked file by file, and the installer has been run against loop devices under
 `busybox sh` — but **nobody has flashed the zip in TWRP on a phone and booted
@@ -34,9 +37,10 @@ it**. Do not claim otherwise anywhere.
 copy the new `rootfs.img` to `/userdata`, swap it with the current one, reboot.
 It needs no TWRP and no boot-partition change. Recovery if it fails is the
 initramfs telnet shell on 192.168.2.15 over USB, then TWRP (Volume Up + Power
-from powered off). Note the release rootfs has **no SSH** — it is the published
-UBports image — so a successful boot still needs the wizard finished on the
-phone before you can log in.
+from powered off). **Use the `-devel-` rootfs for the test**: the normal one is
+the published UBports image with SSH off, so a successful boot would still need
+the wizard finished on the phone before you could log in. The debug one answers
+on `ssh root@10.15.19.82`, password `1234`, as soon as it is up.
 
 **The running kernel is the published one now.** `90c281f8…`
 (`/userdata/boot-known-good-waydroid.img`) is what release

@@ -5,6 +5,30 @@ a boot image and a rootfs and nothing else. This file is how it is built, what
 is verified, and where the build deliberately departs from UBports' own
 scripts.
 
+## Two builds, every release
+
+| | |
+| --- | --- |
+| `ubuntu-touch-a50-<release>-<date>.zip` | the normal one: the published Ubuntu Touch rootfs plus this port, SSH off |
+| `ubuntu-touch-a50-<release>-devel-<date>.zip` | the debug one: the same, plus sshd with password and root login, root's password set, `usb-tethering` enabled, `ADBD_SECURE=0` |
+
+Ship both. Until the port has been tested by people who are not its author, the
+debug build is the one to point testers at - a bug report with a journal in it
+is worth ten that say "it did not boot".
+
+`scripts/release/add-devel-access.sh` is the whole difference, and it does not
+reuse upstream's devel-flashable trick: `prepare-fake-ota.sh` writes
+`/etc/init/ssh.override` and `/etc/init/usb-tethering.conf`, which are upstart
+jobs, and a 26.04 rootfs has no `/etc/init` at all. Those files would be
+created, released and silently ignored. Everything in `add-devel-access.sh` was
+checked against the units that are in the image - including preferring
+`ssh.service` over `ssh.socket`, because `lxc-android-config-disable-ssh-socket.service`
+is enabled and disables the socket on first boot by design.
+
+The password is weak and documented on purpose. Do not quietly change it: the
+README, the motd, `/etc/a50-image-variant` and the installer's own output all
+say `1234`.
+
 ## What a release contains
 
 ```
@@ -43,7 +67,16 @@ sudo ./scripts/release/build-rootfs-image.sh --device-tarball out/device_a50.tar
 # 3. the flashable zip
 ./scripts/release/make-installer-zip.sh --out out --version "$(date -u +%F)" \
     --manifest /path/to/a50-halium/out/build-manifest.txt
+
+# then the debug build: steps 2 and 3 again, with --devel / --variant devel
+sudo ./scripts/release/build-rootfs-image.sh --device-tarball out/device_a50.tar.xz --out out --devel
+./scripts/release/make-installer-zip.sh --out out --version "$(date -u +%F)" \
+    --variant devel --manifest /path/to/a50-halium/out/build-manifest.txt
 ```
+
+Step 2 overwrites `out/rootfs.img`, so build and zip one variant fully before
+starting the other. Each image is 6 GB and each zip is about 1.3 GB, so budget
+roughly 16 GB of scratch for both.
 
 In a container, all three at once:
 
@@ -108,8 +141,24 @@ Verified in the build, every time:
 | `/etc/resolv.conf` points at NetworkManager, not at a build-host DNS | same |
 | the installer detects the right partitions, verifies both artifacts, and reads the boot partition back | run the zip against loop devices under `busybox sh` |
 
-The last one is worth doing before every release, because it is the only thing
-that exercises the installer with the same toolbox TWRP has:
+For a debug build, also check the five things `add-devel-access.sh` changes -
+the drop-in, the enabled units, `ADBD_SECURE`, and that the hash in
+`/etc/shadow` really is the documented password:
+
+```python
+import crypt
+line = [l for l in open("/mnt/img/etc/shadow") if l.startswith("root:")][0]
+h = line.split(":")[1]
+assert crypt.crypt("1234", h) == h
+```
+
+That check earned its place: the first version of the script verified its own
+work with `grep -q "^root:\$6\$"`, which is not the pattern it looks like - the
+shell strips the backslashes and grep reads the trailing `$` as an anchor. It
+failed on a `/etc/shadow` that had been written correctly.
+
+The installer test below is worth doing before every release, because it is the
+only thing that exercises the installer with the same toolbox TWRP has:
 
 ```sh
 # fake partitions, busybox applets first on PATH, then run the zip's own script
@@ -141,5 +190,9 @@ gh release create <tag> -R sadatdaniel/a50-ubuntu-touch \
     out/ubuntu-touch-a50-*.zip out/boot.img out/SHA256SUMS out/manifest.txt
 ```
 
-Ship `boot.img` alongside the zip: an existing install can be updated by
+Ship `boot.img` alongside the zips: an existing install can be updated by
 writing just that, from a running system, with no recovery round trip.
+
+Both zips go in the same release, and the notes have to say which is which.
+A tester who flashes the debug build without knowing what it is has put a phone
+with a known root password on their network.

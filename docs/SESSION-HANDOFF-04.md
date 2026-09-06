@@ -22,8 +22,9 @@ not, and nothing in the repository claims it.
 | | |
 |---|---|
 | Zip | `ubuntu-touch-a50-26.04-1.x-2026-09-06.zip`, 1.32 GB, sha `35e835e0…` |
-| Boot image inside it | `90c281f8…` — **the kernel this device is running**, not a rebuild |
-| Rootfs inside it | 6144M, Ubuntu 26.04.1 + Halium 11 GSI + the port, sha `091322c3…` |
+| Debug zip | `…-devel-2026-09-06.zip`, sha `80ade5e9…`. Same port, sshd on, root `1234`, usb-tethering on, `ADBD_SECURE=0`. **Point testers at this one** |
+| Boot image inside both | `90c281f8…` — **the kernel this device is running**, not a rebuild |
+| Rootfs inside them | 6144M, Ubuntu 26.04.1 + Halium 11 GSI + the port. sha `091322c3…` normal, `0838dda0…` debug |
 | Dev device | unchanged. Nothing was flashed to it this session |
 
 ### How to test it (the next task)
@@ -49,12 +50,17 @@ the Halium initramfs runs a telnet debug shell on **192.168.2.15** over USB —
 back. TWRP (Volume Up + Power from powered off) is the fallback to the
 fallback.
 
-Note the released rootfs has **no SSH enabled**: it is the published UBports
-image, not a `devel-flashable` one. So even a successful boot needs the wizard
-completed on the phone and developer mode turned on before you can log in. If
-that matters, build a test image with upstream's devel overrides
-(`prepare-fake-ota.sh` writes `/etc/init/ssh.override`) and label it a test
-image in the notes.
+Use the **`-devel-` rootfs** for this. The normal one is the published UBports
+image with SSH off, so even a successful boot would need the wizard completed on
+the phone before you could log in and check anything. The debug one answers on
+`ssh root@10.15.19.82` (password `1234`) as soon as it is up.
+
+Upstream's devel-flashable trick could not be reused, and this is worth knowing
+before someone tries: `prepare-fake-ota.sh` writes `/etc/init/ssh.override` and
+`/etc/init/usb-tethering.conf`, which are **upstart** jobs, and this 26.04
+rootfs has no `/etc/init` at all. Those files would be written, released, and
+silently ignored. `scripts/release/add-devel-access.sh` is the systemd
+equivalent, checked against the units that are in the image.
 
 The full version — TWRP, on a phone that was on stock Android, from Format Data
 onwards — is what the release notes say nobody has done.

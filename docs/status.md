@@ -13,12 +13,19 @@ This file is the honest inventory.
 > under `busybox sh`. What nobody has done is flash that zip in TWRP on a phone
 > that was on stock Android beforehand, and boot it. Until someone has, the
 > release says so and so does this file.
+>
+> The release ships **two** zips. The `-devel-` one is the same port with sshd
+> enabled, root's password set to `1234`, `usb-tethering` on and
+> `ADBD_SECURE=0`, so a tester who hits a failure has something to attach to
+> the report. That is the one to point people at until the port has been
+> installed by somebody other than its author.
 
 ## Proven
 
 | Claim | How it was checked |
 |---|---|
 | **A release image can be built from git plus published UBports artifacts** | `scripts/release/` produces `device_a50.tar.xz`, a 6144M `rootfs.img` (Ubuntu 26.04.1 + the Halium 11 GSI + this port) and a flashable zip. The image was mounted and every port file checked present, executable and correctly targeted; `/etc/resolv.conf` points at NetworkManager and not at a build host's DNS; `android-rootfs.img` is in place; 0 failures. |
+| **The debug build's access really works, as shipped** | Checked in the built image, not assumed: the sshd drop-in sorts after `50-lxc-android-config.conf` and re-enables password and root login, `ssh.service` and `usb-tethering.service` are symlinked into `multi-user.target.wants`, `ADBD_SECURE=0`, and `crypt.crypt("1234", hash) == hash` against the `$6$` line actually written into `/etc/shadow`. The installer's `variant=devel` path writes `/userdata/.force-ssh` — force-adb's own documented porter marker — and that was confirmed present after a full run. |
 | **The installer does what it claims, under the toolbox a recovery has** | The finished zip was run against loop devices - a 57,671,680-byte fake boot partition and an 8 GB ext4 `/data` - with `busybox --install` applets first on `PATH` and `busybox sh` as the interpreter. It found both partitions by name, verified the payload against the shipped `SHA256SUMS`, wrote the boot partition and **read it back** to `90c281f8…`, wrote the rootfs and hashed it. Exit 0. |
 | **The shipped boot image is the kernel this device runs** | `sha256(boot.img)` = `90c281f8da080f7bc1a9ec9aa822e0ae10bd19a77804717e0c3f6ea83cffd03b`, the same image staged at `/userdata/boot-known-good-waydroid.img` and running now. |
 | **`overlay/` was never reaching the device tarball** | The tools do `cp -av overlay/* "${TMP}/"` and then pack only `partitions/ system/`; with the tree laid out as `overlay/etc`, `overlay/usr`, `overlay/var`, all of it landed beside those roots and was dropped. Confirmed by listing a tarball built the old way: 31 entries, all kernel-module metadata. Fixed by moving to `overlay/system/`. |
