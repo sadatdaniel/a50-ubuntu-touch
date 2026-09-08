@@ -1,9 +1,9 @@
 # Status
 
-**Last updated: 2026-09-06.** Ubuntu Touch boots, reaches the UI, and has
-working audio, Bluetooth, calls, mobile data, GPS and Waydroid. There is now a
-recovery-flashable installer, and **it has not been flashed on a phone yet**.
-This file is the honest inventory.
+**Last updated: 2026-09-09.** Ubuntu Touch boots, reaches the UI, and has
+working audio, Bluetooth, calls, SMS, mobile data, GPS, USB, a Wi-Fi hotspot
+and Waydroid. There is a recovery-flashable installer, and **it has not been
+flashed on a phone yet**. This file is the honest inventory.
 
 > **The one claim not to make.** The release
 > [`installer-2026-09-06`](https://github.com/sadatdaniel/a50-ubuntu-touch/releases/tag/installer-2026-09-06)
@@ -54,7 +54,10 @@ This file is the honest inventory.
 | **Bluetooth works** | `hci0` is `UP RUNNING` with the device's own BD address, and `bluetoothctl` discovers real nearby devices with live RSSI, and **earbuds pair and play audio over A2DP** — confirmed by the user. Needed `CONFIG_BT` + `CONFIG_BT_HCIVHCI`, restoring the HCI socket layer this vendor tree comments out, and `CONFIG_RFKILL`. The old "CONFIG_BT bootloops this device" result was a misdiagnosis — see [experiment 008](experiments/008-bluetooth-hci-sock.md). |
 | **The signal strength indicator works** | Shows real bars while idle (15–20% at the test location), not only during calls. `ofono-binder-plugin` 1.1.28 maps dBm linearly between `signal_strength_dbm_weak`/`_strong` and returns a hardcoded `1` at or below the low end — and its defaults are **-100 / -60 dBm**, which suit RSSI, not the LTE **RSRP** this modem reports. Idle RSRP here is -107..-112 dBm, i.e. under the -100 floor, so it pinned to 1% and showed nothing; during a call it rose above -100 and worked. Fixed with `signalStrengthRange = -120,-75` in `binder.conf`. |
 | **Mobile network works — SIM detected, registered on LTE** | `Present=true`, `ServiceProviderName="fraenk"`, `NetworkRegistration Status=registered`, `Technology=lte`, `ConnectionManager Attached=true`, on `/ril_0` of a dual-SIM device. Two config files: `OfonoPlugin: binder` in a device yaml that did not exist, and slot definitions in `binder.conf`. No kernel change. |
-| **Wi-Fi works, including the UI** | Connects and lists networks. Note this happens with **no** `/dev/rfkill` and `urfkilld` inactive, which falsifies experiment 006's claim that the indicator needed `CONFIG_RFKILL`. RFKILL is built now, but for Bluetooth: `bluebinder` needs `/dev/rfkill`. `swlan0` is the interface that carries traffic. |
+| **Wi-Fi works, including the UI** | Connects and lists networks. `swlan0`, not `wlan0`, is the interface that carries traffic — it is the one NetworkManager activates from boot, and it is normal here, not a fault. The original note said this worked with **no** `/dev/rfkill` and `urfkilld` inactive, falsifying experiment 006's claim that the indicator needed `CONFIG_RFKILL`. That observation still stands historically but **no longer describes the device**: RFKILL is built now (for Bluetooth — `bluebinder` needs `/dev/rfkill`), `urfkilld` is active, and a consequence nobody intended is that **flight mode can now switch Wi-Fi off**, which it previously could not. Measured 2026-09-08: `URfkill: handle_flight_mode_killswitch: killswitch[WLAN] … Setting WLAN devices to blocked` → `NetworkManager: rfkill: Wi-Fi now disabled by radio killswitch`. Harmless in itself, but it means "Wi-Fi died on its own" now has a cause that did not exist before. |
+| **USB works from boot** | USB was dead from power-on — no RNDIS, no ADB, no gadget at all — and the cause was not what the first fix claimed. A `[udev]` drop-in appeared to fix it and an A/B disproved that; the real fix is `USB_MODED_HW_ADAPTATION_ARGS="-f"` in `etc/default/usb-moded.d/device-specific-config.conf`, which stops usb-moded waiting on a cable-detect this hardware never reports. Verified by reboot: RNDIS and ADB come up unattended. |
+| **Call audio plays at the right pitch** | The operator's voice came through fast-forwarded and unintelligible. Two consumers were routed to SIFS0 at once: the in-call path and the speaker path, so the DSP drained one stream at twice the rate. `a50-gen-mixer-paths.py` now drops `route-sifs0-to-uaif0` from the speaker paths and reserves `ABOX UAIF2 SPK` on the non-speaker in-call paths. Confirmed by ear on a real call. |
+| **Wi-Fi hotspot works** | Every NetworkManager connection add failed, not just the hotspot. `network-manager` 1.54.3 spawns `/usr/libexec/netplan/configure`, a helper introduced in netplan 1.2; the rootfs ships netplan 1.1.2 and does not have it, and NM reported the `ENOENT` as the misleading `netplan generate failed`. Archive version skew, not a device fault — it breaks connection adds on every device on this rootfs. Fixed with a shim forwarding to `generate`. `wlan0` reaches `type AP`, `10.42.0.1/24`, dnsmasq serves the range, `nm-shared-wlan0` MASQUERADE is installed, and a second phone associated and got an address. [016](experiments/016-hotspot-netplan.md) |
 
 ## Not proven, and blocking
 
