@@ -15,7 +15,7 @@ and Samsung's RIL reporting
 
 ```
 RILD2: DoSendSms():
-RILD2: Use default SMSC. 491710760000
+RILD2: Use default SMSC. <carrier SMSC>
 RILD2: IpcTxSendSms()
 RILD2: SendSMS Result: 0x8015, Tp cause: 0xFF,
 ```
@@ -44,9 +44,9 @@ Worth recording, because every step looked reasonable.
 
 The failing number was taken from the device's own message history, from the
 threads that had just failed — so it was the typo, and using it guaranteed the
-error would reproduce. It even looked wrong at the time: `+49 1415 …` is not a
-German mobile prefix, while the other number in the same history,
-`+49 1516 …`, is. That observation was made and then not acted on.
+error would reproduce. It even looked wrong at the time: its prefix is not a valid
+German mobile block, while the other number in the same history has one
+that is. That observation was made and then not acted on.
 
 Four hypotheses were built on top of it and tested, all sound in themselves and
 all irrelevant:
@@ -55,7 +55,8 @@ all irrelevant:
   `TechnologyPreference=gsm`, confirmed re-registration on EDGE, sent again,
   identical `0x8015`. This correctly proved the failure was not
   radio-technology-dependent.
-* **Wrong SMSC.** It is `"491710760000",145` and the RIL logs that it uses it.
+* **Wrong SMSC.** `MessageManager.ServiceCenterAddress` holds the carrier's
+  SMS centre with type 145, and the RIL logs that it uses it. Correct.
 * **Wrong `radioInterface` in `binder.conf`.** The port sets 1.4 and `lshal`
   confirms `android.hardware.radio@1.4::IRadio` is registered for both slots.
   The setting is correct.
