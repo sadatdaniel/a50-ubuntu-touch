@@ -40,6 +40,27 @@ DST = sys.argv[2] if len(sys.argv) > 2 else "/var/lib/lxc/android/mixer_paths.a5
 
 SPEAKER_ONLY = {"media-speaker2", "media-speaker", "media-dual-speaker"}
 
+# 3. incall paths that do NOT use the speaker: park UAIF2 on RESERVED.
+#
+#    `ABOX UAIF2 SPK` is a single global control, and change (1) points it at
+#    SIFS0. Nothing in an earpiece or headset call path ever sets it back, so
+#    it keeps whatever the last speaker playback left there - SIFS0 - and the
+#    call then has UAIF0 *and* UAIF2 draining one mixer output. Same double
+#    drain as (2), same fast-forwarded audio, but arriving as leftover state
+#    rather than from the path itself, which is why it looks intermittent:
+#    play something on the speaker first and the next call is fast.
+#
+#    These paths need UAIF0 (the codec carries the earpiece), so the fix is
+#    the mirror of (2) - disconnect the *other* consumer instead. Item #0 of
+#    that enum is RESERVED, which is the disconnected value.
+INCALL_NO_SPEAKER = {
+    "incall-handset",
+    "incall-headset",
+    "incall-bt-sco-headset",
+    "incall-usb-headset",
+    "incall-hearing-aid",
+}
+
 s = open(SRC).read()
 
 old = ('<path name="route-sifs1-to-uaif2">\n'
@@ -52,24 +73,40 @@ if s.count(old) != 1:
     sys.exit("E: route-sifs1-to-uaif2 anchor found %d times" % s.count(old))
 s = s.replace(old, new)
 
+# Paths where the speaker IS used in a call. Here UAIF2 must stay on SIFS0
+# (that is the whole point of change 1), so the other consumer has to go -
+# exactly as for the media-speaker paths.
+INCALL_SPEAKER = {"incall-speaker", "incall_nb-dual-speaker"}
+
 n = 0
+m_ = 0
 
 
 def fix(m):
-    global n
+    global n, m_
     name, body = m.group(1), m.group(2)
-    if name in SPEAKER_ONLY and "route-sifs0-to-uaif0" in body:
+    if name in (SPEAKER_ONLY | INCALL_SPEAKER) and "route-sifs0-to-uaif0" in body:
         body = body.replace(
             '\t\t<path name="route-sifs0-to-uaif0" />\n',
             '\t\t<!-- A50: dropped, see route-sifs1-to-uaif2. Two consumers on\n'
             '\t\t     SIFS0 drain it at double rate and audio plays fast. -->\n')
         n += 1
+    if name in INCALL_NO_SPEAKER:
+        body += ('\n\t\t<!-- A50: UAIF2 is a global control left pointing at SIFS0 by\n'
+                 '\t\t     the last speaker playback. This path needs UAIF0 on SIFS0,\n'
+                 '\t\t     so disconnect UAIF2 instead or both drain it and the call\n'
+                 '\t\t     plays fast. -->\n'
+                 '\t\t<ctl name="ABOX UAIF2 SPK" value="RESERVED" />')
+        m_ += 1
     return '\t<path name="%s">%s\n\t</path>' % (name, body)
 
 
 s = re.sub(r'\t<path name="([^"]+)">(.*?)\n\t</path>', fix, s, flags=re.S)
-if n != len(SPEAKER_ONLY):
-    sys.exit("E: patched %d speaker paths, expected %d" % (n, len(SPEAKER_ONLY)))
+if n != len(SPEAKER_ONLY) + len(INCALL_SPEAKER):
+    sys.exit("E: dropped uaif0 from %d paths, expected %d"
+             % (n, len(SPEAKER_ONLY) + len(INCALL_SPEAKER)))
+if m_ != len(INCALL_NO_SPEAKER):
+    sys.exit("E: parked UAIF2 in %d paths, expected %d" % (m_, len(INCALL_NO_SPEAKER)))
 
 open(DST, "w").write(s)
 
