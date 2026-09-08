@@ -1,0 +1,24 @@
+#!/bin/sh
+# Compatibility shim for netplan < 1.2 on UBports 26.04.
+#
+# network-manager 1.54.3 spawns "/usr/libexec/netplan/configure --networkmanager-only"
+# every time a connection is added. That helper arrived in netplan 1.2, which split the
+# old single "generate" stage into generate + netplan-configure.service to get
+# systemd-generator compatibility. This rootfs ships netplan 1.1.2, where the same work
+# is still done entirely by "generate", so the helper is simply absent. NM gets ENOENT
+# and reports it as the misleading "netplan generate failed", which makes every
+# connection add fail -- including the Wi-Fi hotspot.
+#
+# "generate" rejects flags it does not know, so forward only --root-dir and drop
+# the rest. Remove this file once netplan >= 1.2 lands in the UBports archive.
+set -e
+args=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --root-dir|-r) args="$args --root-dir $2"; shift 2 ;;
+        --root-dir=*)  args="$args $1"; shift ;;
+        *)             shift ;;
+    esac
+done
+# shellcheck disable=SC2086
+exec /usr/libexec/netplan/generate $args

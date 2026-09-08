@@ -57,6 +57,7 @@ else.
 | `var/lib/lxc/android/usb.rc.empty`, `rc.empty` | The empty rc files those binds point at. |
 | `usr/libexec/lxc-android-config/device-hacks` + `a50-device-setup.sh` | Per boot, after the container: unmask `sensorfwd`, patch `touch.pa`, fix `/dev/gnss_ipc` on an already-created node, enable the Waydroid session unit. |
 | `usr/local/bin/a50-dmesg-snap.sh` | Boot logs are otherwise evicted before you can read them. |
+| `usr/libexec/netplan/configure` | Every NetworkManager connection add failed with `netplan generate failed`, so the Wi-Fi hotspot could not start. `network-manager` 1.54.3 calls this helper, which arrived in netplan 1.2; this rootfs has netplan 1.1.2 and does not ship it. A shim forwarding to `generate`. Delete it when netplan ≥ 1.2 reaches the archive. [016](../docs/experiments/016-hotspot-netplan.md) |
 
 ## Still not solved here
 
