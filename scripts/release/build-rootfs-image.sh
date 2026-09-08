@@ -35,6 +35,7 @@ while [ $# -gt 0 ]; do
         --cache) CACHE="$2"; shift 2 ;;
         --size)  SIZE="$2"; shift 2 ;;
         --no-compat) NO_COMPAT=1; shift ;;
+        --channel)   CHANNEL="$2"; shift 2 ;;
         --devel) DEVEL=1; shift ;;
         *) echo "E: unknown argument: $1" >&2; exit 2 ;;
     esac
@@ -48,7 +49,18 @@ done
 source "$HERE/deviceinfo"
 
 SIZE="${SIZE:-${deviceinfo_system_partition_size:-3584M}}"
-OTA_CHANNEL="${deviceinfo_ubuntu_touch_release}/${deviceinfo_arch/aarch64/arm64}/android9plus/daily"
+
+# Which upstream channel the rootfs comes from. 26.04-1.x currently publishes
+# only `daily`, and it is flagged hidden in channels.json - there is no `rc` or
+# `stable` for it yet. When one appears, this is the one string that changes:
+#
+#   ./build-rootfs-image.sh --channel stable ...
+#   deviceinfo_ubuntu_touch_channel="stable"     # or set it in deviceinfo
+#
+# It is NOT enough on its own - docs/UPDATING.md lists what else to re-check
+# when the rootfs underneath this port moves.
+CHANNEL="${CHANNEL:-${deviceinfo_ubuntu_touch_channel:-daily}}"
+OTA_CHANNEL="${deviceinfo_ubuntu_touch_release}/${deviceinfo_arch/aarch64/arm64}/android9plus/${CHANNEL}"
 
 mkdir -p "$OUT" "$CACHE"
 

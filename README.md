@@ -232,8 +232,11 @@ in [`docs/experiments/`](docs/experiments).
       boot. App confinement is therefore absent, and two services
       (`lomiri-location-service`, `biometryd`) run with their AppArmor caller
       checks bypassed. **Treat this port as not security-hardened.**
-- [ ] **OTA updates.** There is no system-image channel for this device, so
-      Settings, Updates will find nothing. Reflash to update.
+- [ ] **OTA updates.** `system-image.ubports.com` has no `a50` entry in any
+      channel - a 404, checked - so Settings, Updates will find nothing, by
+      construction. Updating the rootfs means reflashing, which wipes the
+      device; a new *kernel* does not. [`docs/UPDATING.md`](docs/UPDATING.md)
+      covers all three cases.
 - [ ] Untested: Bluetooth HFP (calls over Bluetooth), wired headphones,
       earpiece routing, VoLTE, NFC.
 
@@ -343,6 +346,7 @@ releases do not use it. Closing that gap is the port's largest open task.
 | [`overlay/system/`](overlay/system) | the port's userspace, mirroring `/`. Installed into the rootfs by the device tarball |
 | [`installer/`](installer) | the recovery-flashable installer |
 | [`scripts/release/`](scripts/release) | what builds a release |
+| [`docs/UPDATING.md`](docs/UPDATING.md) | how updating works - kernel, rootfs, and why there is no OTA |
 | [`docs/status.md`](docs/status.md) | the honest inventory: what is proven, how it was checked, and what is not |
 | [`docs/experiments/`](docs/experiments) | one file per investigation - question first, result second, failures included |
 | [`REPRODUCE.md`](REPRODUCE.md) | getting from stock to this port's state without this repository's author |
