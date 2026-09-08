@@ -85,6 +85,20 @@ fi
 ROOTFS_TAR="$CACHE/$(basename "$ROOTFS_URL")"
 [ -f "$ROOTFS_TAR" ] || curl -fL --retry 3 -o "$ROOTFS_TAR" "$ROOTFS_URL"
 
+# Record which Ubuntu rootfs this build actually used. The channel index moves:
+# two builds of the same commit a week apart resolve to different rootfs
+# tarballs (measured - 2026-09-06 got rootfs-a71dcb69…, 2026-09-08 got
+# rootfs-e7804a1c…). Without this the Ubuntu half of a released image is
+# unknowable after the fact, which is exactly the problem gsi.lock solved for
+# the Android half. make-installer-zip.sh folds this into the manifest.
+mkdir -p "$OUT"
+{
+    echo "UBUNTU_ROOTFS_CHANNEL=$OTA_CHANNEL"
+    echo "UBUNTU_ROOTFS_URL=$ROOTFS_URL"
+    echo "UBUNTU_ROOTFS_SHA256=$(sha256sum "$ROOTFS_TAR" | cut -d' ' -f1)"
+    echo "UBUNTU_ROOTFS_BYTES=$(stat -c%s "$ROOTFS_TAR")"
+} > "$OUT/rootfs-source.txt"
+
 # --- 2. the Halium GSI, pinned ----------------------------------------------
 # Read from gsi.lock, not from Jenkins' lastSuccessfulBuild, which moves daily.
 # See that file for the measurements that made this necessary.

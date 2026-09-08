@@ -63,6 +63,11 @@ fi
         sed -n 's/^\(GSI_[A-Z0-9_]*\)=\(.*\)$/\1=\2/p' "$HERE/gsi.lock" \
             | tr 'A-Z' 'a-z'
     fi
+    # Which Ubuntu rootfs is inside the image, written by build-rootfs-image.sh.
+    # The channel index moves, so this is the only record of the Ubuntu half.
+    if [ -r "$OUT/rootfs-source.txt" ]; then
+        tr 'A-Z' 'a-z' < "$OUT/rootfs-source.txt"
+    fi
     [ -n "$MANIFEST" ] && [ -f "$MANIFEST" ] && sed 's/^/kernel_/' "$MANIFEST"
 } > "$STAGE/install/manifest.txt"
 

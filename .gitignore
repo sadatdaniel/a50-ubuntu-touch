@@ -6,3 +6,7 @@
 /out/
 /ota/
 /images/
+
+# Release build scratch: downloaded upstream tarballs and built images.
+# 800 MB+ of rootfs/GSI artifacts land here; never commit them.
+dl/
