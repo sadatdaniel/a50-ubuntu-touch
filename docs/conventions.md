@@ -89,3 +89,31 @@ has to be boot-tested here.
   The 57,671,680-byte limit is real and is enforced separately.
 * `deviceinfo_kernel_cmdline` as a way to set anything — S-Boot ignores the
   header command line entirely. See [`kernel.md`](kernel.md).
+
+## Nothing off the device goes into git
+
+Debugging this port means reading the device: contacts, message history, the
+SIM, logs full of identifiers. **None of it belongs in a commit, a doc, or a
+commit message**, and "it is only a fragment" is not the test — the test is
+whether it needed to be there at all.
+
+Established the hard way on 2026-09-08. Experiment 015 quoted two four-digit
+mobile prefixes taken from the device's message history and the carrier's SMS
+centre number, to make a point that did not need any of them. Nothing
+identifying was exposed and the prefixes are blocks shared by millions, but
+they were read off someone's phone under authorisation to *send a message*, not
+to publish. They are gone from the files; they are still in the pushed history,
+which is where this kind of mistake ends up.
+
+What to write instead:
+
+| instead of | write |
+|---|---|
+| a number, even partial | "the destination", "its prefix is not a valid block" |
+| an IMSI, ICCID, IMEI | "the SIM is present", "MCC 262 / MNC 01" if the network matters |
+| the SMSC digits | `<carrier SMSC>` |
+| a MAC, if it is the user's | the OUI's *character* — "not a vendor OUI", "unchanged across reboot" |
+
+Device-level facts that are properties of the *hardware model* rather than of
+this unit — partition sizes, `ro.product.*`, kernel versions, HAL versions —
+are fine and are the point of the docs.
