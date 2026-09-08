@@ -61,6 +61,7 @@ what has been confirmed, not about what probably works.
 * Cellular: Enable/disable mobile data and flightmode works *(measured: Modem.Online false deregisters, true re-registers)*
 * Cellular: Switch connection speed between 2G/3G/4G *(measured: gsm/umts/lte/nr all settable and the registered technology follows - gsm gives edge, lte gives lte)*
 * Cellular: Incoming, outgoing calls
+* Cellular: SMS out *(measured: RIL SendSMS Result 0x0 - the earlier failures were a mistyped destination, see [015](experiments/015-sms-send-fails.md))*
 * GPU: Boot into Spinner animation and Lomiri UI
 * Bluetooth: Driver loaded at startup
 * Bluetooth: Pairing with headset works, volume control ok
@@ -103,7 +104,6 @@ what has been confirmed, not about what probably works.
 * Cellular: the remaining items need a person on the other end of a call or
   message. The SIM lives in **slot 2** (`/ril_1`); slot 1 is empty, so
   "switch preferred SIM" cannot be tested with one card
-* Cellular: SMS out - **fails**, `sms send error SYSTEM_ERR` / RIL `0x8015`, on both LTE and 2G. [015](experiments/015-sms-send-fails.md)
 * Cellular: SMS in - untested
 * Cellular: MMS in, out - untested
 * Cellular: Change audio routings (speakerphone, earphone) - untested
