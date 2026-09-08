@@ -346,6 +346,7 @@ releases do not use it. Closing that gap is the port's largest open task.
 | [`overlay/system/`](overlay/system) | the port's userspace, mirroring `/`. Installed into the rootfs by the device tarball |
 | [`installer/`](installer) | the recovery-flashable installer |
 | [`scripts/release/`](scripts/release) | what builds a release |
+| [`gsi.lock`](gsi.lock) | the Halium GSI this port ships, pinned by build number and hash |
 | [`docs/UPDATING.md`](docs/UPDATING.md) | how updating works - kernel, rootfs, and why there is no OTA |
 | [`docs/status.md`](docs/status.md) | the honest inventory: what is proven, how it was checked, and what is not |
 | [`docs/experiments/`](docs/experiments) | one file per investigation - question first, result second, failures included |

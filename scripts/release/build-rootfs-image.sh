@@ -36,6 +36,7 @@ while [ $# -gt 0 ]; do
         --size)  SIZE="$2"; shift 2 ;;
         --no-compat) NO_COMPAT=1; shift ;;
         --channel)   CHANNEL="$2"; shift 2 ;;
+        --gsi-build) GSI_BUILD="$2"; shift 2 ;;
         --devel) DEVEL=1; shift ;;
         *) echo "E: unknown argument: $1" >&2; exit 2 ;;
     esac
@@ -84,16 +85,47 @@ fi
 ROOTFS_TAR="$CACHE/$(basename "$ROOTFS_URL")"
 [ -f "$ROOTFS_TAR" ] || curl -fL --retry 3 -o "$ROOTFS_TAR" "$ROOTFS_URL"
 
-# --- 2. the Halium GSI ------------------------------------------------------
-GSI_JOB="https://ci.ubports.com/job/UBportsCommunityPortsJenkinsCI/job/ubports%252Fporting%252Fcommunity-ports%252Fjenkins-ci%252Fgeneric_arm64/job"
-case "${deviceinfo_halium_version}" in
-    9)  GSI_URL="$GSI_JOB/main/lastSuccessfulBuild/artifact/halium_halium_arm64.tar.xz" ;;
-    10) GSI_URL="$GSI_JOB/halium-10.0/lastSuccessfulBuild/artifact/halium_halium_arm64.tar.xz" ;;
-    11) GSI_URL="$GSI_JOB/halium-11.0/lastSuccessfulBuild/artifact/halium_halium_arm64.tar.xz" ;;
-    *)  echo "E: unsupported deviceinfo_halium_version=${deviceinfo_halium_version}" >&2; exit 1 ;;
-esac
-GSI_TAR="$CACHE/halium_halium_arm64.tar.xz"
+# --- 2. the Halium GSI, pinned ----------------------------------------------
+# Read from gsi.lock, not from Jenkins' lastSuccessfulBuild, which moves daily.
+# See that file for the measurements that made this necessary.
+GSI_LOCK="$HERE/gsi.lock"
+[ -r "$GSI_LOCK" ] || { echo "E: $GSI_LOCK not readable" >&2; exit 1; }
+gsi_get() { grep -E "^$1=" "$GSI_LOCK" | head -1 | cut -d= -f2-; }
+
+GSI_JOB="$(gsi_get GSI_JOB)"
+GSI_BUILD="${GSI_BUILD:-$(gsi_get GSI_BUILD)}"
+GSI_SHA256="$(gsi_get GSI_SHA256)"
+[ -n "$GSI_JOB" ] && [ -n "$GSI_BUILD" ] || { echo "E: gsi.lock is incomplete" >&2; exit 1; }
+
+if [ "$GSI_BUILD" = latest ]; then
+    # Deliberate escape hatch: fetch the newest and report it, so the pin can
+    # be moved on purpose. It is never moved automatically.
+    GSI_BUILD=lastSuccessfulBuild
+    GSI_SHA256=""
+    echo "W: --gsi-build latest: the GSI is NOT pinned for this build" >&2
+fi
+
+GSI_URL="$GSI_JOB/$GSI_BUILD/artifact/halium_halium_arm64.tar.xz"
+GSI_TAR="$CACHE/halium_halium_arm64-${GSI_BUILD}.tar.xz"
 [ -f "$GSI_TAR" ] || curl -fL --retry 3 -o "$GSI_TAR" "$GSI_URL"
+
+GSI_GOT="$(sha256sum "$GSI_TAR" | cut -d' ' -f1)"
+if [ -n "$GSI_SHA256" ]; then
+    if [ "$GSI_GOT" != "$GSI_SHA256" ]; then
+        echo "E: the Halium GSI does not match the pin in gsi.lock." >&2
+        echo "E:   build    $GSI_BUILD" >&2
+        echo "E:   expected $GSI_SHA256" >&2
+        echo "E:   got      $GSI_GOT" >&2
+        echo "E: Jenkins rebuilds this artifact; a numbered build should not" >&2
+        echo "E: change, so either the pin is wrong or the download is." >&2
+        rm -f "$GSI_TAR"
+        exit 1
+    fi
+    echo "I: GSI build $GSI_BUILD verified against gsi.lock ($(echo "$GSI_GOT" | cut -c1-16)…)"
+else
+    echo "I: GSI build $GSI_BUILD is $GSI_GOT"
+    echo "I: put that in gsi.lock as GSI_SHA256 to pin it"
+fi
 
 # --- 3. the version tarball -------------------------------------------------
 VER="$CACHE/version"

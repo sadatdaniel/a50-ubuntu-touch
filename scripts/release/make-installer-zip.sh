@@ -57,12 +57,33 @@ fi
     echo "variant=${VARIANT}"
     echo "rootfs_bytes=$(stat -c%s "$ROOTFS")"
     echo "boot_bytes=$(stat -c%s "$BOOT")"
+    # Which Android system is inside the rootfs. Unpinned this was unknowable
+    # after the fact; gsi.lock pins it and build-rootfs-image.sh verifies it.
+    if [ -r "$HERE/gsi.lock" ]; then
+        sed -n 's/^\(GSI_[A-Z0-9_]*\)=\(.*\)$/\1=\2/p' "$HERE/gsi.lock" \
+            | tr 'A-Z' 'a-z'
+    fi
     [ -n "$MANIFEST" ] && [ -f "$MANIFEST" ] && sed 's/^/kernel_/' "$MANIFEST"
 } > "$STAGE/install/manifest.txt"
 
 # Hashes of the UNCOMPRESSED artifacts: what the installer verifies is what
 # ends up on the partition, not what sat in the zip.
-( cd "$OUT" && sha256sum boot.img rootfs.img ) > "$STAGE/install/SHA256SUMS"
+{
+    ( cd "$OUT" && sha256sum boot.img rootfs.img )
+    # The Halium GSI is an INPUT, not something the installer writes, so it is
+    # commented out - `sha256sum -c` skips lines beginning with #, and the
+    # installer's own lookup matches on exact filenames. It is recorded here
+    # because this is where someone goes looking for a hash.
+    if [ -r "$HERE/gsi.lock" ]; then
+        gl() { grep -E "^$1=" "$HERE/gsi.lock" | head -1 | cut -d= -f2-; }
+        echo "#"
+        echo "# input, not installed: Halium GSI build $(gl GSI_BUILD) ($(gl GSI_DATE))"
+        echo "# $(gl GSI_SHA256)  halium_halium_arm64.tar.xz"
+        echo "# $(gl GSI_ANDROID_ROOTFS_SHA256)  var/lib/lxc/android/android-rootfs.img"
+        echo "#   the second one is checkable on the running device:"
+        echo "#   sha256sum /var/lib/lxc/android/android-rootfs.img"
+    fi
+} > "$STAGE/install/SHA256SUMS"
 
 SUFFIX=""
 [ "$VARIANT" = release ] || SUFFIX="-$VARIANT"

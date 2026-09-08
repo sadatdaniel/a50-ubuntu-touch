@@ -103,13 +103,31 @@ one subsystem is dead. Check each against a new rootfs before releasing it.
 | `lomiri-location-service` honours `TRUST_STORE_PERMISSION_MANAGER_IS_RUNNING_UNDER_TESTING` | `50-a50-trust-store.conf` | every location session refused again |
 | `biometryd` honours `BIOMETRYD_DBUS_SKELETON_IS_RUNNING_UNDER_TESTING` | `50-a50-testing.conf` | System Settings crashes on the Fingerprint page again |
 | the rootfs ships libxml2 with the **new** SONAME | `add-openstore-compat.sh` | if it ever ships 2.9 again, we co-install a duplicate; if the ICU dependency moves, OpenStore still will not start |
-| the Halium GSI from Jenkins `lastSuccessfulBuild` | `build-rootfs-image.sh` | **unpinned** — a new GSI arrives whether or not you asked for one |
+| the Halium GSI | `gsi.lock` | **pinned** since 2026-09-08, and verified by sha256 at build time. Moving the pin is a deliberate edit + a boot test |
 
-That last row is worth its own line: the GSI is fetched from
-`.../halium-11.0/lastSuccessfulBuild/artifact/halium_halium_arm64.tar.xz`, so
-two builds a week apart are not the same image. If a build regresses and the
-kernel and rootfs are unchanged, suspect it first — and record the hash of the
-GSI you shipped, which `SHA256SUMS` inside the bundle does not currently do.
+That last row used to be the loose end. The GSI came from
+`.../halium-11.0/lastSuccessfulBuild/...`, which Jenkins rebuilds **daily** —
+measured over three days: builds 1542, 1543, 1544 and 1545 are four different
+artifacts. Two builds of this port a week apart therefore contained different
+Android systems, with nothing recording which, so a regression with an
+unchanged kernel and rootfs had no third suspect to rule out.
+
+It is now pinned in [`gsi.lock`](../gsi.lock) by build number, and
+`build-rootfs-image.sh` verifies the download against the recorded sha256 and
+**refuses to build** on a mismatch. The hash is written into the bundle's
+`manifest.txt` and, as a comment, into its `SHA256SUMS` — including the hash of
+`android-rootfs.img` as it lands, which is checkable on a running phone:
+
+```sh
+sha256sum /var/lib/lxc/android/android-rootfs.img
+```
+
+To move the pin deliberately:
+
+```sh
+./scripts/release/build-rootfs-image.sh --gsi-build latest ...   # prints the new hash
+# put it in gsi.lock, rebuild, reflash, boot-test, then commit with the evidence
+```
 
 ### The procedure
 
