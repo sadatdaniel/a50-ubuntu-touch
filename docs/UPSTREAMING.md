@@ -56,8 +56,10 @@ what has been confirmed, not about what probably works.
 
 ### Working
 
-* Cellular: Carrier info, signal strength
-* Cellular: Data connection
+* Cellular: Carrier info, signal strength *(measured: fraenk, MCC 262 MNC 01, strength 40)*
+* Cellular: Data connection *(measured: rmnet4 10.154.122.208, APN internet.telekom; TLS to 1.1.1.1 in 0.14 s and DNS resolving with Wi-Fi switched off)*
+* Cellular: Enable/disable mobile data and flightmode works *(measured: Modem.Online false deregisters, true re-registers)*
+* Cellular: Switch connection speed between 2G/3G/4G *(measured: gsm/umts/lte/nr all settable and the registered technology follows - gsm gives edge, lte gives lte)*
 * Cellular: Incoming, outgoing calls
 * Cellular: SMS in, out
 * GPU: Boot into Spinner animation and Lomiri UI
@@ -99,12 +101,12 @@ what has been confirmed, not about what probably works.
   of reset. [012](experiments/012-fingerprint.md)
 * Sound: Earphones detected - untested
 * Sound: System sounds and effects - untested
-* Cellular: everything below is **blocked, not broken**: there is no SIM in the
-  device (`SimManager Present = false`), and both modems /ril_0 and /ril_1 are
-  present and powered *(measured)*
+* Cellular: the remaining items need a person on the other end of a call or
+  message. The SIM lives in **slot 2** (`/ril_1`); slot 1 is empty, so
+  "switch preferred SIM" cannot be tested with one card
 * Cellular: MMS in, out - untested
 * Cellular: Change audio routings (speakerphone, earphone) - untested
-* Cellular: Switch 2G/3G/4G, preferred SIM - untested
+* Cellular: Switch preferred SIM for calling and SMS - needs a second SIM
 * Cellular: Voice in calls over Bluetooth (HFP) - untested
 * Actors: Notification LED - **not present**: /sys/class/leds is empty *(measured)*
 * Actors: Torchlight - no flash LED in sysfs; camera-HAL only, and the camera does not work in Lomiri *(measured)*
@@ -114,7 +116,7 @@ what has been confirmed, not about what probably works.
 * GPU: Hardware video decoding - /dev/video10-12 present *(measured)*; no playback tested
 * WiFi: Hotspot - the driver advertises AP mode *(measured)*, but no hotspot has been brought up and joined
 * Endurance: battery > 24 h, no reboot needed for 1 week - untested
-* Misc: SD card - no card was inserted, so untested *(measured: no external mmcblk)*
+* Misc: SD card detection and access *(measured: /dev/mmcblk0p1, exFAT, 15 G, mounts, reads and writes)*
 * Misc: logcat, dmesg and syslog do not spam errors - **fails**: 413 journal
   errors this boot and a SIGSEGV from
   android.hardware.graphics.composer.1-service at startup *(measured)*
@@ -241,3 +243,56 @@ shows 0.0% CPU across every process. Do not chase this.
 boot** and is restarted. The display works afterwards, so it has never been
 urgent, but it is real and it is most of what makes the "no error spam"
 checklist item fail.
+
+## Cellular and storage, measured 2026-09-08
+
+With a SIM and an SD card inserted.
+
+**The SIM is in slot 2.** `/ril_1` has it (`Present = true`, IMSI `262012041705080`,
+ICCID `894902…`); `/ril_0` is empty. Both modems exist and are powered, so the
+port's dual-SIM configuration is right - there is simply one card. "Switch
+preferred SIM" cannot be tested until there are two.
+
+**Data carries real traffic.** The context is active on `rmnet4`
+(`10.154.122.208/24`, APN `internet.telekom`). Proving that took two attempts
+and the first one was wrong in an instructive way:
+
+* Binding a socket to the cellular source address and connecting **timed out**,
+  which looked like broken data. It was a broken test. The routing table has
+  `default via … dev swlan0 metric 600` and `default via … dev rmnet4 metric
+  700`, so Wi-Fi wins; the packets left over Wi-Fi carrying a cellular source
+  address and were dropped. Binding a source address does not choose a route.
+* With `nmcli radio wifi off`, `ip route get 1.1.1.1` goes via `rmnet4`, and
+  TLS to 1.1.1.1 completes in 0.14 s, 8.8.8.8:53 in 0.02 s, and DNS resolves.
+
+**Technology switching works, and the radio follows.** Setting
+`RadioSettings.TechnologyPreference` and reading back both the preference and
+the registered technology:
+
+| set | preference | registered on |
+|---|---|---|
+| `gsm` | gsm | `edge` |
+| `umts` | umts | `edge` |
+| `lte` | lte | `lte` |
+| `nr` | nr | `lte` |
+
+`umts` landing on EDGE is the network, not the port - Telekom Germany
+switched 3G off in 2021. `nr` landing on LTE is coverage.
+
+**Flight mode works.** `Modem.SetProperty Online false` deregisters
+(`Status` empties), `true` re-registers.
+
+**SD card works.** `/dev/mmcblk0p1`, exFAT, label `16GB`, 15 G with 3.2 G free.
+Mounts, lists content, and a write-then-read-back test succeeds.
+
+### Two testing traps this session
+
+Both produced a confident wrong answer, so they are worth writing down.
+
+* **`dbus-send` without `--print-reply` swallows errors.** Every ofono
+  `SetProperty` looked like a no-op until the flag was added, at which point
+  they all returned `method return` - they had been working the whole time.
+* **A readback is part of the test.** The first switching run reported the
+  preference never changing; the parser was mangled by shell quoting, not the
+  setter. When a set appears to do nothing, verify the reader before blaming
+  the writer.
