@@ -22,7 +22,7 @@ Everything is committed and pushed to `github.com/sadatdaniel/a50-halium` and
 `github.com/sadatdaniel/a50-ubuntu-touch`.
 
 **There is now an installer, and it is UNTESTED on hardware.** Release
-`installer-2026-09-06` is a single recovery-flashable zip
+`installer-2026-09-08` is a single recovery-flashable zip
 (`ubuntu-touch-a50-26.04-1.x-2026-09-06.zip`, 1.32 GB, sha `35e835e0…`) that
 writes the boot partition and a 6144M rootfs. The release also ships a
 `-devel-` zip (sha `80ade5e9…`) - the same port with sshd on, root's password

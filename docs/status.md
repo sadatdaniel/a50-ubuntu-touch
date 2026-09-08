@@ -6,7 +6,7 @@ and Waydroid. There is a recovery-flashable installer, and **it has not been
 flashed on a phone yet**. This file is the honest inventory.
 
 > **The one claim not to make.** The release
-> [`installer-2026-09-06`](https://github.com/sadatdaniel/a50-ubuntu-touch/releases/tag/installer-2026-09-06)
+> [`installer-2026-09-08`](https://github.com/sadatdaniel/a50-ubuntu-touch/releases/tag/installer-2026-09-08)
 > is **untested on hardware.** Its kernel is boot-proven - it is byte-for-byte
 > the image the development device runs - and the rootfs has been mounted and
 > checked file by file, and the installer has been run against loop devices
