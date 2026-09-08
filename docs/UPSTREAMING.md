@@ -50,6 +50,10 @@ Scored against `DeviceChecklist.md`, in its own three headings. Anything never
 tested is listed as **Not working**, because the checklist is a claim about
 what has been confirmed, not about what probably works.
 
+> **Updated 2026-09-08** from a live session on the device. Items marked
+> *(measured)* were proven in that session; the evidence is in the
+> [session log](#what-was-measured-on-2026-09-08) at the end of this file.
+
 ### Working
 
 * Cellular: Carrier info, signal strength
@@ -69,7 +73,14 @@ what has been confirmed, not about what probably works.
 * WiFi: Enable/disable and flightmode works
 * Actors: Manual brightness
 * Misc: Anbox patches applied to kernel
-* Misc: Online charging
+* Misc: Online charging *(measured: charging, 60%)*
+* Misc: Battery percentage *(measured)*
+* Misc: Shutdown / Reboot *(measured: clean reboot, back in 70 s)*
+* Misc: Date and time are correct after reboot *(measured: RTC correct)*
+* Sound: Microphone, recording works *(measured: 90,880 samples, peak 8587, 98.8%% non-zero)*
+* WiFi: Persistent MAC address between reboots *(measured)*
+* Bluetooth: Persistent MAC address between reboots *(measured: DC:F7:56:3E:DA:8D)*
+* Bluetooth: Enable/disable and flightmode works *(measured: rfkill block/unblock, hci0 DOWN then UP RUNNING)*
 
 ### Working with additional steps
 
@@ -87,23 +98,28 @@ what has been confirmed, not about what probably works.
 * Sensors: Fingerprint reader - Samsung's trustlet never brings the sensor out
   of reset. [012](experiments/012-fingerprint.md)
 * Sound: Earphones detected - untested
-* Sound: Microphone, recording works - untested on this port
 * Sound: System sounds and effects - untested
-* Bluetooth: Enable/disable and flightmode - untested
-* Bluetooth: Persistent MAC address between reboots - untested
+* Cellular: everything below is **blocked, not broken**: there is no SIM in the
+  device (`SimManager Present = false`), and both modems /ril_0 and /ril_1 are
+  present and powered *(measured)*
 * Cellular: MMS in, out - untested
 * Cellular: Change audio routings (speakerphone, earphone) - untested
 * Cellular: Switch 2G/3G/4G, preferred SIM - untested
 * Cellular: Voice in calls over Bluetooth (HFP) - untested
-* Actors: Notification LED, Torchlight, Vibration - untested
-* Sensors: Automatic brightness - untested
-* Sensors: Proximity works during a phone call - untested
-* GPU: Hardware video decoding - untested
-* WiFi: Hotspot, Persistent MAC address - untested
+* Actors: Notification LED - **not present**: /sys/class/leds is empty *(measured)*
+* Actors: Torchlight - no flash LED in sysfs; camera-HAL only, and the camera does not work in Lomiri *(measured)*
+* Actors: Vibration - /sys/class/timed_output/vibrator exists *(measured)*; nobody has felt it buzz
+* Sensors: Automatic brightness - an `auto_brightness` iio device exists *(measured)*; not confirmed in the UI
+* Sensors: Proximity works during a phone call - a `proximity_sensor` iio device exists *(measured)*; needs a call
+* GPU: Hardware video decoding - /dev/video10-12 present *(measured)*; no playback tested
+* WiFi: Hotspot - the driver advertises AP mode *(measured)*, but no hotspot has been brought up and joined
 * Endurance: battery > 24 h, no reboot needed for 1 week - untested
-* Misc: Offline charging, Factory reset, Shutdown/Reboot, Date and time after
-  reboot, SD card, logcat/dmesg not spamming errors - untested
-* Network: NFC - untested
+* Misc: SD card - no card was inserted, so untested *(measured: no external mmcblk)*
+* Misc: logcat, dmesg and syslog do not spam errors - **fails**: 413 journal
+  errors this boot and a SIGSEGV from
+  android.hardware.graphics.composer.1-service at startup *(measured)*
+* Misc: Offline charging, Factory reset - untested
+* Network: NFC - **not present**: no nfc device nodes *(measured)*
 * USB: External monitor - untested
 
 That third list is long, and **most of it is untested rather than broken**.
@@ -157,3 +173,71 @@ By value per hour:
 
 Registration is step 4. Asking before the checklist is filled in mostly earns
 the reply "fill in the checklist".
+
+---
+
+## What was measured on 2026-09-08
+
+A live session over SSH, after fixing USB (see the commit
+"usb: fix USB being dead from boot"). Commands and results, so the claims above
+can be re-checked rather than believed.
+
+**Microphone.** Recorded 3 s from `source.primary-in` with `parec` and measured
+the samples: 90,880 samples, peak amplitude 8587, 98.8% non-zero. Silence would
+be all zeros. Works.
+
+**MAC persistence.** Recorded both addresses, rebooted, compared:
+
+| | before | after | |
+|---|---|---|---|
+| `wlan0` | `00:00:0f:01:d5:76` | same | persistent |
+| `hci0` | `DC:F7:56:3E:DA:8D` | same | persistent |
+
+The Wi-Fi MAC passes the checklist item but is worth a second look: `00:00:0f`
+is not a Samsung OUI, so the driver is inventing an address rather than reading
+one from EFS. Stable, but not the device's own.
+
+**Bluetooth enable/disable.** `rfkill block bluetooth` → `Soft blocked: yes`;
+`rfkill unblock` + `hciconfig hci0 up` → `UP RUNNING PSCAN`. Both directions.
+
+**Clock after reboot.** RTC and system time both correct immediately after
+boot, no network sync needed (`System clock synchronized: no`, NTP active).
+
+**Sensors.** iio exposes `accelerometer_sensor`, `gyro_sensor`,
+`geomagnetic_sensor`, `light_sensor`, `auto_brightness`, `proximity_sensor`,
+plus Samsung's gesture devices. Present at driver level; not confirmed through
+Lomiri.
+
+**Wi-Fi AP mode.** `iw list` reports `AP` among supported interface modes, so a
+hotspot is possible on this chipset.
+
+**Not present at all.** `/sys/class/leds` is empty - no notification LED and no
+flash LED - and there are no NFC device nodes.
+
+**Cellular is blocked, not broken.** `org.ofono.SimManager` reports
+`Present = false`; there is no SIM in the device. Both modems `/ril_0` and
+`/ril_1` exist and are powered. Put a SIM in and the whole Cellular block
+becomes testable in one pass.
+
+### A false alarm worth writing down
+
+The device shows a **load average around 16 while completely idle**, which
+looks alarming and is not. 28 kernel threads sit permanently in `D`
+(uninterruptible) state:
+
+```
+tz_worker_thread  x8      scsi_srpmb_work
+tz_iwsock                 ree_time
+simpleinteracti   x4      ...
+```
+
+These are Samsung's TrustZone workers waiting on the secure world. Linux counts
+`D`-state tasks toward load average, so they inflate it permanently. `top`
+shows 0.0% CPU across every process. Do not chase this.
+
+### Still genuinely wrong
+
+`android.hardware.graphics.composer@2.1-service` takes a **SIGSEGV at every
+boot** and is restarted. The display works afterwards, so it has never been
+urgent, but it is real and it is most of what makes the "no error spam"
+checklist item fail.
