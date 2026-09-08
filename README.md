@@ -236,7 +236,8 @@ in [`docs/experiments/`](docs/experiments).
       channel - a 404, checked - so Settings, Updates will find nothing, by
       construction. Updating the rootfs means reflashing, which wipes the
       device; a new *kernel* does not. [`docs/UPDATING.md`](docs/UPDATING.md)
-      covers all three cases.
+      covers all three cases, and [`docs/UPSTREAMING.md`](docs/UPSTREAMING.md)
+      what it would take to get a channel.
 - [ ] Untested: Bluetooth HFP (calls over Bluetooth), wired headphones,
       earpiece routing, VoLTE, NFC.
 
@@ -346,6 +347,7 @@ releases do not use it. Closing that gap is the port's largest open task.
 | [`overlay/system/`](overlay/system) | the port's userspace, mirroring `/`. Installed into the rootfs by the device tarball |
 | [`installer/`](installer) | the recovery-flashable installer |
 | [`scripts/release/`](scripts/release) | what builds a release |
+| [`docs/UPSTREAMING.md`](docs/UPSTREAMING.md) | how this port would join UBports' update channels, and what it is short of |
 | [`gsi.lock`](gsi.lock) | the Halium GSI this port ships, pinned by build number and hash |
 | [`docs/UPDATING.md`](docs/UPDATING.md) | how updating works - kernel, rootfs, and why there is no OTA |
 | [`docs/status.md`](docs/status.md) | the honest inventory: what is proven, how it was checked, and what is not |
