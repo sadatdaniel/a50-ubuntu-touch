@@ -1,7 +1,16 @@
-# Experiment 014 — camera: the kernel panic does not reproduce
+# Experiment 014 — camera: the kernel panic does not reproduce (SUPERSEDED)
 
-**Date:** 2026-09-05 · **Status:** 🟡 hazard retired; HAL proven working; app crashes in the UT media layer
+**Date:** 2026-09-05 · **Status:** 🔴 conclusion overturned by [017](017-suspend-camera-panic.md) — the panic IS real, this experiment tested the wrong path; HAL proven working; app crashes in the UT media layer
 · **Device needed:** yes
+
+> **Correction, 2026-09-09.** The hazard retired below is real and was retired
+> on the wrong evidence. This experiment exercised V4L2 enumeration; the panic
+> is triggered by a **stale `vctx` from a previous open/close cycle**, which is
+> what suspend/resume produces. Suspending this device panics in exactly the
+> function quoted here, `fimc_is_devicemgr_open`, with the bootloader recording
+> `"RR":"KP"`. See [experiment 017](017-suspend-camera-panic.md). Everything
+> this experiment proves about the HAL and the app remains valid — only the
+> "does not reproduce" conclusion is withdrawn.
 
 ## The claim being tested
 

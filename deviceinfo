@@ -28,7 +28,20 @@ deviceinfo_name="Galaxy A50"
 deviceinfo_manufacturer="Samsung"
 deviceinfo_codename="a50"
 deviceinfo_arch="aarch64"
-deviceinfo_kernel_arch="arm64"
+# [V] MEASURED 2026-09-09. Must be "aarch64", not "arm64", even though
+#     deviceinfo.sample says "arm64 (aarch64 is also accepted)". They are not
+#     interchangeable: build-kernel.sh does
+#         kernel_arch="${deviceinfo_kernel_arch:-$deviceinfo_arch}"
+#         CLANG_TRIPLE="${kernel_arch}-linux-gnu-"
+#         CROSS_COMPILE="${kernel_arch}-linux-android-"
+#     so "arm64" yields the invalid triples arm64-linux-gnu- and
+#     arm64-linux-android-, and every cc-option test compile then fails. The
+#     Makefile reports that as a missing compiler feature, which is badly
+#     misleading - the observed symptom was
+#         Cannot use CONFIG_LTO: -flto=thin -fvisibility=default not supported
+#     while the same clang accepts both flags on their own (tested directly).
+#     "aarch64" still gives ARCH=arm64 via the case in build-kernel.sh.
+deviceinfo_kernel_arch="aarch64"
 
 # [V] The vendor base is Android 11. The kernel tree's own build.sh exports
 #     ANDROID_MAJOR_VERSION="r" and PLATFORM_VERSION="11.0.0", and the working
