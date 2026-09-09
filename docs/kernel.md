@@ -62,6 +62,64 @@ One variable, no device needed for the first half:
 **Do not skip step 4 to get to step 5 faster.** One boot test per variable is
 this project's own rule, broken once already at a cost of an hour.
 
+### Result — steps 1-4 done, 2026-09-09
+
+**Steps 1-4 pass. The config half of risk 1 is solved**, and the prediction in
+step 2 was half wrong in a way worth recording.
+
+`make savedefconfig` against the boot-proven `.config` produced an 806-line
+[`kernel/configs/exynos9610-a50_ut_defconfig`](https://github.com/sadatdaniel/a50-halium/blob/main/kernel/configs/exynos9610-a50_ut_defconfig)
+in a50-halium. Built with a bare `make`, exactly as `build-kernel.sh` does:
+
+| bare `make exynos9610-a50_ut_defconfig` | lost | gained |
+|---|---|---|
+| without `ANDROID_MAJOR_VERSION` | **3** | 0 |
+| with `ANDROID_MAJOR_VERSION=r` | **0** | 0 — identical, 1962 symbols |
+
+So step 2's claim that a resolved defconfig "should not need the environment
+variable" is **false**, and for a reason that is not about merging. The
+`KCONFIG_BUILTINCONFIG` merge *is* baked in, as predicted. What is not is
+`ANDROID_MAJOR_VERSION`: the top-level `Kconfig` reads it into a string symbol,
+and several drivers are `depends on ANDROID_MAJOR_VERSION >= "q"` / `>= "r"`.
+With it unset the comparison fails, those symbols become *invisible*, and
+`savedefconfig` cannot record what Kconfig will not show it. The only
+diagnostic is one line:
+
+```
+Kconfig:16:warning: environment variable ANDROID_MAJOR_VERSION undefined
+```
+
+The three symbols lost that way:
+
+```
+CONFIG_HALL_EVENT_REVERSE
+CONFIG_HALL_NEW_NODE
+CONFIG_USB_F_CONN_GADGET_NDOP
+```
+
+The third is not cosmetic. `conn_gadget` is the driver whose double
+`misc_register()` corrupts `misc_list` and produced this port's original
+display blocker — see [experiment 006](experiments/006-what-we-missed.md).
+A tooling path that silently drops it is precisely the failure mode this risk
+describes: compiles cleanly, does not boot, nothing in the log says why.
+
+**What this means for adopting the tools.** No patch to
+halium-generic-adaptation-build-tools is needed beyond exporting one variable
+before it runs `make`. That is a far smaller ask than the fallback below.
+
+**What this does *not* prove.** The `.config` is identical; the `Image` is not
+claimed to be. The tools use Google's prebuilt Clang where a50-halium pins
+Proton Clang — that is risk 3, still open — so a hash match is not expected and
+**step 5, the boot test, is still required**. The rule above stands: do not
+read this result as permission to skip it.
+
+Re-runnable, self-contained, with the reference `.config` committed:
+
+```sh
+docker run --rm -v a50-ksrc:/src -v "$PWD:/repo" -w /src \
+    a50-halium-build /repo/build/verify-defconfig.sh
+```
+
 ### If it cannot be made to work
 
 The fallback is to keep a50-halium as the kernel producer and feed its `Image`

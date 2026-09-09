@@ -63,7 +63,7 @@ flashed on a phone yet**. This file is the honest inventory.
 
 | Open | Why it matters |
 |---|---|
-| **A bare `make <defconfig>` kernel does not boot this device** | It is how the tools build kernels. [`kernel.md`](kernel.md) risk 1 — the largest single risk in the port. |
+| **A bare `make <defconfig>` kernel has not been boot-tested** | It is how the tools build kernels, so it gates official CI and an update channel. **The config half is now solved** (2026-09-09): a `savedefconfig` of the boot-proven `.config` plus `ANDROID_MAJOR_VERSION=r` reproduces that config exactly under a bare `make` — 1962 symbols, 0 lost, 0 gained. Without the variable 3 symbols vanish silently, one of them `CONFIG_USB_F_CONN_GADGET_NDOP`, the driver behind this port's original display blocker. So the tools need one exported variable, not a patch. **The boot test has not been done**, and the toolchain still differs (risk 3), so the `Image` is not claimed to match. [`kernel.md`](kernel.md) risk 1 |
 | **`console=tty0` cannot be delivered via `deviceinfo_kernel_cmdline`** | S-Boot ignores the boot image command line. [`kernel.md`](kernel.md) risk 2. |
 | **The tools use Google's prebuilt Clang, not the pinned Proton Clang** | A second changed variable sitting under risk 1. [`kernel.md`](kernel.md) risk 3. |
 | **Does S-Boot check the boot header `id` digest?** | The one field experiment 001 could not reproduce. One boot test. |
