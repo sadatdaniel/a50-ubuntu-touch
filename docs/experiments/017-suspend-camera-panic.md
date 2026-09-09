@@ -1,6 +1,7 @@
 # Experiment 017 — suspend panics in the camera driver
 
-**Date:** 2026-09-09 · **Status:** 🟡 root cause found, patch written, boot test pending
+**Date:** 2026-09-09 · **Status:** 🔴 panic real and UNFIXED; trigger is a V4L2 open, not suspend — see the CORRECTION below
+· **Device needed:** yes
 · **Device needed:** yes
 
 ## Symptom
@@ -117,6 +118,47 @@ panic, but it trades suspend against the camera — when the Qt/AAL media-layer
 problem in [experiment 014](014-camera.md) is fixed, the driver comes back and
 the panic with it.
 
+
+## CORRECTION, later on 2026-09-09 — the trigger is not suspend
+
+Everything below about the *panic* is right; the attribution to suspend is
+wrong, and so is the claim in an earlier revision of this file that the patch
+was verified.
+
+A pm_test=devices run after flashing the patched kernel did not panic, and that
+was read as the fix working. It was not. That run aborted at
+`PM_SUSPEND_PREPARE`, on an unrelated ABOX veto:
+
+```
+Abort: PM_SUSPEND_PREPARE failed: abox_pm_notifier (11)
+```
+
+`PM_SUSPEND_PREPARE` runs **before any device is suspended**, so the camera
+never suspended and the patch was never exercised. "No panic" meant "we never
+got that far".
+
+A later crash record carries the full stack, and it is not a suspend path:
+
+```
+STACK: fimc_is_devicemgr_open <- fimc_is_sensor_open <- fimc_is_ssx_video_open
+       <- v4l2_open <- chrdev_open <- vfs_open <- path_openat <- SyS_openat
+KTIME: 23    RR: KP
+```
+
+That is **userspace opening a V4L2 node 23 seconds into boot** — the Android
+camera HAL inside the container (`vendor.samsung.hardware.camera.provider@4.0`,
+`vendor.samsung_slsi.hardware.ofi@1.0`, `camera_service`). It recurred twice
+with the patched kernel installed, confirmed by reading the boot partition back
+(`344ea513…`).
+
+So: the panic is real and reproducible in the field, it is triggered by opening
+the camera and not by suspend, and it remains **unfixed**. Suspend merely
+happens to reach the same code because resume re-opens the pipeline — which is
+still unproven, since full suspend has never completed here.
+
+What experiment 014 got right, then, is more than this file first allowed: its
+V4L2 enumeration test genuinely did not crash. The panic is state-dependent, and
+what state makes it fire is still unknown. That is the open question.
 ## This corrects experiment 014
 
 014 retired the "camera panics the kernel" hazard as "does not reproduce". The
