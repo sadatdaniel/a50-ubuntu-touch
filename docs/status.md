@@ -84,9 +84,40 @@ flashed on a phone yet**. This file is the honest inventory.
   registered device in `ubports/installer-configs`; this port has neither a
   system-image channel nor an upstream device entry. The flashable zip is the
   substitute, and `installer/README.md` explains why the shape differs.
+  Nothing about this being a Samsung blocks it: `herolte` (Galaxy S7 Exynos) is
+  already in `ubports/installer-configs` and installs with `heimdall:flash`,
+  pulling its images from a GitHub release with sha256 checksums, which is the
+  shape this port already publishes. The missing pieces are only the channel and
+  the device entry. Note the guide itself stops short here —
+  `porting/finalize/UBports_installer.rst` says *"For Halium-9.0, exact steps
+  are not available at this time"* — so the convention has to be read off
+  existing ports and `gsi-port-ci.yml` rather than the documentation.
 * **An OTA channel.** Nothing serves `26.04-1.x/.../a50`, so Settings ->
   Updates finds nothing. Updating means reflashing - or, for a kernel-only
   change, `dd` from a running system.
+* **The rootfs on `system` instead of `/data/rootfs.img`.** This is the one
+  place the port knowingly differs from the shape UBports' own tooling
+  publishes, and it is worth stating plainly because the documentation calls it
+  out by name. `porting/finalize/index.rst`: *"Previously, your port has had the
+  rootfs and system image coexisting on the userdata partition. These need to be
+  moved to the system partition."* This port writes
+  `ROOTFS_TARGET=/data/rootfs.img`, so by that definition it is pre-finalization.
+  The shared port pipeline
+  ([`gsi-port-ci.yml`](https://gitlab.com/ubports/porting/community-ports/halium-generic-adaptation-build-tools/-/blob/main/gsi-port-ci.yml))
+  publishes `boot.img`, `dtbo.img`, `recovery.img` and **`ubuntu.img.zst`**, and
+  established GSI ports flash that to the system partition
+  (`fastboot flash system_a ./ubuntu.img`). **Measured on the device, so this is
+  known to be possible rather than assumed:**
+
+  | | |
+  |---|---|
+  | `system` partition | **5300 MiB** — a real partition; this device has no super/dynamic partition |
+  | this port's image | 6144 MiB, which does **not** fit |
+  | content actually in that image | ~4.1 GB, which **does** fit, with ~1.2 GB spare |
+
+  So the move is a rebuild at a smaller size plus an initramfs that mounts the
+  rootfs from `system`, not a redesign. It would also hand ~6 GB back to
+  `/userdata`. Not started, not blocked.
 
 ## A standing hazard, not a task
 
