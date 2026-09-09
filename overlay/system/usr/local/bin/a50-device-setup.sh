@@ -67,6 +67,29 @@ if [ -x /usr/bin/waydroid ] && [ -f /usr/lib/systemd/user/waydroid-session.servi
     fi
 fi
 
+
+# The clock indicator is the one indicator Lomiri never starts.
+#
+# lomiri-indicators.target is what actually pulls the indicators up, via
+# /etc/systemd/user/lomiri-indicators.target.wants/. Seven ayatana indicators
+# are symlinked in there - bluetooth, display, keyboard, messages, power,
+# session, sound - and ayatana-indicator-datetime is NOT. Its only
+# WantedBy= is ayatana-indicators.target, which never becomes active on this
+# image, so the unit is enabled, never attempted, and logs nothing at all.
+#
+# The visible symptom is a lock screen and panel clock that does not match the
+# real time, while Settings looks right - Settings reads the system clock
+# directly, and the system clock is fine (NTP synced, correct timezone, RTC in
+# agreement). Only the indicator that feeds the shell is missing.
+#
+# Measured 2026-09-09: 7 of 8 ayatana indicators active, datetime "inactive
+# (dead)", and starting it by hand fixes the clock immediately.
+DT_WANTS=/etc/systemd/user/lomiri-indicators.target.wants
+DT_UNIT=ayatana-indicator-datetime.service
+if [ -d "$DT_WANTS" ] && [ ! -e "$DT_WANTS/$DT_UNIT" ]; then
+    ln -sf "/usr/lib/systemd/user/$DT_UNIT" "$DT_WANTS/$DT_UNIT" \
+        && log "clock indicator wired into lomiri-indicators.target"
+fi
 # The .desktop sweep is NOT started here.  It edits files under the phablet
 # user's $HOME, and waydroid-session.service - a *user* unit, with the right
 # $HOME - already launches it.
