@@ -62,7 +62,22 @@ One variable, no device needed for the first half:
 **Do not skip step 4 to get to step 5 faster.** One boot test per variable is
 this project's own rule, broken once already at a cost of an hour.
 
-### Result — steps 1-4 done, 2026-09-09
+
+### Result — steps 1-4 re-run, 2026-09-09 (see the correction below)
+**Prior art, and a correction.** The mechanism below was already established in
+[experiment 002](experiments/002-bare-make-config.md) on 2026-09-01 — same three
+symbols, same `ANDROID_MAJOR_VERSION` cause — and the fix is already committed on
+the kernel branch as `halium_a50_defconfig`, together with a patch removing those
+Kconfig dependencies. This section was originally written as if it were a new
+finding. It was not; it is a re-derivation, and it happened because the
+`deviceinfo` comment and 002 were not read first.
+
+What *is* new here is narrower: 002's ground truth was the **base** profile
+(`074aad86…`), while releases ship the **full** profile (`04b2442d…`). The two
+defconfigs differ by 17 symbols — `CONFIG_BT*`, `RFKILL`, the `anbox-*` binder
+devices and `EXTRA_FIRMWARE`. So the branch's `halium_a50_defconfig` reproduces
+the base kernel, not the shipped one.
+
 
 **Steps 1-4 pass. The config half of risk 1 is solved**, and the prediction in
 step 2 was half wrong in a way worth recording.

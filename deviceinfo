@@ -71,6 +71,9 @@ deviceinfo_ubuntu_touch_release="26.04-1.x"
 #     halium.config fragment; the ANDROID_MAJOR_VERSION dependency removal for
 #     HALL_EVENT_REVERSE/HALL_NEW_NODE/USB_F_CONN_GADGET_NDOP; and
 #     console=tty0 prepended to CONFIG_CMDLINE (own commit, own boot test).
+#     NOTE 2026-09-09: the branch tip has moved since - d25a56a60ff0, not
+#     bab51ce8e. The tools clone the BRANCH, so they build the tip, not the
+#     pinned commit. Re-check before trusting a tools-built kernel to match.
 deviceinfo_kernel_source="https://github.com/sadatdaniel/android_kernel_samsung_exynos9610_mint"
 deviceinfo_kernel_source_branch="ubuntu-touch-26.04"
 
@@ -103,14 +106,27 @@ deviceinfo_kernel_cmdline="androidboot.selinux=permissive loop.max_part=7"
 #     visible rather than implicit.
 deviceinfo_kernel_clang_compile="true"
 deviceinfo_kernel_clang_branch="android11-gsi"
-
-# [V] Required: the kernel config carries CONFIG_LTO_CLANG=y + CONFIG_THINLTO=y
-#     (checked in the boot-verified .config), and ThinLTO links need ld.lld +
-#     llvm-* binutils. clang_compile alone leaves GNU ld from the gcc-4.9
-#     prebuilt as the linker, which cannot link LTO bitcode. llvm_compile makes
-#     the tools pass LLVM=1 LLVM_IAS=1 and build in a hermetic LLVM-only PATH -
-#     the closest match to how the Proton Clang build was invoked.
-deviceinfo_kernel_llvm_compile="true"
+# [X] MEASURED WRONG, 2026-09-09. This said llvm_compile was "required" and "the
+#     closest match to how the Proton Clang build was invoked". Both halves are
+#     false, and the second is what made the first look true.
+#
+#     LLVM=1 / LLVM_IAS=1 arrived in kernel 5.7. This is a 4.14 tree: the
+#     variables are simply ignored, so LD never becomes ld.lld, and the build
+#     dies in prepare-compiler-check with
+#         Cannot use CONFIG_LTO_CLANG: requires LLD or GNU gold 1.12 or later
+#
+#     And the Proton build never passed LLVM=1 either. build.sh switches on
+#     BUILD_PREF_COMPILER_VERSION; the `proton` branch this port uses passes
+#         CC=clang HOSTCC=clang AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy
+#         OBJDUMP=llvm-objdump STRIP=llvm-strip
+#     with no LLVM=1 at all. Only the `clang` branch uses LLVM=1.
+#
+#     The LTO reasoning above is still right: ThinLTO does need ld.lld and the
+#     llvm-* binutils. But build-kernel.sh forwards only CC and LD, so the rest
+#     have to be reachable under the CROSS_COMPILE prefix - which means this
+#     port needs a build wrapper (gsi-port-ci.yml's
+#     ADAPTATION_TOOLS_USE_BUILD_WRAPPER=1), not a deviceinfo flag.
+deviceinfo_kernel_llvm_compile="false"
 
 # [V] `build.sh -v recovery` emits arch/arm64/boot/Image, uncompressed, with
 #     the DTB already inside it - the known-good boot images carry no separate
@@ -208,8 +224,11 @@ deviceinfo_ramdisk_compression="gzip"
 #     docs/device-provisioning.md.
 deviceinfo_system_partition_size="6144M"
 
-# [?] The device has UFS storage (13520000.ufs), so 4096 is the expected
-#     sector size, but this has not been read back off the device.
+# [V] MEASURED 2026-09-09 off the running device, which the [?] above asked for:
+#     /sys/block/sda/queue/{logical,physical,hw_sector}_size all read 4096.
+#     Note the mounted rootfs also reports a 4096 ext4 block size, but that is
+#     circular evidence - build-rootfs-image.sh passes `mkfs.ext4 -b 4096`
+#     precisely because this value is set. The sysfs figures are the hardware.
 deviceinfo_rootfs_image_sector_size="4096"
 
 ##########
