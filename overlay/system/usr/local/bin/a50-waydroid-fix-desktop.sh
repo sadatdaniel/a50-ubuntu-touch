@@ -46,11 +46,19 @@ sweep() {
     echo "$n"
 }
 
+# Convergence needs BOTH three clean passes AND a minimum runtime. Waydroid
+# regenerates the entries once more when Android finishes booting ("Android
+# with user 0 is ready", measured ~30-50 s after session start) - a sweep
+# that quits on three early clean passes converges before that regeneration
+# and the clobbered Waydroid.desktop then silently fails to launch anything,
+# because its bare `waydroid show-full-ui` has no session bus (2026-09-10).
+MIN_PASSES=$((150 / 3))   # stay alive at least 150 s
 clean=0; i=0
-while [ "$i" -lt 80 ]; do
+while [ "$i" -lt 200 ]; do
     fixed=$(sweep)
     if [ "$fixed" -eq 0 ]; then
-        clean=$((clean + 1)); [ "$clean" -ge 3 ] && break
+        clean=$((clean + 1))
+        [ "$clean" -ge 3 ] && [ "$i" -ge "$MIN_PASSES" ] && break
     else
         clean=0; echo "waydroid: adjusted $fixed entries"
     fi
