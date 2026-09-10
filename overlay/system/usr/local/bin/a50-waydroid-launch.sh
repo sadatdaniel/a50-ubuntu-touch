@@ -33,6 +33,27 @@ export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$U}"
 export DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS:-unix:path=$XDG_RUNTIME_DIR/bus}"
 export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-wayland-0}"
 
+# 3. Stale sessions after a compositor restart. The session's Wayland clip
+#    dies with the compositor it connected to, but the session PROCESS
+#    survives (graphical-session.target does not cycle when lightdm
+#    restarts Lomiri, so the unit's PartOf= never fires). A surviving
+#    session then serves launch requests into a dead socket: the app
+#    "launches", no window ever maps, and Lomiri's launching splash spins
+#    forever. The socket's mtime is newer than the session's start time
+#    exactly when the compositor was replaced after the session began -
+#    restart the session then. (2026-09-11)
+SESSION_PID="$(pgrep -f 'waydroid session start' | head -1)"
+if [ -n "$SESSION_PID" ] && [ -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]; then
+    # /proc/PID's mtime is dynamic; ps etimes gives the true start time.
+    S_ELAPSED="$(ps -o etimes= -p "$SESSION_PID" 2>/dev/null | tr -d " ")"
+    S_STARTED="$(($(date +%s) - ${S_ELAPSED:-0}))"
+    S_SOCK="$(stat -c %Y "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" 2>/dev/null || echo 0)"
+    if [ "$S_SOCK" -gt "$S_STARTED" ]; then
+        waydroid session stop >/dev/null 2>&1
+        sleep 1
+    fi
+fi
+
 if [ "${1:-}" = "--full-ui" ]; then
     waydroid show-full-ui || exit $?
 else
