@@ -146,6 +146,49 @@ close-path bug (crash D), whatever the PM notifiers disturb, or hardware
 3. The 30-minute watcher and any future unattended testing must treat
    "freezer passes interactively" as meaningless — the failure is delayed.
 
+## The kernel fix for crash D — written, built, flashed, verified
+
+a50-halium `fimc-is-group-stop-semaphore` (commit `3471956`): the hang was a
+race in `fimc_is_group_task_stop()` — it released `gtask->smp_resource` only
+when the semaphore's wait list was already non-empty, but
+`fimc_is_group_shot()` downs that semaphore *after* passing its first
+REQUEST_STOP check, so a stop racing that window sees an empty list, skips
+the release, and `kthread_stop()` waits forever on a `down()` nothing will
+complete. The fix ups both that semaphore and the closing group's
+`smp_trigger` unconditionally; a spurious up is harmless because the
+worker's next REQUEST_STOP check bails and both semaphores are re-initialised
+on the next start. No public fix exists to lift — LineageOS exynos9820
+(lineage-23.2) still carries the conditional up().
+
+**Verified** on boot image `fe4e753a` (flash read-back match): close-path
+storms of 8×30 and 16×50 concurrent open/close rounds across the ISP
+(`video121`), 3AA (`video111`) and sensor (`video101`) nodes — 2,160 node
+operations under contention with the container's camera HAL — completed
+with uptime continuous, zero wedged D-state processes, zero kernel fault
+markers. PM-cycle testing stays paused until the system proves quiet under
+the watcher.
+
+## The media-hub crashes are the missing-AppArmor bug (symbolized)
+
+The recurring `media-hub-server` SIGSEGVs (45 on the 2026-09-09 boot, more
+today) symbolized cleanly via the published `media-hub-dbgsym` ddeb +
+`addr2line`:
+
+```
+operator+(QString const&, QString const&)            qstring.h:1528
+Context::profile_name()                              apparmor/lomiri.cpp:143
+ExistingAuthenticator::authenticate_open_uri_request lomiri.cpp:349
+PlayerSkeletonPrivate::openUri() lambda#1            player_skeleton.cpp:191
+main                                                 server.cpp:162
+```
+
+Every app-initiated `openUri` walks the AppArmor context path, and without
+kernel AppArmor the `Context`'s QString is garbage — QString arithmetic on
+it segfaults. Not patchable from this port (the 26.07 build's source is not
+on the public refs and no `*_RUNNING_UNDER_TESTING`-style hook exists in
+the reachable code); the fix is the **AppArmor ladder** (a50-halium
+`apply-apparmor-step1.py`, prepared per 008's appendix).
+
 ## Next steps
 
 1. **Quiet observation.** All PM testing is stopped — five deaths today, and

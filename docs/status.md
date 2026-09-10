@@ -1,6 +1,6 @@
 # Status
 
-**Last updated: 2026-09-10.** Ubuntu Touch boots, reaches the UI, and has
+**Last updated: 2026-09-10 (evening).** Ubuntu Touch boots, reaches the UI, and has
 working audio, Bluetooth, calls, SMS, mobile data, GPS, USB, a Wi-Fi hotspot
 and Waydroid. There is a recovery-flashable installer, and **it has not been
 flashed on a phone yet**. This file is the honest inventory.
