@@ -37,6 +37,8 @@ no power-down), each followed by a delayed kernel panic:
 | Crash A | 16:57:30–35, clean entry/exit | +19 s | `super_cache_count:shrink_slab:shrink_node:kswapd`, "Fatal exception" |
 | Crash B | 17:03:11–16, clean entry/exit | +~120 s | `(null):slsi_mlme_add_scan:slsi_scan:rdev_scan:nl80211_trigger_scan:…:SyS_sendmsg`, "Fatal exception **in interrupt**" |
 | Crash C | 17:20:49–54, clean entry/exit, **Wi-Fi radio off** | +~10 s | **no panic text at all** — kernel printk and the userspace journal both stop within the same ~20 s window; silent whole-system lockup, recovered only by the owner's forced reset ~8 min later |
+| Crash D | 17:45:31, `pm_test=devices` | +25 s | **full freeze-failure captured**: `gst-plugin-scan` wedged in `fimc_is_group_close → kthread_stop → wait_for_completion` (D-state) → `Freezing of tasks failed` → `Abort: One or more tasks refusing to freeze` → fatal exception in that same stack in `__switch_to` |
+| Crash E | 17:54:52, `pm_test=devices`, gst absent this boot | +32 s | `pagecache_get_page:filemap_fault:ext4_filemap_fault` fatal — **random page-cache corruption**. That boot had *already* self-degraded pre-rung: SLSI self-recovery tore the WLAN service down, `EXT4-fs (sda32): errors=remount-ro` |
 
 Between them: a 22 h 40 m boot and a fresh 5 min boot, both with periodic
 NetworkManager scans, **zero panics** until the freezer cycle.
@@ -78,6 +80,45 @@ freezer disturbs the TrustZone worker threads
   ~2 min before each crash to page cache; this one is built to keep the tail.
 * Evidence preserved at `a50-ut-out/suspend-018/` (host side).
 
+## The gst-plugin-scan trigger (crash D, fully captured)
+
+Every user session starts `clean-gstreamer-cache.service` → media-hub →
+`gst-plugin-scan`, which probes **every** `/dev/video*` node for the v4l2
+plugin. The session even SIGKILLed it 15 s before the rung — useless against
+a D-state task. Two fimc users contend (the container's camera HAL holds the
+pipeline; the scanner opens/closes), the scanner wedges in
+`fimc_is_group_close`'s `kthread_stop`, and it stays wedged for as long as
+the boot lives — any later PM attempt fails to freeze on it. The wedge is
+probabilistic: other boots' scans completed.
+
+**Fix shipped:** `overlay/system/usr/lib/udev/rules.d/99-a50-fimc-scan-block.rules`
+— host userspace loses access to the fimc nodes entirely (`TAG-="uaccess"` is
+the load-bearing clause; logind's ACL overrides any mode). The container's HAL
+is unaffected — it applies its own `cameraserver:camera` permissions inside
+the container. On the dev device, `/etc/systemd/system/a50-fimc-lock.service`
+does the same at boot (mode 0600 zeroes the ACL mask) until the next install.
+
+## wlbt does have a suspend path — it runs at the devices phase
+
+Source reading (`drivers/misc/samsung/scsc/`): the `scsc_wlbt` platform
+driver has `.suspend/.resume` (`platform_mif_module.c`) → `mxman_suspend`/
+`mxman_resume` (`suspendmon.c`) — the MX140 WiFi/BT core is properly powered
+down and restored **only when the devices phase runs**. At freezer level the
+chip stays fully powered while its kthreads freeze — a state stock Android
+never creates, because stock always suspends through the full path. The
+morning full-`mem` test (kernel survived, network died) is consistent: the
+chip *was* suspended properly, but the resume half did not bring the
+interfaces back.
+
+## Filesystem ruled out
+
+After crash E's `EXT4-fs (sda32): errors=remount-ro`, a full offline
+`e2fsck -fy` on `/dev/block/sda32` from TWRP came back **completely clean**
+(all 5 passes, nothing fixed). The ext4 error was transient kernel-side
+state, not media damage. What remains as the corruption engine: the fimc
+close-path bug (crash D), whatever the PM notifiers disturb, or hardware
+(RAM untested).
+
 ## What is NOT yet proven
 
 * **Crash C does not exonerate wlbt**: `nmcli radio wifi off` stops the
@@ -107,14 +148,19 @@ freezer disturbs the TrustZone worker threads
 
 ## Next steps
 
-1. Isolate the destabilizer with the driver-level one-variable test:
-   unbind `scsc`/wlbt (or ABOX) before a freezer cycle. Each unbind costs
-   the corresponding feature until reboot — run when a reboot is cheap.
-2. Kernel-side: instrument or diff the vendor `abox_pm_notifier` and the
-   scsc driver's freeze handling (it has none) against a tree where
-   suspend works (stock Samsung — the same notifier runs there, which
-   argues the race needs UT's task mix to trigger).
-3. Userspace (orthogonal, needed regardless): nothing ever *triggers*
+1. **Quiet observation.** All PM testing is stopped — five deaths today, and
+   crash E's boot degraded before any rung. Let the watcher run; if the
+   system corrupts itself with no PM activity at all, the suspect list
+   shifts to hardware (RAM test) and the fimc close bug alone.
+2. Kernel: `fimc_is_group_close`'s `kthread_stop` wedge (crash D) is a real
+   driver bug with the full stack captured — disassemble against `vmlinux`
+   and read `fimc-is-group.c`'s kthread lifecycle against the HAL's
+   concurrent use.
+3. The PM-notifier churn (ABOX power-cycle at every PREPARE, TZ `-512`s)
+   remains unexonerated for the corruption; the one-variable unbind tests
+   (wlbt: attempted, invalidated by the half-torn remove path; ABOX: not
+   attempted) are still the cleanest isolation if PM work resumes.
+4. Userspace (orthogonal, needed regardless): nothing ever *triggers*
    suspend today — `/sys/power/autosleep` does not exist and the Android
    suspend HAL loop is never enabled; repowerd's libsuspend would fall back
    to the legacy direct-write backend, which has also never fired.

@@ -1,0 +1,19 @@
+# fimc-is2 V4L2 nodes: host userspace must not open these.
+#
+# GStreamer's plugin scanner (spawned at every session start by
+# clean-gstreamer-cache.service + media-hub) probes every /dev/video* node.
+# On this device the fimc-is2 driver's group-close path can wedge the
+# scanner in an unkillable D-state (kthread_stop / wait_for_completion),
+# which blocks the PM freezer outright and is followed by kernel memory
+# corruption. See docs/experiments/018-suspend-freezer-wifi-instability.md.
+#
+# Nothing on the host needs these nodes: the camera architecture goes
+# through the Android container's HAL, which sees the nodes with its own
+# cameraserver:camera permissions inside the container. This rule only
+# changes the host-side view.
+# TAG-="uaccess" is the load-bearing part: 70-uaccess.rules would otherwise
+# tag seat video devices and logind would hand phablet an ACL that overrides
+# any mode/owner set here or by the per-node rules. Without the tag, phablet
+# has no path in; the container's camera HAL is unaffected (it applies its
+# own permissions inside the container).
+KERNEL=="video*", SUBSYSTEM=="video4linux", MODE="0600", OWNER="root", GROUP="root", TAG-="uaccess"
