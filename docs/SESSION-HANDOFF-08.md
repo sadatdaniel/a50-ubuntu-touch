@@ -76,3 +76,41 @@ and upstream kernel solutions before choosing a further boot experiment.
 Next: identify the post-AppArmor userspace boot-loop trigger using preserved
 journals and kernel captures; compare with Halium's existing init/SELinux
 integration. No kernel or device configuration changes made yet.
+
+## Concrete userspace failure found
+
+Copied `core.vndservicemanag.1000.1eb3f72765414629b72566945f50e296.3723.1789103782000000.zst`
+from the phone to session-08 evidence. Offline libzstd decompression (6,139,904
+bytes) exposes the abort message twice:
+
+`Check failed: selinux_status_open(true ) >= 0`
+
+This is direct evidence of a vendor service-manager userspace abort during
+the 07:16 boot. It does not by itself prove which component resets the phone.
+The dump maps `/system/lib64/libselinux.so`; linker configuration strings
+also mention libselinux_stubs.so. Next verify the Halium SELinux-stub
+integration and service linker namespace against upstream before changing it.
+419 vndservicemanager dump files exist: do not infer the first crash date
+from the limited journal/coredumpctl index. No dumps were deleted.
+
+## Existing solution located, not yet applied
+
+- Upstream `Halium/android_external_selinux_stubs` master
+  `c1467934ec5b4c3940ab41a015bae981824bf2cb`, cloned under session-08 evidence,
+  implements `selinux_status_open()` as return 0 (stubs.c:287).
+- Phone already has `/android/system/lib64/libselinux_stubs.so` exporting
+  that symbol. Vendor vndservicemanager instead needs `libselinux.so`; its
+  init service has no LD_PRELOAD. The service is `shutdown critical` and
+  restarts main/hal/early_hal classes on restart.
+- Prior porter report describes this exact Halium vndservicemanager fix:
+  preload libselinux_stubs.so using the Android init service's setenv option.
+  https://irclogs.sailfishos.org/logs/%23sailfishos-porters/2024/%23sailfishos-porters.2024-12-17.log.html
+  Use the existing library and existing container mount-hook convention;
+  do not invent replacement security stubs or change the kernel first.
+- Next: read a50-container-prepare.sh and mount hooks completely, verify
+  Android 11 init setenv behavior from source, prepare a scoped service
+  override with backups, test linker visibility, then plan a controlled
+  AppArmor boot with Android container held back until host access works.
+  A service-manager abort alone still does not prove the phone reset cause.
+- 20:38 CEST: uptime 13h18m, available memory 1640 MiB, swap 438 MiB.
+  Phone remains on step 1; no device modifications in this session.
