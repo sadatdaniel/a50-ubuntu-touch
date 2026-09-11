@@ -12,6 +12,13 @@
 
 A50_HOOKS=/var/lib/lxc/android
 
+# Samsung's vendor service manager uses SELinux even when the host selects
+# AppArmor. Use Halium's existing compatibility library for this service.
+if [ -f "$A50_HOOKS/vndservicemanager.rc.selinux-stubs" ]; then
+    mount --bind "$A50_HOOKS/vndservicemanager.rc.selinux-stubs" \
+        "${LXC_ROOTFS_MOUNT}/vendor/etc/init/vndservicemanager.rc"
+fi
+
 # Samsung's watchdogd opens /dev/watchdog (misc minor 130); that open spins
 # forever in kernel while holding the global misc_mtx, which freezes EVERY
 # misc-device open system-wide - mali0, ion, binder, hwbinder, uinput.  Proof:

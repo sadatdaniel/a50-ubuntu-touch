@@ -55,7 +55,25 @@ if [ -x /usr/local/bin/a50-gen-mixer-paths.py ] && [ -r "$src" ]; then
     fi
 fi
 
-# --- 4. wire the hooks into the container's mount hook ----------------------
+# --- 4. vendor service manager with the Halium SELinux compatibility library -
+# With AppArmor selected, Samsung's service manager aborts in
+# selinux_status_open(). Halium already provides these stubs; preload them
+# for this service alone, preserving all other vendor service options.
+src="$V/etc/init/vndservicemanager.rc"
+dst="$D/vndservicemanager.rc.selinux-stubs"
+if [ -r "$src" ] && [ ! -s "$dst" -o "$src" -nt "$dst" ]; then
+    if [ "$(grep -c '^service vndservicemanager ' "$src")" != 1 ] ||
+       grep -q '^[[:space:]]*setenv[[:space:]]*LD_PRELOAD' "$src"; then
+        log "unexpected vndservicemanager definition; refusing to replace its environment"
+        exit 1
+    fi
+    sed '/^service vndservicemanager /a\
+    setenv LD_PRELOAD libselinux_stubs.so' "$src" > "$dst.tmp"
+    mv "$dst.tmp" "$dst"
+    log "generated vndservicemanager.rc.selinux-stubs"
+fi
+
+# --- 5. wire the hooks into the container's mount hook ----------------------
 # One appended line, not a rewritten file, so a lxc-android-config update that
 # changes mount.sh does not silently drop or fight with this.
 if [ -f "$D/mount.sh" ] && ! grep -q 'a50-mount-hooks.sh' "$D/mount.sh"; then
