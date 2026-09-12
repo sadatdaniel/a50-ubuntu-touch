@@ -25,6 +25,21 @@ a50:
   DeviceType: phone
   DriverType: halium
   GridUnit: 21
+  # Samsung vendor overlay: 83px status bar, centered 73.9dp notch at
+  # 420dpi (~194px), 151px rounded corners. See docs/display-cutout.md.
+  CollapsedPanelHeight: 83
+  DisplayCutoutsCollapsed:
+    - 0 0 75 83
+    - 440 0 200 83
+    - 1005 0 75 83
+  DisplayCutoutsCollapsedLight:
+    - 0 0 75 83
+    - 440 0 200 83
+    - 1005 0 75 83
+  DisplayCutoutsExpanded:
+    - 0 0 75 83
+    - 440 0 200 83
+    - 1005 0 75 83
   WebkitDpr: 2
   SupportedOrientations:
     - Portrait
