@@ -57,3 +57,31 @@ kernel fault with experiment 018 (ABOX/TrustZone and fimc lifetime evidence).
 Avoid another identical freezer test without new evidence or a focused fix.
 Official recovery/OTA/installer finalization remains queued after stability;
 video recording remains explicitly broken and deferred.
+
+## Recovery confirmed
+
+User confirmed frozen/black screen and manually restarted. USB SSH recovered
+by 12:45 CEST. New boot ID `f8a80a98-56ab-477d-bd96-207cf49b6cdb`, AppArmor
+parameter N, consistent with the preserved aa1 fallback. User subsequently
+reported Waydroid not working again; leave unresolved and return after suspend.
+
+Recovered locally to a50-ut-out/session-18: after-freezer.dmesg,
+sec_log-prev.txt and kmsg-tail-recovered.log. The Samsung sec_log-prev file
+ends in early boot messages and is not a trustworthy final-fault witness here.
+Copying the growing kmsg-capture.log caused a PuTTY assertion; a fixed
+25,000-line snapshot at /userdata/a50-session18/kmsg-tail-recovered.log copied
+successfully. The snapshot contains the failed boot's final messages.
+
+The persistent capture ends the aa6 boot at timestamp 1889.423627 immediately
+after suspend exit and ABOX messages: Calliope ready, abox_restore_data,
+abox_boot_done_work_func releasing wake lock. It then jumps to the next
+boot's early timestamps. No panic/Oops was captured in that final sequence.
+An ABOX QoS log reports req=1636958208kHz, ret=1180000kHz; inspect the exact
+source before interpreting that value (it might be logging, units or state).
+These observations identify an investigation point, not proven causation.
+
+Next exact-source inspection of sound/soc/samsung/abox/abox.c was rejected by
+automatic approval review due usage limit, with retry indicated at 15:40.
+No attempt to bypass the rejection, no additional PM test, no kernel fix
+applied. Commit 95d3ada contains the initial test handoff; this recovery
+addendum and CHANGELOG.md record the subsequent recovery findings.
