@@ -78,3 +78,38 @@ not continuous review. Timer ends on reboot.
 
 User is available to force restart or use TWRP if needed. Told user no restart
 needed while build runs. No new PM test or flash has occurred.
+
+## Resumed after usage reset — aa7 boot and failed connectivity test
+
+At 22:30 CEST tools worked again. Docker build had completed 17:37:47 CEST,
+exit 0 (about 21 minutes). Image SHA256:
+f96e37acdd2c444b428986bd5eb7eafa0961f4d047f62345fd6877a7a45bcbad.
+Packaged with verified 90c281f8 donor, unchanged ramdisk e78e8cb8... .
+boot-aa7.img 55,851,008 bytes, SHA256:
+2cdeb6352c757a83583379dde3a6e0df11c2a4b02072f001e3b25c782f4bea4b.
+Actual aa7 configuration matches preserved aa6 byte-for-byte.
+
+Normal boot succeeded, boot ID 70e806c5-3b4e-445b-8873-80e7a087d4c7,
+AppArmor Y, Android boot_completed=1, lightdm and persistent capture active.
+User confirmed screen and touch work. At 22:32:39 guard restored aa1; exact
+55,785,472-byte partition prefix c57250fa... verified. Guard cleanup completed,
+root returned RO. On-disk boot is aa1, running kernel was aa7.
+
+Stopped Waydroid session/container normally and resumed 30min health timer,
+WakeSystem=no. Initial stats success=0/fail=0. Pretest ABOX runtime active,
+/sys/module/abox/parameters/freezer_skip_pm=N. No kernel fault or blocked
+camera-close task found; D-state samples were vendor TZ and governor workers.
+Wi-Fi address after this reboot 192.168.179.86; USB 10.15.19.82.
+
+Ran ONE systemd a50-freezer-isolation-test.service invoking the prepared
+/userdata/a50-session20/freezer-isolation-test.sh. It verifies fallback and
+boot ID, captures baseline, enables diagnostic mode, writes freezer then mem,
+and restores settings with an EXIT trap. No deeper test attempted.
+First post-test USB SSH failed with Software caused connection abort.
+Wi-Fi SSH then timed out. No successful post-test response obtained; whether
+the cycle returned and whether ABOX isolation actually occurred is pending
+recovery of logs. Asked user to check screen/touch without restarting yet;
+physical state confirmation pending. Do not claim ABOX exonerated or fixed.
+No repeated test. Next: user-assisted restart into verified aa1 if frozen,
+recover fixed-size persistent log tail and session20 result files before
+further PM work. TWRP only if normal fallback boot cannot recover.

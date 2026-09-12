@@ -6,9 +6,11 @@
   checked directly in the preserved compiled source volume.
 - Identified an uninitialized ABOX QoS log argument; the enormous printed
   request value does not establish an actual excessive frequency request.
-- Prepared an opt-in, freezer-only ABOX notifier isolation build. Mocked
-  notifier tests pass; kernel build and hardware validation remain pending.
-  This is a diagnostic experiment, not a suspend fix or OTA release.
+- Built and booted the opt-in aa7 ABOX freezer-isolation kernel with AppArmor
+  enabled; user confirmed screen and touch. Automatic aa1 fallback restoration
+  was verified. One diagnostic cycle then lost USB and Wi-Fi connectivity.
+  Physical state and recovered logs are pending; isolation and cause are not
+  established. This is not a suspend fix or OTA release.
 - Resumed temporary 30-minute health captures with 48 rotating slots and
   WakeSystem=no. The timer ends on reboot.
 
