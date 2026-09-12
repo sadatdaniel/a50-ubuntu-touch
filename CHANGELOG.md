@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-09-12 — suspend investigation in progress
+
+- Verified the phone remains on aa1 fallback; aa6 security configuration was
+  checked directly in the preserved compiled source volume.
+- Identified an uninitialized ABOX QoS log argument; the enormous printed
+  request value does not establish an actual excessive frequency request.
+- Prepared an opt-in, freezer-only ABOX notifier isolation build. Mocked
+  notifier tests pass; kernel build and hardware validation remain pending.
+  This is a diagnostic experiment, not a suspend fix or OTA release.
+- Resumed temporary 30-minute health captures with 48 rotating slots and
+  WakeSystem=no. The timer ends on reboot.
+
+See [session handoff 20](docs/SESSION-HANDOFF-20.md).
+
 ## 2026-09-12 — aa6 development validation
 
 ### Published
