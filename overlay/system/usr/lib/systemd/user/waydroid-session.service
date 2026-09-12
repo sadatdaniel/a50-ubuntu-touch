@@ -19,8 +19,10 @@
 # See docs/experiments/013-waydroid.md.
 [Unit]
 Description=Waydroid session (Android apps)
-After=graphical-session.target
-PartOf=graphical-session.target
+# The container bind-mounts Lomiri's Wayland socket. Recreate the session when
+# the compositor restarts, so it cannot retain the unlinked old socket.
+After=graphical-session.target lomiri-full-greeter.service
+PartOf=graphical-session.target lomiri-full-greeter.service
 
 [Service]
 Type=simple
