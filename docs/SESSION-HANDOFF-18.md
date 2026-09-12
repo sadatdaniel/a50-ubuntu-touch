@@ -38,3 +38,27 @@ Waydroid launch/close/relaunch; then controlled suspend/resume with preserved
 fallback and documented recovery. Recovery/OTA work follows these blockers.
 No suspend or flash performed this session. On-disk boot is still aa1 while
 aa6 runs. Raw logs and release staging stay private under a50-ut-out/session-18.
+
+Follow-up, 12:40 CEST: installed the already-committed desktop-fix script after
+backing up the old copy and desktop entry in `/userdata/a50-session18`.
+Reconciliation now selects the wrapper Exec. Standard Gio desktop discovery
+reports the user entry visible and its icon exists. Asked the user to refresh
+the drawer, as the official UBports Android-app guide specifies; visual
+confirmation is pending. `waydroid show-full-ui` succeeded, container RUNNING,
+SurfaceFlinger running, host/container socket both device 54 inode 62382.
+This does not establish long-term reliability.
+
+Added optional `scripts/experiments/capture-health.sh`, not a production overlay
+service. It retains at most 48 half-hour log slots under root-only
+`/userdata/a50-health`. Syntax check and initial capture passed (91 KiB).
+Transient a50-health-sample.timer runs every 30 minutes, WakeSystem=no; first
+scheduled sample 13:10:34 CEST. Timer ends on reboot. Stop with
+`systemctl stop a50-health-sample.timer`. These are automated captures, not a
+claim that an agent continuously reviews them. Raw logs must not be published.
+
+User reaffirmed finalization after Waydroid and suspend: unified recovery,
+additional configuration and system partition migration, manual boot/mount
+validation, local OTA, then UBports installer configuration. Follow
+https://docs.ubports.com/no/latest/porting/finalize/index.html and
+docs/ota-finalization.md. Video recording is explicitly deferred, not fixed.
+No production/"perfect port" claim until the remaining validations pass.
