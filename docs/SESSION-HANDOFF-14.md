@@ -49,3 +49,22 @@ All three paths must change together. Samsung structure definition stays put;
 other security hooks untouched. Patch applies cleanly to aa5; shell syntax passes.
 Generator and reference source preserved in a50-ut-out/session-14.
 Next: fresh aa6 build, then guarded boot and SO_PEERSEC/permission tests.
+
+Correction committed/pushed as a50-halium ac4c288. aa6 build is RUNNING in
+a50-kbuild-aa6 (43608897d5b79728da0540403aaa67b12e9040accfe89e2e05b188cde8e7ff42),
+fresh source volume a50-ksrc-aa6, output out-aa6, full/ubports, -j4.
+Port cutout and handoffs committed/pushed as 8fbab3b.
+
+Read-only baseline probe now in scripts/experiments/check-apparmor-peer.py:
+aa4 reports enabled=Y, caller=unconfined, missing network/af_unix feature and
+SO_PEERSEC errno 92 (Protocol not available). Initial manual 4096-byte probe
+exceeded Python's getsockopt limit; corrected to 256 before drawing conclusions.
+Use the same probe after aa6, then actual app permissions/camera tests.
+
+At 07:39 the aa1 fallback file and on-disk image-sized boot prefix both matched
+c57250fa... . No test guards remain installed. Important: aa6 selects AppArmor
+by Kconfig, so the next restore guard must NOT require security=apparmor in
+/proc/cmdline; check the enabled module parameter and exact test-image hash.
+
+Official OTA migration audit is in docs/ota-finalization.md. No partitions or
+recovery configuration were changed. Current work remains AppArmor first.
