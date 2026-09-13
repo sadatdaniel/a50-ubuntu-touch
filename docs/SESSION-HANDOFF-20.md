@@ -245,3 +245,29 @@ in the OTG branch can deadlock. The IRQ wait must occur outside that lock.
 Role-switch serialization, paired active-device state, unplug during sleep,
 and propagation of resume failures also need explicit review/testing.
 No USB kernel patch applied or new build started. No deeper PM test run.
+
+## User confirmation and OTA readiness audit, 2026-09-13
+
+User confirmed screen and touch remain normal after aa8 tests. Asked whether
+suspend now works and requested the UBports finalization/recovery/local OTA/
+installer path. Explained full sleep/wake remains unvalidated and active USB
+resume still fails; watchdog correction alone is not complete suspend support.
+Waydroid must be reliable but user explicitly defers it until later.
+
+Reviewed the three linked official finalization pages and actual installer
+schema/README. Installer guide is a placeholder; schema supports Heimdall and
+systemimage recovery verification. Do not copy fastboot instructions to Samsung
+without verifying transport. No upstream messages or registration requests sent.
+
+Read-only audit10:35–10:36 confirms / is loop0 backed by /userdata/rootfs.img,
+16GiB filesystem with about4GiB used. system=5300MiB, recovery=64.5MiB,
+cache=400MiB, userdata=120280055808bytes. /cache->/android/cache currently uses
+userdata. system-image-common/dbus/cli installed, but config.d is empty and
+no top-level channel.ini/client.ini exists. No update check/apply invoked.
+Repository remains6144M with recovery disabled and unpinned build-tool wrapper.
+
+Updated docs/ota-finalization.md with a concrete staged plan: suspend/USB,
+pinned correctly sized fresh build, unified recovery and mounts, local OTA,
+upstream signed channel/CI integration, Samsung installer, later Waydroid soak.
+Preserve TWRP and userdata. No storage or update-client configuration changed.
+Current published aa8 remains running; no new kernel build started.
