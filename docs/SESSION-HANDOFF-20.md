@@ -113,3 +113,40 @@ physical state confirmation pending. Do not claim ABOX exonerated or fixed.
 No repeated test. Next: user-assisted restart into verified aa1 if frozen,
 recover fixed-size persistent log tail and session20 result files before
 further PM work. TWRP only if normal fallback boot cannot recover.
+
+## Recovered failure and watchdog candidate, 2026-09-13
+
+User confirmed aa7 rebooted automatically. USB recovered on aa1; no manual
+restart or TWRP was needed. /proc/last_kmsg yielded a full prior panic; private
+copy is a50-ut-out/session-20/last_kmsg-aa7.bin. after-isolation.dmesg confirms
+ABOX PREPARE/POST skipped and no ABOX power-cycle in the test window. Freezer
+returned after5s but stability failed. No deep suspend validated.
+
+Full ring shows storage timeout before I2C/GPU/sensor-hub/Wi-Fi failures. The
+final exception maps to the Wi-Fi confirmation-timeout WARN (BRK #0x800), not
+an established NULL callback. Samsung's hardlockup hook replaces the recorded
+PC before warning classification; do not treat the displayed PC0 as evidence
+of random memory corruption.
+
+Strong lead: freezer emergency watchdog stop/start unconditionally arms an
+inactive secondary watchdog. Captured timer count/prescaler imply about21s,
+matching onset of the wider failures. Candidate preserves hardware ENABLE
+state across the paired calls; normal watchdog/panic/reset/security behavior
+is unchanged. Cause remains pending hardware validation.
+
+Kernel commit ba9b108 adds opt-in --watchdog-freezer-fix and mocked-helper
+regression checks. Inactive/active repeated pairs, unmatched start, and
+absent-device tests pass, as do patch application and build-shell syntax.
+No new hardware test yet. Phone was responsive on aa1 at05:15 CEST.
+
+New running build: a50-kbuild-aa8-watchdog; volume a50-ksrc-aa8-watchdog.
+Output out-aa8-watchdog. Recipe full/ubports plus --watchdog-freezer-fix;
+ABOX isolation is NOT included. aa6 source volume remains read-only baseline.
+Poll existing container; do not duplicate. Next: verify build/config, package
+with known donor, guarded boot and fallback verification, one controlled
+freezer cycle then delayed observation. Health timer ended on reboot.
+
+Approval review initially rejected publication for unverified destinations.
+Read-only remote checks match both repositories explicitly named by the user,
+who requests a numbered handoff and commit/push of completed work. Raw logs
+remain local; this handoff records technical conclusions and build status only.
