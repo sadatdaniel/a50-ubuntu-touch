@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-09-13 — watchdog freezer-state development validation
+
+- aa8 preserves the secondary watchdog's previous enable state. Two freezer
+  cycles passed with normal ABOX callbacks; the first was observed for ten
+  minutes before repetition. Logs directly confirmed the timer was inactive.
+- A devices-stage cycle returned but USB enumeration failed on Windows.
+  Wi-Fi survived, and software reconnection restored USB without rebooting.
+  The same boot remained responsive more than two hours later. USB resume,
+  deep sleep and automatic suspend are not yet fixed or validated.
+- AppArmor and hardened usercopy remain enabled. The aa1 recovery image is
+  still on disk; aa8 is running. Waydroid reliability and camera video remain
+  unresolved. No OTA or stable release is claimed.
+
+See [experiment 020](docs/experiments/020-watchdog-freezer-state.md) and
+[session handoff 20](docs/SESSION-HANDOFF-20.md).
+
+
 ## 2026-09-12 — suspend investigation in progress
 
 - Verified the phone remains on aa1 fallback; aa6 security configuration was

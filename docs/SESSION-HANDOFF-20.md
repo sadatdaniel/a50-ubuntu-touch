@@ -150,3 +150,53 @@ Approval review initially rejected publication for unverified destinations.
 Read-only remote checks match both repositories explicitly named by the user,
 who requests a numbered handoff and commit/push of completed work. Raw logs
 remain local; this handoff records technical conclusions and build status only.
+
+## aa8 phone validation, 2026-09-13 morning
+
+Built ba9b1083db656b0f8f5f5961c0095a045d3e59eb successfully. Image SHA256
+e197a4f9a02790fdf21278e33832720ff1cc42b3aab24cd62d0e4f173fbdbda6;
+boot image 55,851,008 bytes SHA256
+9f219dfa364fb5a0cf279ceaee7563f3371c930649ed528a7c457ce04ba02927.
+Normal boot succeeded 08:02 CEST, boot ID
+38ea8a8e-4874-4384-887b-2e1ba50607a7. AppArmor Y, Android completed,
+lightdm/capture active. Guard restored and verified aa1 on disk at08:02:55;
+temporary guard removed, root RO. No manual restart/TWRP needed.
+
+Stopped Waydroid normally. First freezer cycle08:05:10–08:05:15:
+both watchdog stops were initiallyinactive, both starts preservedoff.
+Normal ABOX power-cycle and firmware-ready confirmed. Unchanged boot and
+USB/Wi-Fi SSH survived ten minutes with no delayed timeout cascade.
+Second cycle08:15:38–08:15:43 also returned, success2/fail0, identical
+watchdog state preservation. Delayed checks clean through08:18:18.
+User screen/touch confirmation for this boot remains unanswered.
+
+Next staged script: /userdata/a50-session20-aa8/devices-watchdog-test.sh,
+not yet run as of08:18. It checks fallback, boot ID and AppArmor before
+one devices-stage test. Do not jump to full deep sleep or claim it works.
+Health timer active with30min slots and WakeSystem=no. Private evidence
+under a50-ut-out/session-20-aa8; remote /userdata/a50-session20-aa8.
+Artifacts including configuration, symbols, reproduction instructions and
+checksums prepared in a50-halium/out-aa8-watchdog; not yet published.
+
+## Validation update, 2026-09-13 10:20 CEST
+
+Two freezer-only cycles passed with normal ABOX behavior; the first was
+observed for ten minutes before repetition. Both stages of both cycles
+confirmed was_enabled=0 and kept the secondary watchdog stopped.
+
+One devices-stage test ran08:19:30–08:19:36 and returned successfully
+(success3/fail0 total). Windows then reported Device Descriptor Request
+Failed, while the phone believed its USB gadget was configured. Wi-Fi
+remained usable; the phone did not reboot. Unbinding/rebinding the existing
+g1 UDC restored enumeration, but recreated rndis0 without its address.
+Restoring its original10.15.19.82/24 address plus temporary169.254.68.82/16
+allowed USB SSH using Windows' existing link-local subnet. Host address
+change was denied by Windows administrator permissions; no host setting
+was successfully changed. A gadget DCTL stop timeout occurred during the
+manual reconnect, separate from the original watchdog failure cascade.
+
+Same aa8 boot remained responsive over both Wi-Fi and recovered USB at
+10:20 CEST, over two hours after the devices-stage test. No full deep sleep
+attempted. Device-stage return does not establish complete driver resume:
+USB still needs a fix. Watchdog correction stays opt-in pending broader
+validation. Screen/touch response from user for aa8 remains pending.
