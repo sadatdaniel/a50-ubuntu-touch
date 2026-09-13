@@ -200,3 +200,24 @@ Same aa8 boot remained responsive over both Wi-Fi and recovered USB at
 attempted. Device-stage return does not establish complete driver resume:
 USB still needs a fix. Watchdog correction stays opt-in pending broader
 validation. Screen/touch response from user for aa8 remains pending.
+
+## Published aa8 and continuation, 2026-09-13 10:24 CEST
+
+Published and verified prerelease assets at:
+https://github.com/sadatdaniel/a50-halium/releases/tag/a50-ubports-halium-2026-09-13-aa8
+Target build revision ba9b1083db656b0f8f5f5961c0095a045d3e59eb. Nine assets
+uploaded, server digests match kernel/boot/config values. Kernel documentation
+commit dde0ed4 and port documentation062aa64 are pushed.
+
+Current connections: Wi-Fi192.168.179.86; recovered USB169.254.68.82.
+Original10.15.19.82 remains on phone but Windows interface47 (Ethernet8)
+uses169.254.68.233/16. Temporary link-local phone address is not a persistent
+fix. Windows host IP change failed with Access denied; no UAC workaround.
+Running boot ID38ea8a8e-4874-4384-887b-2e1ba50607a7, AppArmorY, aa1 on disk.
+
+USB source lead: actual DT dr_mode=otg, debugfs mode=device. In this pinned
+core.c, OTG suspend only calls dwc3_event_buffers_cleanup; OTG resume omits
+paired gadget suspend/resume. Those callbacks run in peripheral mode only.
+Do not blindly copy them under the lock: this tree's gadget_suspend calls
+synchronize_irq, and lock ownership/callback behavior needs review. No USB
+kernel patch written yet. Full/deeper suspend testing remains paused.
