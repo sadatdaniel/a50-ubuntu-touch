@@ -340,3 +340,37 @@ sets debug credentials and must not be enabled for public user images.
 Bluetooth keyboard unsolicited reconnects reported; cause unproven. VPN,
 Libertine, reset and updates untested. Waydroid stability deferred. Recorded
 these in docs/release-validation-backlog.md. No credentials/settings changed.
+
+## aa9 staged ladder and first real sleep, 2026-09-13 20:48 CEST
+
+All nine diagnostic cycles completed: freezer1, devices1/2, platform1/2,
+processors1/2, core1/2. processors2 returned15:53:02 and remained reachable
+nearly five hours later. core1 returned20:40:55, core2 at20:42:08. Same aa9
+boot a1f6e52d-9b04-41ab-97ad-889b9f384abb; CPUs0-7; USB recovered automatically.
+Core logs confirm the deliberate five-second PM debug stop. Processor-stage
+'Disabling non-boot cpus failed' text is the shared debug-stop branch, not
+an actual CPU failure. Platform audio devfreq warning is recorded separately.
+
+ONE real pm_test=none attempt ran20:43:48-20:43:49, using a verified empty
+RTC alarm programmed +45 seconds. Returned0, but actual timekeeping sleep
+was only0.011 seconds. Counters success10/fail0 conceal failed_resume1:
+13200000.dwc3 failed to enable ep0out, failed to reinitialize udc, OTG gadget
+restore=-110. Thus full sleep/resume FAILS; never describe aggregate success
+as a pass. Alarm was cleaned, pm_test none, unchanged boot, Wi-Fi works.
+USB10.15.19.82 timed out; use Wi-Fi192.168.179.86 now. No restart requested.
+The aa1 fallback remains on disk; no recovery/userdata changes.
+
+Script /userdata/a50-session20-aa9/aa9-full-sleep.sh and deep-1 directory
+preserve before/after dmesg, stats, interrupts, return code and alarm.
+Private host log a50-ut-out/session-20-aa9/deep-1-after.dmesg copied.
+Postfailure registers: mode=device, GCTL30c12004, GUSB2PHYCFG(0)40102400,
+DCTL00f00000, DSTS00520210, DEPCMD(0)00000401 (command active remains set).
+No controller recovery or second real sleep attempted yet.
+
+Investigate missing power-loss restoration: normal otg.c start_gadget calls
+phy_setup, core_init, set_peripheral_mode before vbus_connect. aa9 resume
+only restores event buffers and gadget endpoints, preserving prior vendor
+PHY behavior. Compare exact core_soft_reset/PHY refcount and resume ordering
+before implementing any correction; do not blindly add another phy_init.
+Source volume a50-ksrc-aa9-usb-sleep remains read-only reference. aa9 not yet
+published; publish only as development failure milestone with these limits.
