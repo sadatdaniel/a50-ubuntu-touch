@@ -221,3 +221,27 @@ paired gadget suspend/resume. Those callbacks run in peripheral mode only.
 Do not blindly copy them under the lock: this tree's gadget_suspend calls
 synchronize_irq, and lock ownership/callback behavior needs review. No USB
 kernel patch written yet. Full/deeper suspend testing remains paused.
+
+## USB-detached comparison, 2026-09-13 10:25–10:27 CEST
+
+One controlled devices-stage comparison detached the existing g1 gadget
+before entering pm_test=devices, then reattached it and restored the same
+phone USB addresses. Test ran10:25:28–10:25:36, service Result=success,
+ExecMainStatus=0, total suspend statistics success4/fail0. Windows recreated
+its RNDIS adapter successfully without Device Descriptor Request Failed;
+USB SSH to169.254.68.82 worked at10:26:38. Same boot identity, AppArmorY,
+Wi-Fi also remained usable. No timeout marker beyond the intentional5s
+PM debug delay was present in the immediate post-test check.
+
+This comparison supports active gadget state as the USB resume problem.
+It is a diagnostic result, not a production reconnect hook or full sleep fix.
+Raw evidence: local a50-ut-out/session-20-aa8/devices-usb-detached-after.dmesg;
+remote /userdata/a50-session20-aa8/devices-usb-detached-1/.
+
+Before writing an OTG callback patch, account for this exact tree's lock
+hazard: core.c calls dwc3_gadget_suspend under dwc->lock; gadget_suspend calls
+synchronize_irq; dwc3_interrupt acquires dwc->lock. Simply invoking the helper
+in the OTG branch can deadlock. The IRQ wait must occur outside that lock.
+Role-switch serialization, paired active-device state, unplug during sleep,
+and propagation of resume failures also need explicit review/testing.
+No USB kernel patch applied or new build started. No deeper PM test run.
