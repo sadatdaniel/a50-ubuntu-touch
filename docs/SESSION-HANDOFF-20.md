@@ -307,3 +307,36 @@ recorded after packaging/guarded flash. Current phone still runs aa8 boot
 Read-only wake audit: s2mpu09 RTC wake enabled, no alarm pending, repowerd
 active, pm_test none, mem_sleep deep selected; no autosleep node. No wake
 alarm or automatic suspend setting changed. Full sleep has not been tested.
+
+## aa9 boot and attached-USB validation, 2026-09-13 afternoon
+
+Build exited0 at09:25:23 UTC. Kernel Image SHA256
+35e080be14cdfcb3c76be9d4b6fe295e07973266fdd684d39666f07c84d063a3.
+Boot image55,851,008bytes SHA256
+c22da7f377396a2c8cb17b063fc933aae6c234c835813071e21f7942147d68fc.
+Config matches aa8 exactly; same verified donor/ramdisk. aa9 booted normally,
+AppArmorY, Android completed, lightdm/capture active. Guard restored aa1 at
+15:35:32 CEST; verified fallback and cleaned temporary guard, rootRO.
+Running aa9 boot IDa1f6e52d-9b04-41ab-97ad-889b9f384abb. Connections restored
+normally: USB10.15.19.82 (host10.15.19.14), Wi-Fi192.168.179.86.
+
+Waydroid stopped, health timer resumed, baseline clean except known vendor
+TZ/governor D-states. Freezer15:39:36–15:39:42 passed; watchdog remainedoff.
+USB-attached devices115:41:43–15:41:49 passed; quiesce and restore=0 logged,
+USB and Wi-Fi SSH recovered without manual reconnect. Devices2 returned
+15:44:19; at15:45:24 same boot, total success3/fail0, USB recovered normally,
+no fault/timeouts beyond expected PM debug waiting. Host tool responses can
+be slow; yielded SSH tool output alone does not establish lost connectivity.
+
+Next staged test platform1 via /userdata/a50-session20-aa9/aa9-deeper-test.sh
+(accepts platform/processors/core individually); dispatch ongoing at record
+creation. No full deep sleep has been attempted. Preserve single-step ladder.
+Private logs under a50-ut-out/session-20-aa9 and remote aa9 test directory.
+
+User added reports: Settings rejects current passphrase when changing lock
+method despite unlock/sudo working; investigate and test clean onboarding,
+do not assume a fresh image resolves it. Development-access image option
+sets debug credentials and must not be enabled for public user images.
+Bluetooth keyboard unsolicited reconnects reported; cause unproven. VPN,
+Libertine, reset and updates untested. Waydroid stability deferred. Recorded
+these in docs/release-validation-backlog.md. No credentials/settings changed.
