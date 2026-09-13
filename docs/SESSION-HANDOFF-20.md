@@ -271,3 +271,39 @@ pinned correctly sized fresh build, unified recovery and mounts, local OTA,
 upstream signed channel/CI integration, Samsung installer, later Waydroid soak.
 Preserve TWRP and userdata. No storage or update-client configuration changed.
 Current published aa8 remains running; no new kernel build started.
+
+## aa9 USB system-sleep candidate building, 2026-09-13 10:44 CEST
+
+User explicitly asks to continue fixing suspend/resume; phone connected.
+Kernel commit9ee1c1af122e69b696435f859236d28e80b8e9c0 is pushed. New opt-in
+--usb-otg-sleep-fix adds active B-peripheral gadget quiesce/restore, remembered
+paired state, role/FSM and driver locking, IRQ wait outside both locks,
+callback error propagation and runtime PM reference balancing. Existing
+watchdog flag remains enabled. Host and inactive OTG behavior is preserved;
+vendor PHY init is unchanged. Hardware validation remains pending.
+
+Actual-helper compiled tests pass: repeated connected pairs; inactive/unbound/
+host cases; unplug, role change, soft disconnect and unbind during sleep;
+unmatched resume; runtime/get/stop/start errors; IRQ wait lock assertions;
+PM reference accounting and peripheral/host paths. bash -n passed. git apply
+--check --whitespace=error-all on the exact baseline passed. git diff --check
+on the patch-as-a-new-file warns about normal unified-diff context indentation;
+those are not added kernel source whitespace errors.
+
+Running build a50-kbuild-aa9-usb-sleep, container
+f2a4eaff53a4d7d5393a579a7cd0aa0856ac6fbf6c11958a0418afbbb9c074b6,
+started08:44:04 UTC. New source volume a50-ksrc-aa9-usb-sleep; aa8 baseline
+mounted read-only. Recipe full/ubports +watchdog-freezer-fix +usb-otg-sleep-fix,
+output out-aa9-usb-sleep. No ABOX isolation. Poll this container; no duplicate.
+
+Prepared host recovery guards in a50-ut-out/session-20-aa9 (not uploaded/armed).
+Local task work/aa9-pm-test.sh accepts one freezer/devices cycle per invocation,
+checks active bound/configured USB, boot identity, AppArmor and aa1 fallback.
+No automatic gadget reconnect is performed by that script: next devices test
+must establish automatic USB re-enumeration. New boot identity/hash must be
+recorded after packaging/guarded flash. Current phone still runs aa8 boot
+38ea8a8e-4874-4384-887b-2e1ba50607a7; Wi-Fi192.168.179.86, USB169.254.68.82.
+
+Read-only wake audit: s2mpu09 RTC wake enabled, no alarm pending, repowerd
+active, pm_test none, mem_sleep deep selected; no autosleep node. No wake
+alarm or automatic suspend setting changed. Full sleep has not been tested.
