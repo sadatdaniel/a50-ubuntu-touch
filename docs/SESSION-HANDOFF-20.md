@@ -374,3 +374,31 @@ PHY behavior. Compare exact core_soft_reset/PHY refcount and resume ordering
 before implementing any correction; do not blindly add another phy_init.
 Source volume a50-ksrc-aa9-usb-sleep remains read-only reference. aa9 not yet
 published; publish only as development failure milestone with these limits.
+
+## Release work resumed, 2026-09-19
+
+User authorizes work toward a shareable stable release, retaining Ubuntu Touch
+26.04/current packages, and explicitly requests revisiting fingerprint.
+Current phone is aa1 fallback, boot10b90d1f-f951-49c1-b46a-29a1a9f01fdb;
+AppArmorN, boot prefix verified c57250fa..., USB10.15.19.82 accessible.
+Health samples archived to /userdata/a50-session20-release/health-before-20260919.tar,
+then half-hour bounded transient timer resumed with WakeSystem=no. Kernel
+capture active but286MiB/unbounded: rotation remains TODO.
+
+Settings password change failure correlates directly to polkit127 helper's
+unsupported SO_PEERPIDFD socket path. Prepared legacy helper proposal was
+rejected by auto-review pending explicit security approval. USER DECISION:
+leave authentication unchanged for now. Do not apply setuid/socket change,
+do not downgrade packages. No authentication change was executed. Keep issue
+open. Local work/fix-polkit-legacy.sh was not executed (tool rejection).
+
+Fingerprint discovery: sec_efs /dev/sda7 contains calibration metadata/files,
+but Android has no /efs mount. Prior checks examined different partition efs
+/dev/sda3 at /mnt/vendor/efs. See new experiment012 section. Audit used
+ro,noload and unmounted; no calibration data altered. Live /efs mountpoint
+creation failed at read-only loop remount before any modification. Plan an
+offline Android image mountpoint+mount-hook change with backup, then a bounded
+read-only vendor initialization/enrollment test. No fingerprint success yet.
+Docker Desktop was stopped; started successfully. aa9 source volume retained.
+No aa10 patch/build has yet been made. Suspend remains first kernel blocker;
+software USB reconnect failed, physical cable cycle restored it on Sep13.

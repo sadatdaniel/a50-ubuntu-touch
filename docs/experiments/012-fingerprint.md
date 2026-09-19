@@ -345,3 +345,41 @@ finger at all — so no amount of light can produce a detection. The blocker is
 sensor bring-up inside Samsung's trustlet, not the screen.
 
 **Do not re-test illumination.** It is settled.
+
+## Reassessment 2026-09-19: calibration exists on a different partition
+
+The previous claim that calibration was absent was based on the wrong EFS
+partition. Do not repeat it. Samsung init.exynos9610.rc explicitly mounts
+sec_efs at /efs separately from efs at /mnt/vendor/efs. This port mounts only
+the latter. Inside Android, /efs is absent.
+
+Live fallback kernel confirms CONFIG_SENSORS_FINGERPRINT=y,
+CONFIG_SENSORS_ET7XX=y, CONFIG_TZDEV=y, CONFIG_TEEGRIS_VERSION=2. aa9 config
+also enables these. Generic CONFIG_TEE being unset does not mean Samsung's
+TEEGRIS driver is missing. The Android HAL runs as system and holds /dev/esfp0,
+/dev/tzdev and /dev/tziwsock open. Android /dev/esfp0 is0660 system:system;
+the separate host node being0600 root:root is not this service's blocker.
+
+Installed libbauthserver.so references /efs/biometrics and actual writable
+storage under /data/vendor/biometrics, not /data/vendor/fingerprint. The
+fingerprint trustlet /vendor/tee/00000000-0000-0000-0000-46494e474502 exists.
+
+Read-only, journal-replay-disabled inspection of sec_efs (/dev/sda7) found
+biometrics/meta and files sensor_id (18bytes) and egis_calibration_data.bin
+(500000bytes). Only metadata was read; no calibration contents were copied,
+printed or changed. The temporary audit mount was unmounted.
+
+This is a strong, testable missing-mount lead, not proof that enrollment works.
+First expose the correct partition read-only to the HAL, trace actual file
+access and sensor initialization, then test capture with the user. Do not
+symlink /efs to /mnt/vendor/efs: these are DIFFERENT partitions. Do not create
+replacement calibration, copy another phone's data, or run calibration tools.
+
+A live attempt to create /efs failed before modification because the Android
+rootfs loop device is write-protected. No mountpoint or live /efs mount was
+created. Prepare the mountpoint in a backed-up offline Android image or during
+an appropriate rebuild; coordinate restart with the kernel test. No repeated
+illumination tests or enrollment/template clearing were run.
+
+The old biometryd testing bypass remains on the fallback. It must be removed
+and normal authorization validated on the AppArmor-enabled release candidate.
