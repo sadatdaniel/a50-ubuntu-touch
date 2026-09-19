@@ -402,3 +402,35 @@ read-only vendor initialization/enrollment test. No fingerprint success yet.
 Docker Desktop was stopped; started successfully. aa9 source volume retained.
 No aa10 patch/build has yet been made. Suspend remains first kernel blocker;
 software USB reconnect failed, physical cable cycle restored it on Sep13.
+
+## Fingerprint one-boot test dispatched 2026-09-19 ~22:00 CEST
+
+Original Android image /var/lib/lxc/android/android-rootfs.img SHA256
+b6f46a5f849ca79ce333005dbf2bcdfa4dab83c9357f5b3c035904a14bdf7795
+(473653248bytes) had no free blocks. A separate userdata candidate was grown
+8MiB, e2fsck checked, /efs created using debugfs and explicitly verified, then
+read-only e2fsck passed. Candidate SHA256
+e3b6e32a4d15e48ca0a87d6f18f08cc6bc57055eb042b70b08b48616329e34a1.
+First debugfs mkdir silently failed despite exit0; caught by missing directory
+and identical hashes, then corrected. Never treat debugfs status alone as proof.
+
+Candidate now staged at original Android image path via atomic rename; original
+retained as /var/lib/lxc/android/android-rootfs.img.before-sec-efs. Original
+mount.sh and init.exynos9610.rc.nowatchdog copies saved in userdata experiment.
+Test mount.sh sources /userdata/a50-session20-release/fp-sec-efs-hook.sh,
+which mounts /dev/disk/by-partlabel/sec_efs at LXC /efs ro,noload,nosuid,nodev,noexec.
+Both vendor sec_efs RW mount lines were commented in test rc to prevent remount.
+
+Enabled a50-fp-restore-image.service, NOT started in old boot. On new boot it
+waits90s then verifies original image hash, restores original Android image
+name and both hook files, disables itself and restores host root read-only.
+The candidate inode remains mounted until next reboot. Service/script output
+and /userdata/a50-session20-release/image-restored prove rollback completed.
+It retains tested image as android-rootfs.img.sec-efs-tested for inspection.
+
+Normal reboot command was accepted. NEXT: wait for USB10.15.19.82, verify new
+boot, lightdm/Android, /efs read-only in container, guard restoration, and
+fingerprint logs. No enrollment test yet, no sensor success claimed. Kernel
+remains aa1; no kernel flash or authentication change was done. If phone fails
+to boot, original image backup and recovery remain available. Do not blindly
+re-run stage scripts (they refuse existing backups).
