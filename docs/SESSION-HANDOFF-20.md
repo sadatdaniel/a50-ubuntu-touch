@@ -434,3 +434,8 @@ fingerprint logs. No enrollment test yet, no sensor success claimed. Kernel
 remains aa1; no kernel flash or authentication change was done. If phone fails
 to boot, original image backup and recovery remain available. Do not blindly
 re-run stage scripts (they refuse existing backups).
+
+
+## September20 upstream/power follow-up
+See experiments/020-notifications-power-audit.md for exact package audit and push0.100.3 installation. Boot cb53ecb1-a42d-48fd-8bb4-95810ca82c39 remains aa1, zero suspend attempts. Fingerprint test read-only mount survives; original image restored on disk22:02:59 Sep19. No enrollment result provided yet. Authentication unchanged by user choice; no aa10 code/build yet. User reports random screen wakes probably charger-connected; charge comparison clarified50% versus15minutes (not two contradictory times). No cause proven. Root filesystem read-only after update.
+
