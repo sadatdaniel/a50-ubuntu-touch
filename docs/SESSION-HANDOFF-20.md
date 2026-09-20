@@ -461,3 +461,4 @@ Patch-file context triggers generic git whitespace warnings; not kernel-added
 whitespace. Container a50-kbuild-aa10-usb-core currently compiling, fresh volume
 a50-ksrc-aa10-usb-core, output out-aa10-usb-core. Full/AppArmor ubports/watchdog
 fix/USB sleep fix/core reinit. Phone still aa1, no flash/sleep in this turn.
+Sept20 resumed12:35CEST. aa10 build exited0, Image48b14c86703187535cdf85f9cc301cacc70a343bf77c2a9601c3735bd4766659, boot db7fa97910cd6ba0aaf19695e187db8c709590b19b4f52dd74e977ac84ea40cd (55851008bytes). Not flashed yet. Swipe-only fixed by removing backed-up stale local phablet passwd/shadow duplicates; writable extrausers unchanged. AccountsService nowmode2, userconfirmedworking. PIN remained1234. See experiment011 correction and repairscript. Docker restarted after being stopped; build artifacts survived.

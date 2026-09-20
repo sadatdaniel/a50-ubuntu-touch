@@ -96,3 +96,28 @@ fscrypt-encrypted here, so that is not involved either.
 passphrase is wanted anyway as the fallback for fingerprint unlock
 (experiment 012). Changing the lock method from the CLI is possible but touches
 the greeter's own state and is not worth the risk to remove a working PIN.
+
+## September20: verified fixes supersede the earlier diagnosis
+The earlier claim that this was a known Settings regression was not supported
+by a cited upstream report and did not explain the actual polkit failure.
+Polkit127 socket mode failed on this kernel's missing SO_PEERPIDFD. Its supported
+legacy helper was explicitly approved, applied and tested: wrong password
+rejected, correct password accepted. The user confirmed passphrase-to-PIN works
+(the credential remained 1234; only input style changed). See polkit-legacy.md.
+
+Swipe-only exposed a second problem: phablet existed in both /etc/passwd and
+/var/lib/extrausers/passwd with the same UID/GID/home/shell. The local shadow
+record still held the old password, while the extrausers shadow was empty after
+Settings successfully requested password mode2. NSS files-before-extrausers
+made AccountsService report mode0 (regular password), leaving the lock prompt.
+
+The guarded repair script scripts/experiments/remove-duplicate-phablet.py checks
+matching identity and NSS order, locks the account database, backs up local
+passwd/shadow privately, and removes only their duplicate phablet records.
+It never changes the writable extrausers account, PIN, home or user data.
+After restarting accounts-daemon, passwd reports NP and AccountsService mode2.
+USER CONFIRMED swipe-only unlock now works on September20 around12:43CEST.
+Backups remain /userdata/a50-session20-release/account-duplicate-backup.
+Script is a one-time repair for this exact development state, not a general
+account migration or automatic boot hook. Source of duplicate still being
+checked against the cached upstream rootfs. Future images must audit this.
