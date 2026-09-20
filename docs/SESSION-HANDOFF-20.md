@@ -462,3 +462,39 @@ whitespace. Container a50-kbuild-aa10-usb-core currently compiling, fresh volume
 a50-ksrc-aa10-usb-core, output out-aa10-usb-core. Full/AppArmor ubports/watchdog
 fix/USB sleep fix/core reinit. Phone still aa1, no flash/sleep in this turn.
 Sept20 resumed12:35CEST. aa10 build exited0, Image48b14c86703187535cdf85f9cc301cacc70a343bf77c2a9601c3735bd4766659, boot db7fa97910cd6ba0aaf19695e187db8c709590b19b4f52dd74e977ac84ea40cd (55851008bytes). Not flashed yet. Swipe-only fixed by removing backed-up stale local phablet passwd/shadow duplicates; writable extrausers unchanged. AccountsService nowmode2, userconfirmedworking. PIN remained1234. See experiment011 correction and repairscript. Docker restarted after being stopped; build artifacts survived.
+
+## aa10 runtime results, September20 12:44-12:55CEST
+Kernel Image48b14c86703187535cdf85f9cc301cacc70a343bf77c2a9601c3735bd4766659,
+boot db7fa97910cd6ba0aaf19695e187db8c709590b19b4f52dd74e977ac84ea40cd,
+boot ID c3315905-c6da-4e25-9d50-381ddef90a5b. Early guard restored aa1 on disk
+12:43:44; aa10 continues running. AppArmorY, 237 profiles/162 enforcing,
+hardened usercopyY. UNIX mediation and SO_PEERSEC probe pass. Temporary enforcing
+profile allowed its permitted read and denied forbidden read; profile removed.
+Runtime systemd UnsetEnvironment drop-ins removed biometry/location testing
+bypasses for this boot; both services active and process environments verified.
+Persistent aa1-era drop-ins still exist and must not ship in the final image.
+
+Freezer1 passed. Devices1 aborted at alarmtimer -16, USB restored0. Devices2 and
+core1 passed with USB configured and failed_resume0. First real sleep deep-1
+returned after0.011s, MIF blocked prev_conn_req0x20000, WAKEUP_STAT0x80020000,
+BUT USB restored0 and stayed usable: aa9 endpoint -110 failure not reproduced.
+
+Comparison deep-wifi-off temporarily disabled Wi-Fi and restored it in trap:
+22.620s actual sleep, MIF down count65, wake0x80000001 and PMIC/RTC interrupt,
+USB restored. Wi-Fi automatically enabled/reconnected. Vendor command comparison
+SETSUSPENDMODE1 with Wi-Fi ON:1.105s sleep, MIF down +4, wake0x80020000 with
+WIFI wakeup by DATA frame. Command restored0 afterward. This is not long-idle
+validation: normal network wakes still need characterization and automatic
+resuspend. Phone remains healthy over USB and Wi-Fi, same boot, AppArmorY.
+Counters success6/fail1/failed_suspend1(alarmtimer)/all resume failures0.
+
+Exact source: cfg80211_ops.c slsi_suspend/slsi_resume are empty; ioctl.c
+slsi_set_suspend_mode programs packet filters and clears LCD_ACTIVE host state.
+Without that command sap_mlme_notifier explicitly logs SUSPEND but no
+SETSUSPENDMODE, mode0/hoststate02. Board exynos9610.dts wake bit17 is
+INT_MBOX_WLBT2AP; do not conflate this with a proven meaning of CONN_REQ bit17.
+Userland diagnostic command uses verified SIOCDEVPRIVATE+2(0x89f2),64-bit
+android_wifi_priv_cmd layout. This is experimental, not an installed sleep hook.
+Next: integrate prior-state-preserving Wi-Fi sleep preparation in the driver,
+verify callback ordering/error unwind, then repeat tests and automatic sleep.
+Fingerprint remains deferred. Swipe-only user-confirmed fixed; repair pushed.
