@@ -207,6 +207,9 @@ if [ -z "${NO_COMPAT:-}" ]; then
         || echo "W: OpenStore SONAME compat failed - OpenStore will not start"
 fi
 
+# Kernel 4.14 needs the installed polkit helper in its supported legacy mode.
+bash "$HERE/scripts/release/configure-polkit-legacy.sh" "$MNT"
+
 # --devel turns this into a debug image: sshd on, root password set, adb
 # unlocked, USB networking up. Kept out of the release image on purpose.
 if [ -n "${DEVEL:-}" ]; then

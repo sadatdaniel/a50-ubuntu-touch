@@ -439,3 +439,25 @@ re-run stage scripts (they refuse existing backups).
 ## September20 upstream/power follow-up
 See experiments/020-notifications-power-audit.md for exact package audit and push0.100.3 installation. Boot cb53ecb1-a42d-48fd-8bb4-95810ca82c39 remains aa1, zero suspend attempts. Fingerprint test read-only mount survives; original image restored on disk22:02:59 Sep19. No enrollment result provided yet. Authentication unchanged by user choice; no aa10 code/build yet. User reports random screen wakes probably charger-connected; charge comparison clarified50% versus15minutes (not two contradictory times). No cause proven. Root filesystem read-only after update.
 
+
+## September20 08:00: priorities, authentication, aa10
+User now explicitly approves the polkit legacy helper change, superseding the
+previous refusal. Fingerprint is deferred until last. Suspend/resume and
+AppArmor remain mandatory, followed by conventional image/recovery/OTA release.
+Live helper unchanged binary, root:root4755 via dpkg-statoverride; socket masked,
+stopped, stale unlistened pathname removed. Root read-only. Real pkcheck account
+administration auth rejected wrong password and accepted current password.
+Settings and AppArmor-enabled checks pending; see docs/polkit-legacy.md.
+Backup state /userdata/a50-session20-release/polkit-legacy, applied marker.
+
+Fingerprint latest user attempt was a timeout: nd cnt0, onError3, trustlet21,
+no usable acquisition proven. Read-only sec_efs mount did not resolve it.
+Original Android image/hooks restored on disk; candidate still mounted until
+next reboot. Do not modify calibration or repeat enrollment work now.
+
+Kernel aa10 opt-in core exit/init resume candidate committed/pushed9b6dc81.
+Actual helper mock checks and shell syntax pass; hardware remains untested.
+Patch-file context triggers generic git whitespace warnings; not kernel-added
+whitespace. Container a50-kbuild-aa10-usb-core currently compiling, fresh volume
+a50-ksrc-aa10-usb-core, output out-aa10-usb-core. Full/AppArmor ubports/watchdog
+fix/USB sleep fix/core reinit. Phone still aa1, no flash/sleep in this turn.
