@@ -1,5 +1,50 @@
 # Status
 
+**Current checkpoint: 2026-09-22.** This remains a development port, not a
+validated final release. The September 10 inventory below is historical; the
+following checkpoint supersedes its AppArmor, suspend, authentication, and
+recovery claims.
+
+- **AppArmor:** aa10 and aa11 boot with AppArmor and hardened usercopy. A real
+  enforcing-profile allow/deny test passed. Biometry and location services run
+  without testing bypasses in runtime overrides. Final-image cleanup remains.
+- **Suspend/resume:** aa11 passed freezer, device, and core diagnostics and
+  returned from three full suspend attempts without counted resume failures.
+  Normal Wi-Fi preparation yielded two 0.011-second sleeps. Preparing earlier
+  yielded 0.970 seconds with MIF power-down. Sustained and automatic screen-off
+  sleep are not yet validated. Packet-triggered wakes are not established bugs;
+  broader wake characterization is deferred at the user's request.
+- **Wi-Fi timing:** aa12 source `a50-halium bb78a3b` moves preparation before the
+  freezer and restoration after resume/abort. Mock callback tests pass; fresh
+  kernel compilation has started. It is not flashed or hardware-validated.
+- **Authentication:** the supported installed polkit legacy helper is configured;
+  settings accept credentials. Removing a backed-up stale duplicate local
+  account fixed swipe-only unlocking; the user confirmed it works. Fresh-image
+  and post-OTA behavior still require validation.
+- **Recovery and updates:** conventional UBports recovery/installer/OTA work is
+  in progress. TWRP is backed up and remains untouched. System partition sizing,
+  recovery packaging, signed local OTA, channel hosting and installer integration
+  are still required; GitHub artifacts alone are not an update channel.
+
+## Remaining release agenda
+
+1. Validate earlier Wi-Fi preparation, automatic screen-off suspend and wake,
+   and networking after resume. Check long-idle drain before release.
+2. Build a clean reproducible image with security/authentication fixes and no
+   development permission bypasses; test first-run setup and credential changes.
+3. Complete recovery packaging while preserving TWRP access; validate a local
+   OTA, a second update, and userdata preservation before enabling a channel.
+   Complete UBports Installer configuration and conventional build integration.
+4. Stabilize Waydroid. Test Bluetooth keyboard reconnect behavior, VPN,
+   Libertine, reset, remaining camera/video and audio paths, and notifications.
+   Revisit the reported charging estimate and spontaneous screen wakes when
+   reproducible; neither report currently has a proven common cause.
+5. Investigate fingerprint last. Capture/enrollment remains unproven.
+
+See [aa11 hardware evidence](experiments/021-aa11-wifi-sleep.md) and
+[session handoff](SESSION-HANDOFF-20.md) for the current experiments.
+
+## Historical inventory: September 10
 **Last updated: 2026-09-10 (evening).** Ubuntu Touch boots, reaches the UI, and has
 working audio, Bluetooth, calls, SMS, mobile data, GPS, USB, a Wi-Fi hotspot
 and Waydroid. There is a recovery-flashable installer, and **it has not been
