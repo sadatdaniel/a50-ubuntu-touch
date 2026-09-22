@@ -16,7 +16,7 @@ recovery claims.
   broader wake characterization is deferred at the user's request.
 - **Wi-Fi timing:** aa12 source `a50-halium bb78a3b` moves preparation before the
   freezer and restoration after resume/abort. Mock callback tests pass; fresh
-  kernel compilation has started. It is not flashed or hardware-validated.
+  kernel compilation and guarded hardware testing passed the staged diagnostics. A connected-Wi-Fi deep sleep lasted 11.065 seconds; another was immediate and a third aborted at alarmtimer. Automatic screen-off suspend remains unvalidated. See [aa12 evidence](experiments/022-aa12-early-wifi.md).
 - **Authentication:** the supported installed polkit legacy helper is configured;
   settings accept credentials. Removing a backed-up stale duplicate local
   account fixed swipe-only unlocking; the user confirmed it works. Fresh-image

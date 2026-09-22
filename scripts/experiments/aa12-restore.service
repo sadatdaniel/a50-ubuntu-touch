@@ -1,0 +1,13 @@
+[Unit]
+Description=Restore known-working boot image during aa12 test boot
+DefaultDependencies=no
+Before=lxc-android-config.service sysinit.target
+ConditionPathExists=/sys/module/apparmor/parameters/enabled
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh /userdata/a50-session20-aa12/restore-aa12-boot.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target
