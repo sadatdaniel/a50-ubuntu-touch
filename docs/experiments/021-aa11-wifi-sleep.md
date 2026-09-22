@@ -58,3 +58,11 @@ Next: inspect firmware readiness and workqueue ordering around the Linux PM
 callback, characterize delayed USB access, then validate automatic screen-off
 suspend/resuspend and battery drain. Conventional recovery/OTA integration and
 fresh-install validation remain required. Fingerprint remains deferred.
+
+## Delayed USB follow-up
+
+At 15:48 CEST USB ping and SSH both worked again without cable reconnection,
+phone restart, or USB reconfiguration. The phone retained the same aa11 boot ID,
+the gadget was configured, and UI, Android, biometry, and location services were
+active. The transient connection failure is unresolved; do not attribute it to
+either kernel or Windows without further evidence.
