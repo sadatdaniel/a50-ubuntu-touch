@@ -1,0 +1,2 @@
+# Conservative initial UI configuration; display must be tested on hardware.
+ro.recovery.ui.margin_height=24
