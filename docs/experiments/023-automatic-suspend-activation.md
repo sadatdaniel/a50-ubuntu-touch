@@ -18,6 +18,11 @@ while connected. This explains why starting the loop alone cannot demonstrate
 ordinary idle suspend with the cable connected. Prior direct sysfs sleep tests
 do not establish normal wake-lock-aware behavior.
 
+> **Correction, 29 September:** the original timeout-free kernel wake-lock write
+> lasted only 500 ms on this Samsung kernel. The claimed hold until reboot below
+> was incorrect. Corrected scripts use explicit durations and a runtime repowerd
+> inhibitor. See [the disconnected test and handshake diagnosis](025-automatic-suspend-wakeup-handshake.md).
+
 ## Guard and scope
 
 The test first takes a temporary kernel wake lock, then arms an independent
