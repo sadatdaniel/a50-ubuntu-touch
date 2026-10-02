@@ -34,3 +34,8 @@ Upstream references checked before changing code:
 
 No installed Waydroid code or configuration was changed in this audit. The
 container's FROZEN state while idle is intentional and is not a crash diagnosis.
+
+User follow-up: Waydroid also becomes unavailable from Recents during the event.
+The event is not occurring now. The user will record it when it recurs and
+requested deferring further Waydroid diagnosis. A crash remains possible; the
+currently healthy launcher does not exclude an earlier crash.

@@ -48,3 +48,8 @@ a50:
     - InvertedLandscape
   PrimaryOrientation: Portrait
   OfonoPlugin: binder
+  # Prepare before the HIDL wake lock is released; restore when leaving suspend.
+  # Requires the aa12 SCSC PM notifier; see experiments/029-wifi-overlay.md.
+  RepowerdScriptPerfBoostLowPower: /usr/bin/timeout 8 /usr/bin/python3 /usr/local/bin/a50-wifi-power.py 1
+  RepowerdScriptPerfBoostSustained: /usr/bin/timeout 8 /usr/bin/python3 /usr/local/bin/a50-wifi-power.py 0
+  RepowerdScriptPerfBoostInteractive: /usr/bin/timeout 8 /usr/bin/python3 /usr/local/bin/a50-wifi-power.py 0

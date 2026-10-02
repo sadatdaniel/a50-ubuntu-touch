@@ -6,6 +6,9 @@
   cycles, with zero resume failures. Screen/touch recovery was user-confirmed.
   Three earlier attempts aborted on wake events. The calendar timer passed across-sleep validation; permanent
   integration remain open; see [the measured result](experiments/026-repowerd-wifi-preparation.md).
+- The Wi-Fi preparation is now in the build overlay. Disabled-radio, reconnection
+  and repowerd restart checks passed; fresh-boot activation remains pending.
+  See [overlay validation](experiments/029-wifi-overlay.md).
 - AppArmor allow/deny enforcement passed. The guarded test boot restores the old
   fallback image on disk; a reboot into that fallback is not an AppArmor-enabled
   release configuration.
