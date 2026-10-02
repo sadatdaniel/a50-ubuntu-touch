@@ -1,36 +1,42 @@
 # Galaxy A50: suspend and updates
 
-Verified 13 September 2026. Device: SM-A505F.
+Updated 2 October 2026. Device: SM-A505F. Ubuntu Touch 26.04 only.
 
 ## Current result
 
-The aa8 watchdog fix survived two freezer-only cycles, a devices-stage cycle,
-and more than two hours on the same boot. A separate devices-stage comparison
-with USB detached also returned normally and restored USB connectivity.
-The user confirmed screen and touch work after these tests.
+The aa12 kernel and supported repowerd Wi-Fi hooks completed 35 automatic
+suspend/resume cycles with zero resume failures. Screen/touch recovered in user
+checks. Permanent startup, fresh-boot behavior, service-crash recovery and long
+idle/battery validation remain release blockers. The native Android activation
+unit has passed an inhibited repowerd restart test, not a fresh boot.
+See [the release backlog](release-validation-backlog.md) and
+[activation lifecycle](experiments/032-native-suspend-startup.md).
 
-Full suspend/resume is not validated. An active USB gadget fails to resume
-correctly: Windows reports a descriptor failure. Software reconnection recovers
-it. The next kernel change must handle gadget quiescing and IRQ locking, then
-pass repeated device-stage tests before deeper sleep/wake and battery testing.
+## Enabling OTA on this phone
 
-## What blocks system updates
+This development installation boots /userdata/rootfs.img. It does not yet have
+a working A50 update channel. A newer rootfs alone cannot enable OTA.
+
+The planned one-time migration needs a compatible boot image and system layout,
+tested UBports recovery, and a signed update channel. Back up and verify user
+data and recovery before performing it. After migration and validation, ordinary
+updates should use System Settings rather than manual flashing. Data preservation
+is a test requirement, not a promise based on the offline build.
 
 | Item | Verified state | Required work |
 | --- | --- | --- |
-| Installed updater | system-image CLI, service and common packages installed; config.d empty | Supply valid device/channel configuration through the finalized image |
-| Root filesystem | /userdata/rootfs.img, 16 GiB image, roughly 4 GiB used | Build a fresh, measured system image with committed adaptations |
-| System partition | 5,557,452,800 bytes = 5,300 MiB | Fit the image and update growth allowance within this limit |
-| Repository image size | 6,144 MiB | Add a correctly sized finalization build profile; retain the development profile |
-| Recovery | Build disabled; physical recovery is 67,633,152 bytes | Build and test unified UBports recovery while preserving TWRP backup |
-| Cache | Physical cache is 419,430,400 bytes; live /cache resolves onto userdata | Verify recovery's staging path and capacity rather than assuming it uses physical cache |
-| Published aa8 release | Development boot image and symbols | Not an OTA channel; integrate signed update artifacts and metadata |
+| Root filesystem | Current boot still uses userdata image; clean 26.04 full-376 candidate built read-only | Validate fresh boot/onboarding and boot from the final layout |
+| Image size | Candidate 5,452,595,200 bytes (5,200 MiB); measured system 5,557,452,800 bytes (5,300 MiB) | Validate on hardware and retain growth allowance inside the filesystem |
+| Recovery | Unified recovery candidate built and checked offline; 62,095,360 bytes fits 67,633,152-byte partition | Test display, ADB, mounts, reboot modes; preserve TWRP fallback |
+| Cache | Unified recovery candidate uses userdata-backed cache | Verify actual recovery staging and available capacity |
+| Image adaptations | Audio uses upstream DeviceInfo; container files generated under /run; polkit fallback baked into candidate | Verify clean boot and survival across rootfs OTA, especially helper ownership/mode |
+| Update service | Generated channel config is not a registered/hosted A50 channel | Signed artifacts, metadata, key trust and UBports integration or maintained hosting |
+| Installer | Samsung transport must be validated | Verified downloads and A50 installer configuration; do not assume fastboot |
 
-The existing 16 GiB image cannot be flashed to the 5.18 GiB system partition.
-Approximately 4 GiB used makes a fresh image plausible, not yet proven. Keep
-Waydroid images and user data outside the system image; measure actual paths
-when Waydroid work resumes. No partition resize, migration, recovery replacement
-or updater configuration change was performed during this audit.
+Latest offline rootfs SHA256:
+`8408498e80eeca0c8f3fca251dfb57a94dc23c8ce6b5ca325cbce0854874510f`.
+It uses port overlay f0c4a7e; runtime suspend experiments are not permanent
+release configuration. No candidate system or recovery image has been flashed.
 
 ## Implementation sequence
 

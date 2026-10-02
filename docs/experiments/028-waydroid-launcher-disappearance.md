@@ -54,3 +54,39 @@ and XdgWatcher are unchanged between these revisions. The model drops events
 while refreshing; changed-file events only update popularity, and file-removal
 signals remove rows. These are investigation leads, not a verified fix.
 No Waydroid, shell or phone restart was performed while capturing this state.
+
+## Live follow-up at 23:26–23:31 CEST
+
+The user confirmed pull-down refresh did not restore the icon. A fresh process
+using the running shell's XDG paths still listed Waydroid, and lomiri-app-info
+parsed its name/icon/orientation successfully. The existing desktop file was
+unchanged since 07:26 before the next test.
+
+Starting Waydroid via lomiri-app-launch succeeded; the user confirmed Android
+opened while the drawer icon remained absent. The same container/session
+services retained NRestarts=0, and the container changed from FROZEN to RUNNING.
+This event does not establish a container crash.
+
+At 23:29:53 the user desktop file was regenerated with Exec=waydroid show-full-ui
+instead of the adaptation wrapper, still NoDisplay=false. This demonstrates a
+late rewrite beyond the 150-second repair window. It does not explain the
+original disappearance, which was captured with the wrapper still intact.
+
+An isolated Qt5 harness reproduced four AppDrawerModel defects against upstream
+9ee950b: duplicate add events, missing visibility reconciliation on change,
+and an event lost while a refresh snapshot is in flight. No model patch was
+deployed: the user's unsuccessful manual refresh means those test failures alone
+are insufficient evidence for the current phone symptom.
+
+Capture the next event before restarting with
+`sudo sh scripts/experiments/check-waydroid-launcher.sh` on the phone. It only
+reads metadata, discovery, parsing, service status and relevant journal entries.
+Keep raw diagnostic output private; no repair or launch is performed by it.
+The script passed against this live event. Investigation remains open.
+
+The user subsequently confirmed the normal launch opened Android with its
+icon still absent, and authorized a clean-install test with no need to retain
+personal data. Helper 3.4.0 was not running. Its installed Appdrawer code only
+selects lowercase waydroid.*.desktop entries for hide/show, not Waydroid.desktop;
+there is no evidence it hid the main entry. No Helper uninstall was performed.
+The next clean-image test is distinct from a working OTA migration.
