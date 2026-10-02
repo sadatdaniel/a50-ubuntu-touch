@@ -58,4 +58,42 @@ false activation result only if the Android SystemSuspend process has a worker
 blocked in pm_get_wakeup_count under the test hold. Otherwise it aborts. This
 keeps failed activation distinguishable from an already-running loop.
 
-Automatic-sleep hardware results remain pending.
+## October 2 hardware result
+
+Auto7 activated successfully at 07:29:26 CEST. The hook journal records mode 1
+accepted at 07:29:25, before activation. Counters changed from success 0/fail 0
+to **success 30/fail 3**, with all resume failure counters zero. The boot ID
+remained unchanged. The retained dmesg tail contains 22 duration records totaling
+167.182 seconds, ranging from 0.456 to 14.635 seconds; earlier records had rotated
+out, so this is not the total duration of all 30 cycles. MIF power-down counts
+advanced, confirming actual platform sleep rather than only successful entry
+and immediate exit.
+
+Three attempts aborted with pending Wi-Fi wake sources: wlan_ma, hip4_wake_lock,
+and wlan_ma/wlan. These differ from the former deterministic preparation loop;
+they still require classification before claiming stable unattended behavior.
+USB reconnection woke the phone (sm5713-usbpd IRQ in the log). The user confirmed
+screen wake and touch work. AppArmor remained Y and its real allow/deny probe
+passed on this boot; repowerd, biometryd and location service were active.
+NetworkManager reported Wi-Fi connected, but end-to-end Wi-Fi connectivity was
+not established by this test. Mode 0 restoration was accepted after reconnect.
+
+## Cleanup timing limitation
+
+The worker finished at 07:34:23 and the independent timer at 07:34:54, later than
+the nominal 60/90 seconds. Monotonic journal timestamps show +60.34/+90.69 seconds
+of awake time from activation. The worker uses ordinary sleep, so its extension
+across suspend is expected. The WakeSystem=yes timer should include suspend,
+but did not provide the intended deadline on this run. Do not describe this
+experiment as a verified 90-second wall-clock bound.
+
+Read-only checks afterward show CLOCK_BOOTTIME and CLOCK_BOOTTIME_ALARM include
+251 seconds more than CLOCK_MONOTONIC. A harmless new timer with WakeSystem=yes
+uses a timerfd with clockid 9 (BOOTTIME_ALARM); default AccuracySec is one minute.
+Thus merely changing the timer accuracy does not explain or resolve the full
+delay. The cause still needs investigation. Keep manual recovery available for
+future tests and do not enable permanent automatic sleep from these scripts.
+
+This establishes that supported early Wi-Fi preparation permits automatic deep
+sleep and repeated resume on aa12. It does not establish release readiness,
+alarm reliability, battery life, or persistence across reboot.
