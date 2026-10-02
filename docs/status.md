@@ -1,6 +1,23 @@
 # Status
 
-**Current checkpoint: 2026-09-22.** This remains a development port, not a
+**Current checkpoint: 2026-10-02.** Development port, not a stable release.
+
+- aa12 plus supported repowerd Wi-Fi preparation completed 30 automatic suspend
+  cycles, with zero resume failures. Screen/touch recovery was user-confirmed.
+  Three attempts aborted on wake events. Alarm deadline validation and permanent
+  integration remain open; see [the measured result](experiments/026-repowerd-wifi-preparation.md).
+- AppArmor allow/deny enforcement passed. The guarded test boot restores the old
+  fallback image on disk; a reboot into that fallback is not an AppArmor-enabled
+  release configuration.
+- Clean non-development rootfs and unified recovery candidates were built and
+  checked offline. Fresh onboarding, recovery boot, local OTA, channel and
+  installer validation remain outstanding.
+- Authentication and swipe fixes are confirmed on the development installation.
+  Waydroid still has user-reported crashes. The full current checklist is the
+  [release validation backlog](release-validation-backlog.md).
+
+## Previous checkpoint: September 22
+**Checkpoint: 2026-09-22.** This remains a development port, not a
 validated final release. The September 10 inventory below is historical; the
 following checkpoint supersedes its AppArmor, suspend, authentication, and
 recovery claims.

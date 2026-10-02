@@ -44,10 +44,12 @@ while [ "$(cat /run/a50-wifi-power-hooks/mode 2>/dev/null)" != 1 ]; do
     waited=$((waited + 1))
 done
 cat /sys/kernel/debug/wakeup_sources > "$B/disconnected.wakeup-sources"
-# CLOCK_BOOTTIME_ALARM wakes the system even if the worker's sleep is paused.
-systemd-run --unit=a50-oct02-auto7-stop --on-active=90s --timer-property=WakeSystem=yes /bin/sh "$P/aa12-auto7-stop.sh"
+# Use the established calendar-timer workaround for systemd issue #29245.
+deadline=$(date -u -d '+90 seconds' '+%Y-%m-%d %H:%M:%S UTC')
+printf '%s\n' "$deadline" > "$B/deadline"
+systemd-run --unit=a50-oct02-auto7-stop --on-calendar="$deadline" --timer-property=AccuracySec=1s --timer-property=WakeSystem=yes /bin/sh "$P/aa12-auto7-stop.sh"
 systemctl is-active --quiet a50-oct02-auto7-stop.timer
-systemctl show a50-oct02-auto7-stop.timer -p WakeSystem -p NextElapseUSecMonotonic > "$B/timer"
+systemctl show a50-oct02-auto7-stop.timer -p WakeSystem -p NextElapseUSecRealtime -p AccuracyUSec > "$B/timer"
 grep -q '^WakeSystem=yes$' "$B/timer"
 # Android 11 AIDL method 1 is enableAutosuspend(); method 3 would force sleep.
 timeout 8 lxc-attach -n android -- /system/bin/service call suspend_control 1 > "$B/activation"
@@ -55,8 +57,14 @@ if ! grep -Eq '00000000[[:space:]]+00000001' "$B/activation"; then
     # Android 11 returns false when already started. Prove its worker exists
     # and is waiting on the held kernel wake lock; never accept false blindly.
     grep -Eq '00000000[[:space:]]+00000000' "$B/activation"
-    pid=$(pgrep -f '^/system/bin/hw/android.system.suspend@1.0-service$')
-    grep -H '^pm_get_wakeup_count$' /proc/"$pid"/task/*/wchan > "$B/existing-worker"
+    init_pid=$(lxc-info -n android -pH)
+    android_ns=$(readlink "/proc/$init_pid/ns/pid")
+    : > "$B/existing-worker"
+    for pid in $(pgrep -f '^/system/bin/hw/android.system.suspend@1.0-service$'); do
+        [ "$(readlink "/proc/$pid/ns/pid")" = "$android_ns" ] || continue
+        grep -H '^pm_get_wakeup_count$' /proc/"$pid"/task/*/wchan >> "$B/existing-worker" || true
+    done
+    test -s "$B/existing-worker"
 fi
 date -Is > "$B/started"
 echo a50-auto-test-hold > /sys/power/wake_unlock
