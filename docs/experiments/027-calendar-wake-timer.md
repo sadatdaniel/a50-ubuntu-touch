@@ -33,4 +33,15 @@ awake timer validation only, not proof of alarm wake from suspend.
 The guard now matches the process PID namespace against `lxc-info -n android
 -pH`, then checks only that container's blocked suspend worker. This exact check
 passed live with both containers running. The repeat run uses auto9 evidence and
-unit names. Across-suspend calendar validation is pending.
+unit names. Auto9 passed across-suspend calendar validation on October 2. Counters changed
+from 30 successes / 3 failures to 35 / 3: five additional suspend/resume cycles,
+no additional aborts and no resume failures. Sleep intervals were 45.429,
+14.578, 14.648, 5.387 and 8.095 seconds (88.137 seconds total).
+
+The requested deadline was 05:50:34 UTC; resume and the cleanup service ran at
+05:50:36 UTC, about two seconds later. This validates the conventional calendar
+path in this run, not a universal alarm timing guarantee. The worker's later
+EXIT cleanup ran again at 05:51:30 UTC and overwrote its `stopped` file; use the
+first cleanup journal event when interpreting the deadline. Raw evidence remains
+private in work/session02/auto-9. USB access returned; longer idle, Wi-Fi network
+recovery, restart and permanent integration validation remain outstanding.
