@@ -15,12 +15,12 @@ test -f "$backup/rootfs.img"
 test ! -e "$failed"
 sha256sum -c "$backup/boot-partition.sha256"
 test "$(stat -c %s "$backup/boot-partition.img")" = 57671680
-for name in rootfs.img user-data system-data android-data .force-adb .force-ssh; do
+for name in rootfs.img user-data system-data android-data .force-adb .force-ssh .writable_image .writable_image_overlay rootfs-overlay rootfs-overlay-workdir; do
     test ! -L "/data/$name"
     test ! -L "$backup/$name"
 done
 mkdir "$failed"
-for name in rootfs.img user-data system-data android-data .force-adb .force-ssh; do
+for name in rootfs.img user-data system-data android-data .force-adb .force-ssh .writable_image .writable_image_overlay rootfs-overlay rootfs-overlay-workdir; do
     if [ -e "/data/$name" ]; then mv "/data/$name" "$failed/$name"; fi
     if [ -e "$backup/$name" ]; then mv "$backup/$name" "/data/$name"; fi
 done

@@ -15,14 +15,14 @@ fi
 test -f /data/rootfs.img
 backup=/data/a50-before-clean-20261002
 test ! -e "$backup"
-for name in rootfs.img user-data system-data android-data .force-adb .force-ssh; do
+for name in rootfs.img user-data system-data android-data .force-adb .force-ssh .writable_image .writable_image_overlay rootfs-overlay rootfs-overlay-workdir; do
     test ! -L "/data/$name"
 done
 mkdir "$backup"
 dd if=/dev/block/sda14 of="$backup/boot-partition.img" bs=1048576
 test "$(stat -c %s "$backup/boot-partition.img")" = 57671680
 sha256sum "$backup/boot-partition.img" > "$backup/boot-partition.sha256"
-for name in rootfs.img user-data system-data android-data .force-adb .force-ssh; do
+for name in rootfs.img user-data system-data android-data .force-adb .force-ssh .writable_image .writable_image_overlay rootfs-overlay rootfs-overlay-workdir; do
     path="/data/$name"
     if [ -e "$path" ]; then
         mv "$path" "$backup/$name"

@@ -28,7 +28,7 @@ local updates remain separate gates in ota-finalization.md.
    transfer via ADB to TWRP's internal storage and verify its complete hash.
 2. Verify the A50 partition paths, /data mount and free space in recovery.
 3. Run prepare-clean-install-twrp.sh only in TWRP. It saves the boot partition
-   and moves rootfs.img, user-data, system-data, android-data and any force-USB
+   and moves rootfs.img, user-data, system-data, android-data, writable-image/overlay state and any force-USB
    markers under /data/a50-before-clean-20261002. It refuses nested /data mounts
    and symlinked source paths. It neither formats partitions nor changes TWRP.
 4. Install the verified ZIP using TWRP's existing install command. Check its
