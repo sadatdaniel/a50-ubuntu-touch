@@ -1,0 +1,14 @@
+[Unit]
+Description=A50 Android 11 automatic suspend activation test
+Requires=repowerd.service
+After=repowerd.service
+PartOf=repowerd.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh /userdata/a50-session29-aa12/a50-enable-autosuspend.sh
+TimeoutStartSec=20
+
+[Install]
+WantedBy=repowerd.service

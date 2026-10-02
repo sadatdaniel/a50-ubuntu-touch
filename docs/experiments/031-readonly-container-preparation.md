@@ -48,3 +48,16 @@ Rollback for a future installed deployment: stop the Android container before
 unmounting the runtime hook and restoring the previous port files. Runtime
 mounts disappear on reboot. Do not remove generated files while a container is
 using them. The isolated validation made no such live deployment.
+
+The isolated candidate was refreshed with the f0c4a7e device tarball and passed
+another e2fsck plus script/configuration checks. No phone partition was flashed.
+Final image SHA256: 8408498e80eeca0c8f3fca251dfb57a94dc23c8ce6b5ca325cbce0854874510f.
+Device tarball SHA256: feaa03ff61c7bffadcbceb2604fd40524c7d09749b1551bf32df0eaf411c3dda.
+Artifacts remain in Docker volume a50-release-readonly-376 under /w/out.
+Official input: full image 376, rootfs-1797be4cea7f57bc920e6c874fdc501fc956e64698cfbda3853ce9b864f8ed3e.tar.xz,
+SHA256 7273c2fb019f2b2a1d0eb41d141095d6a6b6cbf512e55031527e3dea1a5d3b8b,
+683,412,668 bytes. The file digest was checked against the official HTTPS index.
+Reproduce the image content with the existing release builders at f0c4a7e,
+ROOTFS_URL pinned to that pool file, aa12 boot.img and size 5200M. As documented
+for earlier candidates, filesystem timestamps/UUID prevent a byte-identical
+rootfs guarantee. The refresh reused the unflashed image to conserve host disk.

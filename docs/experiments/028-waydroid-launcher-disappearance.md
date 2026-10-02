@@ -39,3 +39,18 @@ User follow-up: Waydroid also becomes unavailable from Recents during the event.
 The event is not occurring now. The user will record it when it recurs and
 requested deferring further Waydroid diagnosis. A crash remains possible; the
 currently healthy launcher does not exclude an earlier crash.
+
+At 18:47 CEST the user reported the icon currently absent. Before any refresh or
+restart, the same Waydroid.desktop still had its 07:26 modification time,
+NoDisplay=false and the wrapper Exec. Both fresh Gio discovery and
+lomiri-app-launch-appids included Waydroid. The session and container services
+had been running since 07:25 with NRestarts=0; the container was FROZEN and the
+session RUNNING. There were no matching recent retained journal entries.
+This narrows the current symptom toward the shell's displayed model; it does
+not rule out an earlier application failure or establish the exact race.
+
+Inspected installed Lomiri e12b69c and current upstream 9ee950b. AppDrawerModel
+and XdgWatcher are unchanged between these revisions. The model drops events
+while refreshing; changed-file events only update popularity, and file-removal
+signals remove rows. These are investigation leads, not a verified fix.
+No Waydroid, shell or phone restart was performed while capturing this state.
