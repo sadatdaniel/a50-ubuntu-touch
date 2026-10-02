@@ -1,6 +1,6 @@
 #!/bin/sh
 # Per-boot device setup for the A50 that has to happen AFTER the Android
-# container is running, or that patches a file the rootfs itself ships.
+# container is running. Static configuration belongs in the build overlay.
 #
 # Everything here is idempotent and cheap on a boot where it has already been
 # done.  It is invoked from /usr/libexec/lxc-android-config/device-hacks, the
@@ -12,37 +12,6 @@
 set -u
 
 log() { echo "a50-device-setup: $*"; }
-
-# --- sensorfwd -------------------------------------------------------------
-# It was masked during the misc_mtx investigation, when it was one of the
-# daemons caught spinning at 100% CPU holding the lock.  With that corruption
-# gone it runs normally and rotation works; left masked, every sensor is
-# silently dead.
-if [ "$(systemctl is-enabled sensorfwd 2>/dev/null)" = "masked" ]; then
-    systemctl unmask sensorfwd && systemctl daemon-reload && systemctl start sensorfwd
-    log "sensorfwd unmasked"
-fi
-
-# --- PulseAudio: the legacy HAL has no create_audio_patch -------------------
-# Without this flag the droid module calls that absent operation, dereferences
-# a NULL function pointer, and PulseAudio segfaults in a restart loop.
-# Verified: SEGV before; clean run with sink.primary-out / sink.fast after.
-if [ -f /etc/pulse/touch.pa ] && ! grep -q 'use_legacy_stream_set_parameters' /etc/pulse/touch.pa; then
-    cp -a /etc/pulse/touch.pa /etc/pulse/touch.pa.bak-a50
-    sed -i 's/^\(load-module module-droid-discover .*\)$/\1 use_legacy_stream_set_parameters=true/' \
-        /etc/pulse/touch.pa
-    log "touch.pa: use_legacy_stream_set_parameters=true"
-fi
-
-# --- ld.so cache -----------------------------------------------------------
-# The image build co-installs the pre-26.04 libxml2 and ICU SONAMEs, without
-# which the preinstalled OpenStore and Morph cannot start. The loader would
-# find them anyway - /usr/lib/<triplet> is in its compiled-in search path - but
-# the build host cannot run the target's ldconfig, so do it here once.
-if [ -e /usr/lib/aarch64-linux-gnu/libxml2.so.2 ] && \
-   ! ldconfig -p 2>/dev/null | grep -q 'libxml2\.so\.2 '; then
-    ldconfig && log "ld.so cache rebuilt for the co-installed SONAMEs"
-fi
 
 # --- /dev/gnss_ipc on a node that already exists ----------------------------
 # usr/lib/udev/rules.d/99-a50-gnss.rules handles it at hotplug time; this
@@ -68,28 +37,6 @@ if [ -x /usr/bin/waydroid ] && [ -f /usr/lib/systemd/user/waydroid-session.servi
 fi
 
 
-# The clock indicator is the one indicator Lomiri never starts.
-#
-# lomiri-indicators.target is what actually pulls the indicators up, via
-# /etc/systemd/user/lomiri-indicators.target.wants/. Seven ayatana indicators
-# are symlinked in there - bluetooth, display, keyboard, messages, power,
-# session, sound - and ayatana-indicator-datetime is NOT. Its only
-# WantedBy= is ayatana-indicators.target, which never becomes active on this
-# image, so the unit is enabled, never attempted, and logs nothing at all.
-#
-# The visible symptom is a lock screen and panel clock that does not match the
-# real time, while Settings looks right - Settings reads the system clock
-# directly, and the system clock is fine (NTP synced, correct timezone, RTC in
-# agreement). Only the indicator that feeds the shell is missing.
-#
-# Measured 2026-09-09: 7 of 8 ayatana indicators active, datetime "inactive
-# (dead)", and starting it by hand fixes the clock immediately.
-DT_WANTS=/etc/systemd/user/lomiri-indicators.target.wants
-DT_UNIT=ayatana-indicator-datetime.service
-if [ -d "$DT_WANTS" ] && [ ! -e "$DT_WANTS/$DT_UNIT" ]; then
-    ln -sf "/usr/lib/systemd/user/$DT_UNIT" "$DT_WANTS/$DT_UNIT" \
-        && log "clock indicator wired into lomiri-indicators.target"
-fi
 # The .desktop sweep is NOT started here.  It edits files under the phablet
 # user's $HOME, and waydroid-session.service - a *user* unit, with the right
 # $HOME - already launches it.

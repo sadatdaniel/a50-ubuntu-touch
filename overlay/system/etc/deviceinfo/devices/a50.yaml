@@ -53,3 +53,6 @@ a50:
   RepowerdScriptPerfBoostLowPower: /usr/bin/timeout 8 /usr/bin/python3 /usr/local/bin/a50-wifi-power.py 1
   RepowerdScriptPerfBoostSustained: /usr/bin/timeout 8 /usr/bin/python3 /usr/local/bin/a50-wifi-power.py 0
   RepowerdScriptPerfBoostInteractive: /usr/bin/timeout 8 /usr/bin/python3 /usr/local/bin/a50-wifi-power.py 0
+  # Preserve the working legacy HAL routing through upstream DeviceInfo hooks.
+  PulseaudioModulesDroid_ExtraCardArgs: use_legacy_stream_set_parameters=true
+  PulseaudioModulesDroid_ExtraHidlArgs: helper=false

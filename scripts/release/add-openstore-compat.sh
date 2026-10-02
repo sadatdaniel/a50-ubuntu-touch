@@ -68,8 +68,6 @@ cp -a "$i/$L/"libicu*.so.74* "$ROOT/$L/"
 echo "I: co-installed:"
 ls -l "$ROOT/$L/"libxml2.so.2* "$ROOT/$L/"libicu*.so.74* | sed 's/^/    /'
 
-# No ldconfig here: `ldconfig -r` chroots and execs the target's own binaries,
-# which cannot work when the build host is x86 and the rootfs is arm64. It is
-# not needed either - /usr/lib/<triplet> is in glibc's compiled-in search path,
-# so the loader finds these without a cache entry - but a50-device-setup.sh
-# runs ldconfig on the device at first boot so the cache is right as well.
+# No boot-time cache write is needed: glibc searches /usr/lib/<triplet>.
+# Verified with the arm64 loader --inhibit-cache and the app's bundled library
+# path on the device; the old libxml2 and ICU SONAMEs resolve normally.

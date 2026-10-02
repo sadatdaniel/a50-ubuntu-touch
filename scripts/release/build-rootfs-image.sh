@@ -196,15 +196,12 @@ if [ -e "$MNT/var/lib/lxc/android/system.img" ]; then
     echo "I: renamed system.img -> android-rootfs.img"
 fi
 
-# The halium initramfs loop-mounts this image read-write only if the marker is
-# present; a UBports release image ships it, a hand-built one has to add it.
-touch "$MNT/.writable_image"
+# Release images use the normal read-only root; only debug builds opt in.
 
 # Ubuntu 26.04 renamed libxml2's SONAME, which stops the preinstalled OpenStore
 # and Morph from starting at all. Co-install the old one. --no-compat skips it.
 if [ -z "${NO_COMPAT:-}" ]; then
-    "$HERE/scripts/release/add-openstore-compat.sh" "$MNT" \
-        || echo "W: OpenStore SONAME compat failed - OpenStore will not start"
+    "$HERE/scripts/release/add-openstore-compat.sh" "$MNT"
 fi
 
 # Kernel 4.14 needs the installed polkit helper in its supported legacy mode.
@@ -213,8 +210,10 @@ bash "$HERE/scripts/release/configure-polkit-legacy.sh" "$MNT"
 # --devel turns this into a debug image: sshd on, root password set, adb
 # unlocked, USB networking up. Kept out of the release image on purpose.
 if [ -n "${DEVEL:-}" ]; then
+    touch "$MNT/.writable_image"
     "$HERE/scripts/release/add-devel-access.sh" "$MNT"
 else
+    rm -f "$MNT/.writable_image"
     printf 'variant=release\nssh=off\n' > "$MNT/etc/a50-image-variant"
 fi
 
