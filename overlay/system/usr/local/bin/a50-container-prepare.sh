@@ -3,7 +3,7 @@
 # the container's LXC mount hook.
 #
 # Runs once per boot, BEFORE lxc-android-config.service starts the container -
-# the bind sources have to exist by the time mount.sh runs, and mount.sh runs
+# temporary bind sources have to exist by the time mount.sh runs, and it runs
 # inside the container's mount namespace where nothing can be fixed afterwards.
 #
 # Each file below is DERIVED from a vendor or GSI file that is not in git
@@ -14,13 +14,15 @@
 # source, so it costs nothing on a normal boot.
 set -eu
 
-D=/var/lib/lxc/android
+BASE=/var/lib/lxc/android
+D=/run/a50-android
 V=/android/vendor
 S=/android/system
 
 log() { echo "a50-container-prepare: $*"; }
 
-[ -d "$D" ] || { log "no $D - lxc-android-config not installed?"; exit 0; }
+[ -d "$BASE" ] || { log "no $BASE - lxc-android-config not installed?"; exit 1; }
+mkdir -p "$D"
 
 # --- 1. watchdogd, which freezes every misc device on the system ------------
 src="$V/etc/init/init.exynos9610.rc"
@@ -49,7 +51,7 @@ fi
 src="$V/etc/mixer_paths.xml"
 if [ -x /usr/local/bin/a50-gen-mixer-paths.py ] && [ -r "$src" ]; then
     if [ ! -s "$D/mixer_paths.a50.xml" ] || [ "$src" -nt "$D/mixer_paths.a50.xml" ]; then
-        python3 /usr/local/bin/a50-gen-mixer-paths.py \
+        python3 /usr/local/bin/a50-gen-mixer-paths.py "$src" "$D/mixer_paths.a50.xml" \
             && log "generated mixer_paths.a50.xml" \
             || log "WARNING mixer_paths generation failed - speaker will be silent"
     fi
@@ -73,17 +75,22 @@ if [ -r "$src" ] && [ ! -s "$dst" -o "$src" -nt "$dst" ]; then
     log "generated vndservicemanager.rc.selinux-stubs"
 fi
 
-# --- 5. wire the hooks into the container's mount hook ----------------------
-# One appended line, not a rewritten file, so a lxc-android-config update that
-# changes mount.sh does not silently drop or fight with this.
-if [ -f "$D/mount.sh" ] && ! grep -q 'a50-mount-hooks.sh' "$D/mount.sh"; then
-    cp -a "$D/mount.sh" "$D/mount.sh.bak-a50"
-    cat >> "$D/mount.sh" <<'HOOK'
+# --- 5. extend the upstream mount hook without modifying its package file ---
+# Keep generated state in /run. LXC executes the current upstream hook first.
+if mountpoint -q "$BASE/mount.sh"; then
+    [ "$BASE/mount.sh" -ef "$D/mount.sh" ] || {
+        log "mount.sh has an unexpected overlay; refusing to stack another"
+        exit 1
+    }
+else
+    cp -a "$BASE/mount.sh" "$D/mount.sh"
+    if ! grep -q 'a50-mount-hooks.sh' "$D/mount.sh"; then
+        cat >> "$D/mount.sh" <<'HOOK'
 
-# a50 port: see /var/lib/lxc/android/a50-mount-hooks.sh
-[ -f /var/lib/lxc/android/a50-mount-hooks.sh ] && . /var/lib/lxc/android/a50-mount-hooks.sh
+# A50 adaptation after the upstream hook in LXC's mount namespace.
+. /var/lib/lxc/android/a50-mount-hooks.sh
 HOOK
-    log "mount.sh: a50 hooks wired in"
+    fi
+    mount --bind "$D/mount.sh" "$BASE/mount.sh"
+    log "runtime mount.sh overlay installed"
 fi
-
-exit 0
