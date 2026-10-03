@@ -40,3 +40,24 @@ scsi_srpmb_work, ree_time, tz_iwsock and six simpleinteractive workers.
 This does not show CPU saturation or prove these workers are faulty.
 Their wait paths need privileged bounded diagnostics before any kernel fix
 is justified; no process was terminated or scheduling setting changed.
+
+At 23:07 CEST the user completed `sudo.ws sh check` using normal private
+authentication. The bounded temporary AppArmor profile allowed its permitted
+read and denied its forbidden read; APPARMOR_ALLOW_DENY=PASS on the fresh
+aa13 installation. The temporary profile was removed afterward. This
+proves the controlled file-mediation test, not every application's profile.
+`check-release-health.sh` reproduces the check and retains a private log.
+
+Kernel worker stacks locate TrustZone waits in tz_worker_handler and
+tz_iwsock_read, and simpleinteractive workers in kthread startup. These
+waits explain counted D tasks without establishing a CPU or I/O bottleneck.
+No trusted-service thread was stopped or kernel wait mode changed.
+
+The privileged standard Python socket probe returned EPROTONOSUPPORT (93)
+for Bluetooth RFCOMM and succeeded for L2CAP. This confirms protocol
+availability differs, independently of BlueZ's voice-gateway log. Kernel
+initialization still needs inspection; HID keyboard support is not proved
+broken by a missing serial-port protocol. No pairing or connection was made.
+System failed units remain zero. Suspend counters are zero successes and
+zero failures in this boot, so it contains no successful suspend evidence.
+The RTKit cgroup runtime budget remains zero.

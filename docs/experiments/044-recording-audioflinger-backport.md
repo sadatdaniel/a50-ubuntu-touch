@@ -84,3 +84,14 @@ The corrected helper also passed against the actual resolved manifest: the
 compatibility/cdd AOSP project now uses refs/tags/android-11.0.0_r46. At this
 checkpoint no compilation result or new phone library is available. Monitor
 the run to completion before any artifact staging or deployment.
+
+Run [37152420785](https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/37152420785)
+compiled both architectures successfully (2091 build actions, about nine
+minutes for compilation). Its artifact only contained the two initial
+manifests: Android envsetup overwrote the script's generic OUT variable,
+redirecting libraries and checksums into the product tree. Those outputs
+were not uploaded and cannot be used for a phone test. The script now uses
+a readonly task-specific artifact directory, and the workflow checks both
+libraries and their checksums in the upload directory before declaring the
+build successful. A replacement build is required; no new library has been
+installed on the phone.

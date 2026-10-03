@@ -3,7 +3,7 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 TREE="$(realpath "${1:?Halium source tree required}")"
-OUT="$(realpath -m "${2:?Output directory required}")"
+readonly A50_RECORDING_ARTIFACT_DIR="$(realpath -m "${2:?Output directory required}")"
 PATCH="$HERE/halium11-recording-audioflinger.patch"
 cd "$TREE"
 actual=$(git hash-object frameworks/av/media/libaudioclient/AudioSystem.cpp)
@@ -21,17 +21,17 @@ source build/envsetup.sh
 lunch lineage_halium_arm64-userdebug
 make -j"${BUILD_JOBS:-2}" libaudioclient
 set -u
-mkdir -p "$OUT/lib" "$OUT/lib64"
+mkdir -p "$A50_RECORDING_ARTIFACT_DIR/lib" "$A50_RECORDING_ARTIFACT_DIR/lib64"
 for arch in lib lib64; do
     source="out/target/product/halium_arm64/system/$arch/libaudioclient.so"
     test -s "$source"
-    readelf -h "$source" > "$OUT/$arch/elf-header.txt"
-    readelf -d "$source" > "$OUT/$arch/elf-dynamic.txt"
-    cp "$source" "$OUT/$arch/libaudioclient.so"
+    readelf -h "$source" > "$A50_RECORDING_ARTIFACT_DIR/$arch/elf-header.txt"
+    readelf -d "$source" > "$A50_RECORDING_ARTIFACT_DIR/$arch/elf-dynamic.txt"
+    cp "$source" "$A50_RECORDING_ARTIFACT_DIR/$arch/libaudioclient.so"
 done
-grep -q 'Class:.*ELF32' "$OUT/lib/elf-header.txt"
-grep -q 'Class:.*ELF64' "$OUT/lib64/elf-header.txt"
-(cd "$OUT" && sha256sum lib/libaudioclient.so lib64/libaudioclient.so > SHA256SUMS)
-repo manifest -r -o "$OUT/built-manifest.xml"
-git -C frameworks/av diff > "$OUT/frameworks-av.patch"
+grep -q 'Class:.*ELF32' "$A50_RECORDING_ARTIFACT_DIR/lib/elf-header.txt"
+grep -q 'Class:.*ELF64' "$A50_RECORDING_ARTIFACT_DIR/lib64/elf-header.txt"
+(cd "$A50_RECORDING_ARTIFACT_DIR" && sha256sum lib/libaudioclient.so lib64/libaudioclient.so > SHA256SUMS)
+repo manifest -r -o "$A50_RECORDING_ARTIFACT_DIR/built-manifest.xml"
+git -C frameworks/av diff > "$A50_RECORDING_ARTIFACT_DIR/frameworks-av.patch"
 echo 'Compiled both Android library architectures; phone validation still required.'

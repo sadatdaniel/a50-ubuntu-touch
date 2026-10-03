@@ -37,7 +37,11 @@ jobs:
           repo sync -c -j4 --fail-fast --no-clone-bundle --no-tags
           hybris-patches/apply-patches.sh --mb
       - name: Build the existing upstream correction for both architectures
-        run: bash scripts/experiments/build-recording-library.sh "$RUNNER_TEMP/halium" "$GITHUB_WORKSPACE/recording-test"
+        run: |
+          bash scripts/experiments/build-recording-library.sh "$RUNNER_TEMP/halium" "$GITHUB_WORKSPACE/recording-test"
+          test -s recording-test/lib/libaudioclient.so
+          test -s recording-test/lib64/libaudioclient.so
+          (cd recording-test && sha256sum -c SHA256SUMS)
       - name: Preserve artifacts and build evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
