@@ -1,0 +1,15 @@
+Subject: [PATCH] Fix the backported openat2 declaration for tar's older gnulib
+
+Ubuntu's CVE-2025-45582 backport copies a four-argument _GL_FUNCDECL_SYS
+call into tar 1.35, whose macro takes three arguments. Join the attributes
+to the parameter list, as the existing declarations in that gnulib do.
+Keep the nonnull attributes and all the upstream path-security code.
+
+--- a/gnu/fcntl.in.h
++++ b/gnu/fcntl.in.h
+@@ -273,4 +273,4 @@
+ _GL_FUNCDECL_SYS (openat2, int,
+                   (int fd, char const *file, struct open_how const *how,
+-                   size_t size),
++                   size_t size)
+                   _GL_ARG_NONNULL ((2, 3)));

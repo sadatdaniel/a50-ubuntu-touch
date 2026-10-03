@@ -14,6 +14,8 @@ sudo apt-get -y --no-install-recommends install libseccomp-dev
 cd "$BUILD_DIR"
 apt-get source "tar=$SOURCE_VERSION"
 cd tar-1.35+dfsg
+patch --dry-run -p1 < "$HERE/scripts/experiments/tar-openat2-gnulib-declaration.patch"
+patch -p1 < "$HERE/scripts/experiments/tar-openat2-gnulib-declaration.patch"
 DEBFULLNAME='A50 port build' DEBEMAIL='noreply@example.invalid' \
     dch --newversion "$SOURCE_VERSION+a50openat2.1" --distribution UNRELEASED 'Retain the existing gnulib runtime ENOSYS fallback on old kernels.'
 ac_cv_func_openat2=no dpkg-buildpackage --build=binary --no-sign -j4
@@ -30,5 +32,6 @@ cmp "$BUILD_DIR/fixture/sub/file" "$BUILD_DIR/extracted/sub/file"
 mkdir -p "$HERE/tar-test"
 cp "$BUILD_DIR"/tar_*_arm64.deb "$HERE/tar-test/"
 printf 'Ubuntu tar source: %s\nConfigure: ac_cv_func_openat2=no\nBlocked-openat2 create/extract: PASS\nHardware validation: pending\n' "$SOURCE_VERSION" > "$HERE/tar-test/build.txt"
+sha256sum "$BUILD_DIR"/*.dsc >> "$HERE/tar-test/build.txt"
 dpkg-query -W > "$HERE/tar-test/build-dependencies.txt"
 (cd "$HERE/tar-test"; sha256sum ./*.deb > SHA256SUMS)

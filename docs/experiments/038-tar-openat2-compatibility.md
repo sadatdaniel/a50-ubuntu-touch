@@ -21,6 +21,11 @@ archive paths fail. Package operations must be validated before release.
 
 Candidate: rebuild the current signed Ubuntu 26.04 source, with
 ac_cv_func_openat2=no so the existing gnulib implementation is compiled.
+The first build exposed an incomplete backport: openat2's declaration passes
+four arguments to tar 1.35's three-argument gnulib macro. Joining its parameter
+list and nonnull attributes restores that existing macro convention; all
+upstream security patches remain applied. The candidate also carries this
+one-line declaration correction.
 Use the normal Debian package build and its upstream tests. Also run one
 archive create/extract test with openat2 forced to ENOSYS in that test process
 only; the original tar must fail and the candidate must preserve the nested
