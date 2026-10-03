@@ -48,3 +48,20 @@ calling the backend. A controlled capture of that path remains necessary;
 no reboot-policy relaxation was applied. The unsuccessful camera test was
 removed through the normal launcher and helper stop/start, and both original
 library hashes were restored without a system reboot.
+
+## Remote UI test limit at this checkpoint
+
+The installed python-evdev and native screen-saver activity API were checked
+for a direct Camera test. A temporary uinput key device and a bounded native
+power-key event did not establish Camera focus: the normal FocusInfo API
+returns false and its process is paused. The temporary device was closed and
+no power key remains held. No recording or Stop action was executed, so the
+new correction is still unvalidated on this phone. The normal screen-saver
+reports inactive, while the inner screenshot shows an old Camera buffer and
+the outer screenshot is black; those images alone cannot establish the
+physical display state. Ask the user to open Camera for the pending test.
+
+The candidate hashes remain correct inside the Android container mount
+namespace and camera_service is running. Host /android/system reads the
+original files because the temporary binds belong only to the container.
+Always use lxc-attach for the active recording-library fingerprint check.
