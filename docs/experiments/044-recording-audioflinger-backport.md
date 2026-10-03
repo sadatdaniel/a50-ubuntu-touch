@@ -76,3 +76,11 @@ used the default Lineage branch for a project whose AOSP remote specifies an
 Android release tag. The helper now uses project revision, then remote revision,
 then default revision, matching repo manifest semantics. Its regression covers
 this AOSP case. No compilation or phone deployment occurred in that attempt.
+
+
+Corrected run [37152420785](https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/37152420785)
+passed runner preparation and manifest resolution and entered source sync.
+The corrected helper also passed against the actual resolved manifest: the
+compatibility/cdd AOSP project now uses refs/tags/android-11.0.0_r46. At this
+checkpoint no compilation result or new phone library is available. Monitor
+the run to completion before any artifact staging or deployment.
