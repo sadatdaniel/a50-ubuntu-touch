@@ -1,10 +1,9 @@
 # Clean 26.04 installation test
 
-Started October 2, 2026; installation preparation continued October 3 CEST.
-The user explicitly authorized replacing the existing installation and discarding
-its data to test the experience of a new user. The old installation can still be
-moved aside cheaply on the same filesystem; no SD card or partition formatting
-is necessary. This is not an OTA-enabled release or completed stability claim.
+Started October 2, 2026; installation continued October 3 CEST. The user
+explicitly authorized erasing the existing installation and all personal data
+to test the experience of a new user. This is not an OTA-enabled release or a
+completed stability claim. No SD card is needed: transfer over USB into TWRP.
 
 ## Inputs
 
@@ -12,40 +11,57 @@ is necessary. This is not an OTA-enabled release or completed stability claim.
   `8408498e80eeca0c8f3fca251dfb57a94dc23c8ce6b5ca325cbce0854874510f`.
 - Tested aa12 boot image:
   `795e8b7fffda6b46e318d1bccc542b3a7d807987a7787f5115f0dcb27b7b9dcb`.
-- Existing TWRP 3.7.1_12-0, full recovery partition SHA256:
-  `8535a9d9193243412fcefc0e6f1ba585d60e1533e65069867444a49d0287e51f`.
+- Existing TWRP 3.7.1_12-0 remains installed. The complete boot partition was
+  backed up and verified on the computer before resetting userdata.
+- Corrected clean-test ZIP: 1,272,844,557 bytes, SHA256
+  `d9718ef979d725e18dedc02379bc6e11ae0db019dee6e986262ff0f154bf2a19`.
 
-The package uses the committed make-installer-zip.sh with --variant clean-test
-and --version 2026-10-02. The rootfs itself is the release variant: locked root,
-no development password, no .writable_image, and no forced development USB mode.
-The installed filesystem still uses /data/rootfs.img for this onboarding test.
-Conventional system layout, unified recovery hardware validation and signed
-local updates remain separate gates in ota-finalization.md.
+Build with make-installer-zip.sh --variant clean-test --version 2026-10-02
+using the recorded images. The rootfs itself is the release variant: locked
+root, no development password, no .writable_image and no forced development USB
+mode. This onboarding test still uses /data/rootfs.img. Conventional system
+layout, unified recovery hardware validation and signed local updates remain
+separate gates in ota-finalization.md.
 
-## Procedure
+## Installer correction and preparation
 
-1. Check the two image hashes, build the ZIP, run unzip integrity validation,
-   transfer via ADB to TWRP's internal storage and verify its complete hash.
-2. Verify the A50 partition paths, /data mount and free space in recovery.
-3. Run prepare-clean-install-twrp.sh only in TWRP. It saves the boot partition
-   and moves rootfs.img, user-data, system-data, android-data, writable-image/overlay state and any force-USB
-   markers under /data/a50-before-clean-20261002. It refuses nested /data mounts
-   and symlinked source paths. It neither formats partitions nor changes TWRP.
-4. Install the verified ZIP using TWRP's existing install command. Check its
-   boot/rootfs read-back results before rebooting.
-5. Verify setup wizard, user-chosen credentials, confinement, device services,
-   second boot and suspend startup. Install Waydroid through the documented
-   supported path and reproduce launch/close/sleep tests without old Helper or
-   Android state. Do not treat one successful boot as release validation.
+The first TWRP dry run failed to parse SHA256SUMS. Toybox grep did not accept
+the GNU basic-regex optional-character extension in the old pattern. sum_of()
+now uses POSIX awk to compare the checksum filename field exactly, allowing
+sha256sum's optional leading '*' and ignoring comments. The unchanged boot
+and rootfs hashes remain mandatory; integrity checks were not bypassed.
 
-Rollback in TWRP: rollback-clean-install-twrp.sh verifies the saved boot image,
-moves fresh test state under /data/a50-clean-test-failed-20261002, restores the
-old paths and boot partition, and verifies boot read-back. It is an experiment
-script tied to these literal staging paths, not a general public installer.
+The corrected parser passed that stage in TWRP. The next gate detected actual
+stock Android packages.xml and system/users left on userdata. An old
+/data/.writable_image was also present. Because the user requested a completely
+clean installation, use TWRP's standard Format Data rather than maintaining
+custom path-migration scripts. The proposed rename/rollback scripts were never
+run and are removed from the current tree.
 
-At preparation time: TWRP ADB connected, /data on /dev/block/sda32 had 72 GiB
-available, boot mapped to /dev/block/sda14 and measured 57,671,680 bytes. Script
-syntax checks passed in the build container and TWRP. Data migration and actual
-installation results must be appended after execution.
+Verified partition mapping: userdata /dev/block/sda32, boot /dev/block/sda14
+(57,671,680 bytes). TWRP's `format data` completed using mke2fs; /data remounted
+as ext4 with about 110 GiB free. Old rootfs, stock Android package state and the
+writable-image marker were absent. No system/vendor/boot/recovery partition was
+formatted by this operation. The old personal data cannot now be restored from
+the phone; no backup of it was requested or promised for this reset.
+
+## Remaining execution
+
+1. Transfer the corrected ZIP via ADB, verify its complete hash, and rerun the
+   installer's A50_DRYRUN=1 path in TWRP.
+2. Use `twrp install /data/ubuntu-touch-a50-clean-test-20261002.zip`. Check boot
+   and rootfs read-back results before rebooting.
+3. Verify setup wizard, user-chosen credentials, confinement, device services,
+   second boot and suspend startup. Install Waydroid through the supported
+   documented path and test launch/close/sleep without old Helper/Android state.
+4. Record the outcome. One successful boot is insufficient release validation.
+
+Recovery fallback is the still-installed TWRP plus the host's verified boot and
+rootfs artifacts. Do not claim the erased development userdata remains available.
 
 Upstream procedure: https://twrp.me/faq/openrecoveryscript.html
+
+A second dry-run defect was 32-bit shell arithmetic overflowing rootfs_bytes.
+The size calculation now uses awk and correctly reports 5,324,800 KiB instead
+of 1,130,496 KiB. The corrected complete dry run passed in TWRP after Format
+Data. Both findings were caught before writing boot or rootfs.

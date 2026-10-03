@@ -46,7 +46,7 @@ fi
 # --- 2. checksums shipped with the payload ---------------------------------
 unzip -o "$ZIP" install/SHA256SUMS install/manifest.txt -d "$TMP" >/dev/null 2>&1
 [ -f "$TMP/install/SHA256SUMS" ] || abort "this zip has no SHA256SUMS"
-sum_of() { grep " \*\?$1\$" "$TMP/install/SHA256SUMS" | awk '{print $1}'; }
+sum_of() { awk -v name="$1" '$2 == name || $2 == "*" name {print $1}' "$TMP/install/SHA256SUMS"; }
 
 BOOT_SHA=$(sum_of boot.img)
 ROOTFS_SHA=$(sum_of rootfs.img)
@@ -74,7 +74,8 @@ fi
 # The zip entry is compressed; what has to fit on /data is the expanded image,
 # whose size the manifest records.
 free_kb=$(df /data | tail -1 | awk '{print $4}')
-need_kb=$(( $(grep '^rootfs_bytes=' "$TMP/install/manifest.txt" | cut -d= -f2) / 1024 ))
+# TWRP's shell may use 32-bit arithmetic; this image is larger than 4 GiB.
+need_kb=$(awk -F= '$1 == "rootfs_bytes" {printf "%.0f\n", int(($2 + 1023) / 1024)}' "$TMP/install/manifest.txt")
 if [ "$free_kb" -lt $((need_kb + 262144)) ]; then
     abort "/data has ${free_kb}K free, the rootfs needs ${need_kb}K plus headroom."
 fi
