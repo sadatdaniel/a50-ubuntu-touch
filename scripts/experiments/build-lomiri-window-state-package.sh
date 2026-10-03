@@ -17,15 +17,15 @@ git checkout --detach FETCH_HEAD
 # Match the existing 26.04 phone runtime instead of the runner's newer LightDM
 # and rolling UBports headers. These preferences affect this disposable builder.
 cat > "$BUILD_DIR/runtime.preferences" <<'PINS'
-Package: liblightdm-qt5-3-0 liblightdm-qt5-3-dev
+Package: src:lightdm:any
 Pin: version 1.30.0-0ubuntu14ubports1+0~20260425115354.2+ubports26.04.1~1.gbp12d40d
 Pin-Priority: 1001
 
-Package: liblomiri-connectivity-qt1-1 liblomiri-connectivity-qt1-dev
+Package: src:lomiri-indicator-network:any
 Pin: version 1.99.0+0~20260930165218.255+ubports26.04.1~1.gbp489ef1
 Pin-Priority: 1001
 
-Package: liblomirigestures5t64 liblomirigestures-dev liblomirigestures5-private-dev
+Package: src:lomiri-ui-toolkit:any
 Pin: version 1.3.5908+0~20260930165252.351+ubports26.04.1~1.gbpc41976
 Pin-Priority: 1001
 PINS

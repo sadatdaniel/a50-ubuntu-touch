@@ -149,3 +149,11 @@ runtime dependencies accompany the artifact. A complete APT dependency
 simulation is still required before installation; compilation alone is
 insufficient. No authentication, vendor or recovery change is part of this
 correction.
+
+The first matching-header run (37153801896) stopped during dependency
+resolution because QML toolkit packages require their gesture library at an
+exact matching version. Pin the complete source package families, rather
+than a subset of their binary packages, using APT's documented `src:` syntax
+([apt_preferences](https://manpages.debian.org/bookworm/apt/apt_preferences.5.en.html)).
+This builder-only correction keeps the toolkit, its development packages and
+runtime libraries coherent. The phone still has no new Lomiri packages.
