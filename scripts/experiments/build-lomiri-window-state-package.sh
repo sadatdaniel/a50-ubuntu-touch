@@ -30,6 +30,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(APPLICATION_API REQUIRED IMPORTED_TARGET lomiri-shell-application=28)
 pkg_check_modules(QTMIRSERVER REQUIRED IMPORTED_TARGET qt5mir1server)
 add_executable(WindowStateStorageTestExec WindowStateStorageTest.cpp windowstatestorage.cpp)
+target_compile_options(WindowStateStorageTestExec PRIVATE -include QtCore/QRect)
 target_link_libraries(WindowStateStorageTestExec Qt5::Core Qt5::Gui Qt5::Sql Qt5::Test PkgConfig::APPLICATION_API PkgConfig::QTMIRSERVER)
 CMAKE
 # Demonstrate that the new regression fails against the unmodified storage code.
