@@ -21,7 +21,9 @@ if ! command -v ui_print >/dev/null 2>&1; then
 fi
 
 BOOT_PARTITION_BYTES=57671680
-ROOTFS_TARGET=/data/rootfs.img
+# The Android image is embedded: Halium calls this layout ubuntu.img.
+# rootfs.img selects a DIFFERENT layout with separate images on userdata.
+ROOTFS_TARGET=/data/ubuntu.img
 
 # --- 1. is this the right phone? -------------------------------------------
 find_part() {
@@ -71,6 +73,12 @@ if [ -d /data/system/users ] || [ -e /data/system/packages.xml ]; then
     abort "/data still holds an Android installation.
        Wipe > Format Data first. Installing over it leaves Android's
        encryption policy in place and Ubuntu Touch will not boot."
+fi
+
+if [ -e /data/rootfs.img ]; then
+    abort "/data/rootfs.img selects Halium's separate-image layout.
+       This installer uses the self-contained /data/ubuntu.img layout.
+       Use the documented clean-install procedure before installing."
 fi
 
 # The zip entry is compressed; what has to fit on /data is the expanded image,

@@ -75,22 +75,20 @@ if [ -r "$src" ] && [ ! -s "$dst" -o "$src" -nt "$dst" ]; then
     log "generated vndservicemanager.rc.selinux-stubs"
 fi
 
-# --- 5. extend the upstream mount hook without modifying its package file ---
-# Keep generated state in /run. LXC executes the current upstream hook first.
-if mountpoint -q "$BASE/mount.sh"; then
-    [ "$BASE/mount.sh" -ef "$D/mount.sh" ] || {
-        log "mount.sh has an unexpected overlay; refusing to stack another"
+# --- 5. add a native LXC mount hook after the upstream one -------------------
+# /run is noexec in Halium. Keep executable hooks in the packaged image;
+# only their configuration is generated in /run. Preserve the current
+# upstream config and append LXC's supported second mount hook.
+if mountpoint -q "$BASE/config"; then
+    [ "$BASE/config" -ef "$D/config" ] || {
+        log "config has an unexpected overlay; refusing to stack another"
         exit 1
     }
 else
-    cp -a "$BASE/mount.sh" "$D/mount.sh"
-    if ! grep -q 'a50-mount-hooks.sh' "$D/mount.sh"; then
-        cat >> "$D/mount.sh" <<'HOOK'
-
-# A50 adaptation after the upstream hook in LXC's mount namespace.
-. /var/lib/lxc/android/a50-mount-hooks.sh
-HOOK
+    cp -a "$BASE/config" "$D/config"
+    if ! grep -q 'a50-mount-hooks.sh' "$D/config"; then
+        printf '\nlxc.hook.mount = /bin/sh /var/lib/lxc/android/a50-mount-hooks.sh\n' >> "$D/config"
     fi
-    mount --bind "$D/mount.sh" "$BASE/mount.sh"
-    log "runtime mount.sh overlay installed"
+    mount --bind "$D/config" "$BASE/config"
+    log "runtime LXC configuration overlay installed"
 fi

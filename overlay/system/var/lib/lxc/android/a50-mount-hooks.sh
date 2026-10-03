@@ -1,5 +1,5 @@
-# A50 container mount hooks.  Sourced by /var/lib/lxc/android/mount.sh, which
-# LXC runs in the container's own mount namespace before Android's init starts.
+# A50 container mount hook. LXC runs it with /bin/sh after the upstream
+# mount hook, in the container mount namespace before Android init starts.
 #
 # Everything here overrides a file the Halium GSI or Samsung's vendor image
 # ships.  The host cannot do it: /vendor and /system are mounted separately in

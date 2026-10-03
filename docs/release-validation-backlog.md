@@ -1,6 +1,6 @@
 # Release validation backlog
 
-Updated 2026-10-02. Ubuntu Touch 26.04 only. This remains a development port.
+Updated 2026-10-03. Ubuntu Touch 26.04 only. This remains a development port.
 Research existing upstream implementations first; prefer supported UBports
 configuration and narrowly scoped device adaptations. Record source references,
 reproduction, validation and rollback for every fix, and publish the scripts.
@@ -10,7 +10,7 @@ reproduction, validation and rollback for every fix, and publish the scripts.
 | Suspend/resume | aa12 plus supported repowerd Wi-Fi hooks completed 35 automatic cycles, zero resume failures; user confirmed screen/touch | Calendar timer passed across sleep; repeated cycles, network recovery, screen-on inhibition, service restart and battery drain; reproducible permanent enablement |
 | AppArmor | Real allowed/denied file-access probe passes on aa12; normal biometry/location permissions work | Final image must boot the hardened kernel by default, remove testing bypasses, verify application confinement after clean install and OTA |
 | Authentication | Installed polkit's supported legacy helper fixed password validation; duplicate local account removal fixed swipe; user confirmed PIN/swipe | Clean-image and reboot/OTA tests for passphrase, PIN, swipe; preserve authentication protection and package-managed ownership |
-| First-run setup | Current 26.04 image 376 rebuilt read-only; audio uses upstream DeviceInfo; container generation moved to /run and tested in isolation | Fresh install, setup wizard, user-chosen credentials, no development SSH/default password, second boot |
+| First-run setup | Clean 26.04 image 376 installed; first boot panicked in Samsung USB configfs; conventional linking fix building; supported ubuntu.img layout, native LXC hooks and upstream schedtune typo correction staged and regression checked | Fresh install, setup wizard, user-chosen credentials, no development SSH/default password, second boot |
 | Recovery and OTA | Unified recovery candidate built and checked offline; TWRP backup retained; no candidate recovery flash yet | Conventional layout/build pipeline, safe recovery boot test, signed local OTA, second update and userdata preservation, signed channel hosting, installer configuration |
 | Waydroid | During reported disappearance, both Gio and LAL still list Waydroid; session/container have no counted restarts; drawer investigation ongoing | Reproduce launcher disappearance and distinguish drawer cache from desktop-file changes; repeated launches/stops, network/audio, sleep/wake, compositor restart, extended use; remove stopgap adaptations only after valid replacements |
 | Bluetooth keyboard | User reports unsolicited disconnect/reconnect | Capture controller/connection logs; idle, typing, reconnect and suspend tests |
@@ -22,9 +22,11 @@ reproduction, validation and rollback for every fix, and publish the scripts.
 | Charging estimate | User reports inaccurate lock-screen time to full; low priority | Compare lock-screen, indicator and battery-provider values at the same time; fix the responsible layer using upstream behavior |
 | Fingerprint | Driver and enrollment path exist; successful capture/enrollment unproven | Investigate last; preserve calibration and trusted firmware; advertise unavailable unless verified |
 
-The conventional calendar-timer workaround passed auto9. Next complete suspend
-fresh-boot validation when the user is beside the phone, and diagnose the Waydroid launcher disappearance. Then close
-the clean-image/OTA release blockers and the remaining functional checks above.
+The conventional calendar-timer workaround passed auto9. First resolve the clean
+boot failures in experiments 034 and 035, complete onboarding and a second boot,
+then rerun confinement and suspend startup on the fresh image. Waydroid must be
+installed and validated without the erased old Helper/Android state. Close the
+OTA release blockers and remaining functional checks above.
 Do not call a single successful run a stable release.
 
 `agent.md` and `first_contact.md` are explicitly deferred until this checklist is

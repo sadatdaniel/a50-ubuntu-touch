@@ -204,6 +204,10 @@ if [ -z "${NO_COMPAT:-}" ]; then
     "$HERE/scripts/release/add-openstore-compat.sh" "$MNT"
 fi
 
+# Upstream's cgroup probe contains an NBSP before `true`, making the
+# intended fallback abort on kernels without nested schedtune groups.
+python3 "$HERE/scripts/release/fix-partition-probe.py" "$MNT"
+
 # Kernel 4.14 needs the installed polkit helper in its supported legacy mode.
 bash "$HERE/scripts/release/configure-polkit-legacy.sh" "$MNT"
 

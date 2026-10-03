@@ -1,6 +1,6 @@
 # Galaxy A50: suspend and updates
 
-Updated 2 October 2026. Device: SM-A505F. Ubuntu Touch 26.04 only.
+Updated 3 October 2026. Device: SM-A505F. Ubuntu Touch 26.04 only.
 
 ## Current result
 
@@ -14,7 +14,10 @@ See [the release backlog](release-validation-backlog.md) and
 
 ## Enabling OTA on this phone
 
-This development installation boots /userdata/rootfs.img. It does not yet have
+The clean test installation uses /userdata/ubuntu.img, the existing Halium
+layout for an embedded Android image. Its initial rootfs.img filename selected
+the separate-image layout and failed; see experiment 035. Fresh boot remains
+pending the USB kernel correction in experiment 034. It does not yet have
 a working A50 update channel. A newer rootfs alone cannot enable OTA.
 
 The planned one-time migration needs a compatible boot image and system layout,
@@ -34,9 +37,12 @@ is a test requirement, not a promise based on the offline build.
 | Installer | Samsung transport must be validated | Verified downloads and A50 installer configuration; do not assume fastboot |
 
 Latest offline rootfs SHA256:
-`8408498e80eeca0c8f3fca251dfb57a94dc23c8ce6b5ca325cbce0854874510f`.
-It uses port overlay f0c4a7e; runtime suspend experiments are not permanent
-release configuration. No candidate system or recovery image has been flashed.
+`a92dbb720e5523b74703e1bd9444205f0e5a21756e7835c44e572181f014295d`.
+This candidate now includes the native LXC hook and partition-probe corrections.
+Runtime suspend experiments are not permanent release configuration. A clean
+userdata image was installed with TWRP; no candidate system-partition or unified
+recovery image has been flashed. The original ZIP predates these fixes and must
+be rebuilt before sharing.
 
 ## Implementation sequence
 

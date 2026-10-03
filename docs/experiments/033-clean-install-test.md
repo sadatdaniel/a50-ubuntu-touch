@@ -80,3 +80,13 @@ installed file corrected to root:root/0600 before boot. This last permission
 fix is newer than the test ZIP hash above; rebuild from current source before
 sharing an installer. No bytes inside the verified filesystem image changed.
 First boot was then requested; onboarding and runtime results remain pending.
+
+## First boot failure and corrections (3 October)
+
+First boot panicked in USB configfs before onboarding. Persistent pstore and
+journal were retained privately. Experiment 034 records the exact instruction
+and the standard configfs replacement. Experiment 035 records the separate
+image-layout failure, native LXC hook correction and upstream schedtune typo.
+The userdata image now uses the supported self-contained /data/ubuntu.img name.
+Fresh boot is pending the corrected kernel build; do not describe this as a
+successful new-user installation or OTA-ready release.
