@@ -1,7 +1,7 @@
 # 036 — Clean boot ION permissions
 
 Status: Samsung/upstream rule applied; user confirmed that the setup wizard
-appears and touch works. Setup completion, second boot, clean-image AppArmor
+appears and touch works. Its language page is cropped; [experiment 037](037-clean-wizard-mir1-scaling.md) tracks the separate QtMir/Mir1 scaling regression. Setup completion, second boot, clean-image AppArmor
 and suspend validation remain pending. Ubuntu Touch stays 26.04.
 
 ## Recorded failure and diagnosis

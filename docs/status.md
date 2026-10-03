@@ -5,7 +5,7 @@ the setup wizard, and the user confirmed touch works. The aa13 USB configfs
 fix, supported ubuntu.img layout, native LXC hooks and partition-probe typo
 correction resolved the early startup failures. Matching Samsung/upstream
 ION permissions resolved the remaining desktop allocation failure. Setup
-completion, second boot, fresh confinement/suspend and USB checks remain open.
+completion is blocked by a cropped language page: current QtMir exposes native scaling while Mir1 still returns physical extents. See [the old/new display comparison](experiments/037-clean-wizard-mir1-scaling.md). A compatibility rebuild is pending; second boot, fresh confinement/suspend and USB checks remain open.
 See [release validation](release-validation-backlog.md), [USB diagnosis](experiments/034-clean-boot-usb-configfs.md),
 [startup layout](experiments/035-clean-startup-layout.md) and
 [ION access](experiments/036-clean-boot-ion-permissions.md). Earlier bring-up
