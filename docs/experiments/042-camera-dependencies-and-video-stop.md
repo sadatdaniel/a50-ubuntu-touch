@@ -95,3 +95,34 @@ audio fault caused the stop freeze until that test and subsequent evidence
 establish the link. Restore the private saved YAML to roll back the live
 change and restart the user audio service; release rollback uses the previous
 tested device image. Keep raw logs and media private.
+
+
+## Clean reboot: recorder lock traced, still unresolved
+
+A normal reboot reproduced the Stop freeze after a six-second recording.
+The camera remained alive. The earlier zero-byte microphone write was a
+one-second pipe timeout (errno was zero on the clean test), not proof of an
+EINVAL syscall failure.
+
+The corrected collector targets Android's 32-bit camera_service recorder,
+rather than only the separate minimediaservice. The native backtrace shows:
+
+- Binder Stop waits in MediaCodecSource::setStopTimeUs / StagefrightRecorder::stop.
+- recorder_looper waits for the AudioSource lock in AudioSource::setStopTimeUs.
+- AudioRecord callback holds that lock while AudioSystem::getInputFramesLost
+  calls get_audio_flinger, then ServiceManagerShim::getService. The expected
+  media.audio_flinger service is absent because Halium recording uses the
+  Ubuntu microphone pipe instead.
+
+The existing [Halium Android 11 recording patch](https://github.com/Halium/hybris-patches/blob/halium-11.0/frameworks/av/0004-halium-get-rid-of-using-AudioFlinger-for-recording.patch)
+comments out the use of AudioFlinger in getInputFramesLost but leaves its
+initial blocking lookup active. This matches the live stack. Removing that
+unused lookup is the narrow source correction to validate in a conventional
+GSI build, not a Camera thread-order or timing workaround. No framework
+library replacement has been installed, and playable video remains unverified.
+
+Separately, YouTube was silent because the existing audio bridge did not start;
+see [startup packaging](043-audio-startup-packaging.md). Loading droid modules
+and exposing named sinks does not establish that the hardware HAL is mapped.
+The earlier clean-boot retest requirement above has now been completed and
+failed; the new stack supersedes the earlier unspecified blocked-service lead.

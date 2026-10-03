@@ -1,6 +1,17 @@
 # Changelog
 
-## 2026-10-03 � Camera dependencies and audio configuration
+## 2026-10-03 - startup dependency links and recording diagnosis
+
+- Corrected three ordinary startup files to conventional Git symlinks for the
+  existing audio and GNSS units. Added an archive regression check and a
+  backed-up authenticated audio startup repair; audible verification is pending.
+- Clean reboot reproduced video Stop blocking. The recorder callback waits on
+  an unused AudioFlinger lookup left by the Halium recording patch. Published
+  the improved bounded collector and evidence; no video fix is claimed yet.
+
+See [audio startup packaging](docs/experiments/043-audio-startup-packaging.md).
+
+## 2026-10-03 — Camera dependencies and audio configuration
 
 - Installed the two signed official Lomiri Action API dependencies needed by
   Camera 4.1.1. The user confirms Camera opens and photo capture works.
@@ -17,7 +28,7 @@
 See [Camera and audio evidence](docs/experiments/042-camera-dependencies-and-video-stop.md).
 
 
-## 2026-10-03 � compatibility repair and Terminal reopening
+## 2026-10-03 — compatibility repair and Terminal reopening
 
 - Completed the verified offline dependency repair: eight matching upgrades,
   three configured QtMir packages, no removals and clean package audit. The next
@@ -36,7 +47,7 @@ See [Camera and audio evidence](docs/experiments/042-camera-dependencies-and-vid
 See [package repair](docs/experiments/040-compatibility-package-repair.md) and
 [Terminal investigation](docs/experiments/041-authentication-and-terminal-runtime.md).
 
-## 2026-09-13 — watchdog freezer-state development validation
+## 2026-09-13 â€” watchdog freezer-state development validation
 
 - aa8 preserves the secondary watchdog's previous enable state. Two freezer
   cycles passed with normal ABOX callbacks; the first was observed for ten
@@ -53,7 +64,7 @@ See [experiment 020](docs/experiments/020-watchdog-freezer-state.md) and
 [session handoff 20](docs/SESSION-HANDOFF-20.md).
 
 
-## 2026-09-12 — suspend investigation in progress
+## 2026-09-12 â€” suspend investigation in progress
 
 - Verified the phone remains on aa1 fallback; aa6 security configuration was
   checked directly in the preserved compiled source volume.
@@ -69,7 +80,7 @@ See [experiment 020](docs/experiments/020-watchdog-freezer-state.md) and
 
 See [session handoff 20](docs/SESSION-HANDOFF-20.md).
 
-## 2026-09-12 — aa6 development validation
+## 2026-09-12 â€” aa6 development validation
 
 ### Published
 

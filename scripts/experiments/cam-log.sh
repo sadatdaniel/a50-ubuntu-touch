@@ -21,7 +21,9 @@ echo '=== Android camera/recorder/audio logs ==='
 timeout 12 lxc-attach -n android -- /system/bin/logcat -d -v threadtime -t 1800 \
     CameraService:V CameraClient:V MediaRecorder:V StagefrightRecorder:V \
     MPEG4Writer:V ACodec:V OMXNodeInstance:V AudioRecord:V AudioFlinger:V \
-    AudioPolicyManager:V ExynosCamera:V '*:W' || true
+    AudioPolicyManager:V ExynosCamera:V AudioRecordHybris:V MediaRecorderClient:V '*:S' || true
+echo '=== Android recording helper native backtrace ==='
+timeout 12 lxc-attach -n android -- /system/bin/sh -c 'pid=$(pidof camera_service); test -n "$pid" && debuggerd -b "$pid"' || true
 echo '=== Android media and camera state ==='
 for service in media.camera media.player media.audio_flinger; do
     echo "$service"

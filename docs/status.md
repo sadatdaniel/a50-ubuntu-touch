@@ -13,7 +13,7 @@ lock-security page previously allowed the user to choose a private credential.
 Terminal's saved hidden window state prevented reopening; a backed-up targeted
 repair restored it and the user confirmed it opens. A shared Lomiri storage fix
 passed native ARM compilation and storage regression tests; phone installation remains pending ([041](experiments/041-authentication-and-terminal-runtime.md)).
-Official Action API dependencies restored Camera loading; the user confirmed photo capture. Video Stop freezes and remains under investigation. Removing a duplicate device HIDL argument restored real audio devices; initial retry still blocked; clean-boot recording/playback retest is pending ([042](experiments/042-camera-dependencies-and-video-stop.md)). The migrated temporary diagnostic unit has been removed through normal authentication.
+Official Action API dependencies restored Camera loading; the user confirmed photo capture. Video Stop freezes and remains under investigation. Removing a duplicate device HIDL argument restored audio module initialization; a clean reboot still reproduced the video Stop lock. The recorder callback blocks on an unused AudioFlinger lookup. YouTube silence also exposed incorrectly packaged audio startup links, corrected in Git; the live repair and audible retest are pending ([042](experiments/042-camera-dependencies-and-video-stop.md)). The migrated temporary diagnostic unit has been removed through normal authentication.
 Ordinary Settings, repeated app lifecycle and shell crashes remain under test.
 Recents previews remain distorted and Waydroid is not initialized. See [display comparison](experiments/037-clean-wizard-mir1-scaling.md),
 [tar compatibility](experiments/038-tar-openat2-compatibility.md) and
