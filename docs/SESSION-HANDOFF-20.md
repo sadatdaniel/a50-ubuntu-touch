@@ -30,9 +30,11 @@ The old aa1/AppArmor-N observations below describe earlier boots only.
 - aa14 Bluetooth kernel compiled and packed, unflashed. aa15 disables RT groups
   per systemd/Halium requirements; Samsung's two incompatible scheduler accesses
   now use existing standard Linux 4.14 helpers. Retry container
-  a50-kbuild-aa15-native-realtime-retry is the current build. Check completion
-  before starting another. Both candidates require hardware tests; phone aa13
-  is unchanged. Kernel repo docs/native-realtime-config.md records the guards.
+  a50-kbuild-aa15-native-realtime-retry completed successfully (exit 0). aa15
+  is packed and re-parsed, with unchanged ramdisk and 1,687,552 bytes spare.
+  Boot SHA256 4a55b320b49e68f7191bc563ad5d165820823f4d7b4c77e1bc34787d41b57f40.
+  Both candidates are unflashed and require hardware tests; phone aa13 is
+  unchanged. Kernel repo docs/native-realtime-config.md records the guards.
 - Graphical Restart is still unresolved: policy checks and CanReboot pass, but
   the window-closing/dialog path needs a controlled trace. Authenticated reboot
   previously changed kernel boot ID. Launcher CLI registry-teardown errors are
