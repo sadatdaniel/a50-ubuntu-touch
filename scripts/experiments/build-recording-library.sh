@@ -4,7 +4,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 TREE="$(realpath "${1:?Halium source tree required}")"
 readonly A50_RECORDING_ARTIFACT_DIR="$(realpath -m "${2:?Output directory required}")"
-PATCH="$HERE/halium11-recording-audioflinger.patch"
+PATCH="$HERE/halium11-camera-record-service.patch"
 cd "$TREE"
 actual=$(git hash-object frameworks/av/media/libaudioclient/AudioSystem.cpp)
 [ "$actual" = d84c49e22a93bef2b875d0066698c8a20673437e ] || {
@@ -12,7 +12,7 @@ actual=$(git hash-object frameworks/av/media/libaudioclient/AudioSystem.cpp)
 }
 git -C frameworks/av apply --check "$PATCH"
 git -C frameworks/av apply "$PATCH"
-[ "$(git hash-object frameworks/av/media/libaudioclient/AudioSystem.cpp)" = 3f3e99c2cb745b2928c5ec57f75af0f98bd39979 ]
+[ "$(git hash-object frameworks/av/media/libaudioclient/AudioSystem.cpp)" = 74a68fec469df1edccebfd58104045f5a3d0c10c ]
 export LC_ALL=C
 unset USE_CCACHE
 # Android envsetup predates nounset; use its conventional shell environment.

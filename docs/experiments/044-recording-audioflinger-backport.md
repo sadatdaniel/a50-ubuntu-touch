@@ -56,7 +56,7 @@ checksums, ELF headers/dependencies, exact built manifest and applied diff.
 If the standard runner cannot provide the space, this job stops rather than
 starting the source download. A larger Linux build host would then be required.
 
-The workflow's compilation result is still pending. Do not install a different
+The initial workflow checkpoint preceded the completed runs recorded below. Do not install a different
 Halium major-version library. Before any live test, verify both artifacts,
 SONAME/dependency and exported-symbol compatibility, retain private originals,
 and use authenticated reversible deployment. Normal reboot and repeated
@@ -121,5 +121,45 @@ it removes its mounts; on normal reboot the test mounts disappear. Original
 image files and vendor remain intact. No startup service is installed.
 
 This temporary test is not the release implementation: a validated result
-must be incorporated into the normal pinned GSI build. Video Stop and saved
-picture/sound playback verification are currently pending.
+must be incorporated into the normal pinned GSI build. The user tested recording and Stop, and reported another freeze. Directly
+collected native stacks prove the callback wait has gone, but reveal a second
+wait during AudioRecord destruction:
+
+```
+ServiceManagerShim::getService -> AudioSystem::get_audio_flinger
+ -> AudioSystem::releaseAudioSessionId -> AudioRecord::~AudioRecord
+ -> AudioSource::~AudioSource -> StagefrightRecorder::~StagefrightRecorder
+ -> MediaRecorderClient::release
+```
+
+The process remains alive; this evidence establishes a blocked release rather
+than a proven native crash. Both active library hashes match the candidates.
+The first one-line backport is therefore insufficient and is not a release fix.
+
+## Existing shared fix: Halium pull request 84
+
+[Halium PR 84](https://github.com/Halium/hybris-patches/pull/84) is open and
+unmerged at this checkpoint. Its author reports successful hardware recording
+with audio on POCO X3 Pro/vayu using Droidian 101 and Halium 11. The exact head
+is f2083f3e9cf6462dbee1c202e6ea74cf66da5f79. This is upstream proposed code with
+reported testing on another device; it is not an accepted UBports update or
+A50 validation.
+
+The five-line patch checks CameraRecordService using nonblocking checkService
+inside the shared get_audio_flinger accessor. If Halium recording is active,
+it returns the existing null/no-service result instead of entering the infinite
+AudioFlinger lookup. Thus getInputFramesLost and releaseAudioSessionId both
+reach their existing null handling. Existing AudioFlinger behavior remains
+when CameraRecordService is absent or gAudioFlinger is already established.
+The standard Halium 11 enable-recording patch already disables acquiring the
+AudioFlinger session in AudioRecord::set, but leaves the release call intact.
+The shared upstream fix covers that mismatch without changing recorder order.
+
+The replacement build uses this exact upstream patch alone, superseding the
+one-line experiment rather than accumulating both patches. Applying it to the
+recorded post-Halium source passes, producing AudioSystem.cpp blob
+74a68fec469df1edccebfd58104045f5a3d0c10c. Patch SHA256:
+02606a812de88bf71003f074ad4eb5135444cfaf54500ef730022386e78842a8.
+Build script rejects another source and verifies this result. Original libraries,
+ABI checks and reboot-reversible deployment remain required. Compilation and
+hardware results for this replacement are pending.
