@@ -6,11 +6,14 @@ fix, supported ubuntu.img layout, native LXC hooks and partition-probe typo
 correction resolved the early startup failures. Matching Samsung/upstream
 ION permissions resolved the remaining desktop allocation failure. The current-source QtMir compatibility build now renders the wizard correctly,
 and the user completed onboarding with swipe-only unlocking. Its library is
-still loaded through a temporary diagnostic override; normal package installation
-and second boot remain pending. The fresh lock-security page cannot load because
-its QtQuick import predates its validator type; an isolated import-only correction
-passes. Camera is missing its signed compatibility dependency, Recents previews
-are distorted, and Waydroid has not been initialized. See [display comparison](experiments/037-clean-wizard-mir1-scaling.md),
+still loaded through a temporary diagnostic override. The normal installation
+unpacked three QtMir packages but left them unconfigured because their build
+requires a newer content-hub; the matching signed dependency repair is staged
+and simulated ([040](experiments/040-compatibility-package-repair.md)). Tar and
+the official camera compatibility library installed successfully. The corrected
+lock-security page worked through a standard temporary Settings panel and the
+user chose a private credential; the conventional Settings package build is
+pending. Recents previews remain distorted and Waydroid is not initialized. See [display comparison](experiments/037-clean-wizard-mir1-scaling.md),
 [tar compatibility](experiments/038-tar-openat2-compatibility.md) and
 [fresh diagnostics](experiments/039-lock-security-import-regression.md). Fresh
 confinement/suspend and USB checks remain open.

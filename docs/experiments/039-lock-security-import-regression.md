@@ -1,7 +1,7 @@
 # 039 — Lock-security page cannot load on current Qt 5
 
 3 October 2026. Status: diagnosed and reproduced; minimal correction tested in
-isolation, not installed in the Settings package or validated through its full UI.
+isolation and through a temporary standard Settings panel. Conventional package build is pending.
 
 The user completed clean onboarding with swipe-only unlocking, then reported
 that selecting a different unlock method did nothing. The user-session journal
@@ -47,7 +47,7 @@ scripts/experiments/check-lock-validator.qml
 The real phone reproducer exits 0: import 2.4 raises the exact reported type
 error, import 2.14 creates the validator, and its synthetic short/non-digit
 inputs are rejected while valid four/five-digit inputs are accepted. No real
-credentials are read or changed. The full Settings page must still be tested.
+credentials are read or changed. The full page was then tested using the standard user-local Settings panel discovery mechanism, with a private copy of the existing security/privacy QML and only the import corrected. The user successfully chose a private credential; `passwd -S` changed from NP to P. No credentials were collected. The temporary panel must be removed after validating the conventional package.
 
 Read-only account queries show no password, password mode 2 and Locked=false,
 consistent with the user's swipe-only setup. The supported legacy polkit helper
@@ -55,19 +55,16 @@ is already setuid-root and its socket is masked; both accounts-daemon and the
 polkit agent are active with no counted restarts. The absence of an old shared
 development password is intentional, not this page-loading error.
 
-Required next: package the import fix conventionally, verify the page opens,
-allow the user to choose credentials privately, test PIN/password/swipe changes
+Required next: build and install the import fix conventionally using `build-lock-settings-package.sh`, verify the normal page opens, test PIN/password/swipe changes
 and administrator authentication, then reboot/OTA persistence. Preserve the
-current credentials until the user chooses to change them. No reboot or
-maintenance installation is authorized by the current diagnostic follow-up.
+current credentials until the user chooses to change them. The user resumed repairs and ran the prepared package installation after setting a credential. Do not publish temporary panels or diagnostic access in a final image.
 
 ## Other fresh-install observations
 
 Camera currently fails to load its QML plugin because libexiv2.so.27 is missing.
 The current signed 26.04 UBports index offers libexiv2-27-compat, version
 0.27.6-1ubports1+0~20260529190549.1+ubports26.04.1~1.gbp94be66. A verified
-844082-byte package is staged; all dependencies are installed. It has not been
-installed. The later aa6 records confirm working camera preview after AppArmor
+844082-byte package is staged; all dependencies are installed. It is now installed and configured; the camera QML plugin resolves all of its shared libraries. Camera preview and video still need functional validation. The later aa6 records confirm working camera preview after AppArmor
 socket fixes; do not repeat the superseded experiment 014 conclusion as the
 current baseline. Video recording remains unvalidated.
 

@@ -6,15 +6,17 @@
   correct display and completed swipe-only onboarding. Temporary library loading
   remains; Recents distortion and permanent installation/second boot are open.
 - Current-source tar rebuild passes 222 upstream tests and native 4.14 archive/
-  dpkg-deb extraction checks. Normal package installation remains pending.
+  dpkg-deb extraction checks. Normal tar installation now passes; the QtMir dependency repair remains pending.
 - Unlock-method Settings cannot load: the Qt 6 preparation change introduced a
   validator unavailable under its QtQuick 2.4 import. The isolated 2.14 import
-  correction passes on the phone without changing credentials or configuration.
+  correction passes on the phone. A standard temporary panel then allowed the user to choose a private credential. A conventional ARM64 package build is now available.
 - Fresh Camera lacks libexiv2.so.27; the signed 26.04 compatibility package is
-  verified and staged. Waydroid package is present but Android images are absent
+  installed and the plugin resolves all shared libraries. Waydroid package is present but Android images are absent
   after the wipe. No camera/Waydroid fix or stable-release result is claimed.
 
-See [fresh diagnostics](docs/experiments/039-lock-security-import-regression.md).
+The first QtMir installation left three packages unconfigured because of a newer content-hub dependency. The complete signed repair is staged and simulated; root read-only restoration and clean-boot validation remain pending.
+
+See [fresh diagnostics](docs/experiments/039-lock-security-import-regression.md) and [package repair](docs/experiments/040-compatibility-package-repair.md).
 
 ## 2026-09-13 — watchdog freezer-state development validation
 
