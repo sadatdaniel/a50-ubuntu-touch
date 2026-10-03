@@ -175,3 +175,11 @@ that condition. It also warns that the _apt sandbox account is absent, which
 needs comparison with the clean UBports account layout. That warning does not
 invalidate the hash-checked local package operation. New shell runtime,
 close/reopen checks and read-only boot verification are still pending.
+
+The ordinary reboot completed with all four patched packages installed,
+root read-only and a clean package audit. The user completed the requested
+three close/reopen repetitions for Terminal and Settings without reporting
+a failure. The checked interval shows the same shell PID, zero restarts and
+successful app unit results; no new hidden-state QML error or shell SIGSEGV
+was observed. NoSuchUnit messages during app lifecycle remain and are not
+claimed fixed. Wider lifecycle, first-boot and OTA validation remain open.

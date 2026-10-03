@@ -95,3 +95,31 @@ a readonly task-specific artifact directory, and the workflow checks both
 libraries and their checksums in the upload directory before declaring the
 build successful. A replacement build is required; no new library has been
 installed on the phone.
+
+## Complete artifact and temporary hardware test
+
+Replacement run [37154143698](https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/37154143698)
+successfully built and uploaded both libraries, their ELF reports, checksums,
+pinned manifests and the exact one-line source diff. SHA256 values:
+
+- ARM32: 10d7fa4bdb95005f855520aa797d2ae31e68c231df94d9de9f2fd6714ee9a719
+- ARM64: 3851b31f6c254f91a97e6b2c3a3aae71559abf2b83c3a78ebc19abb9b4b456fe
+
+`check-recording-abi.py ORIGINAL_DIRECTORY CANDIDATE_DIRECTORY` uses standard
+readelf and Python. The original fingerprints, candidate checksums, architecture,
+SONAME, all dynamic exports/imports and ordered DT_NEEDED libraries match.
+ARM32 has 1280 exports/334 imports; ARM64 has 1277 exports/333 imports.
+ABI matching does not prove runtime behavior.
+
+The user authenticated `test-recording-library.sh` via the short fix file.
+The private screenshot confirms checks succeeded and the test-ready message.
+The script verifies Android SDK 30 and the exact original library hashes,
+copies the candidates into a private root-owned Android staging directory,
+temporarily bind-mounts them inside the Android container and verifies the
+active hashes before restarting only the existing camera_service. On failure
+it removes its mounts; on normal reboot the test mounts disappear. Original
+image files and vendor remain intact. No startup service is installed.
+
+This temporary test is not the release implementation: a validated result
+must be incorporated into the normal pinned GSI build. Video Stop and saved
+picture/sound playback verification are currently pending.
