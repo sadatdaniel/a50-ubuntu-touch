@@ -17,7 +17,7 @@ reproduction, validation and rollback for every fix, and publish the scripts.
 | VPN | Untested | Supported VPN configuration, routing/DNS, reconnect and sleep/wake |
 | Libertine | Untested | Container creation, package install, application launch/input and reboot persistence |
 | Factory reset | Untested | Disposable test data or verified backup; recovery operation, clean onboarding and no unintended partition loss |
-| Camera/video and audio | Old aa6 preview worked after socket mediation fixes. Fresh Camera compatibility library installed; plugin has no unresolved shared libraries, functional preview still pending. Video remains broken | Capture/playback, call and media routing, Bluetooth audio, recovery after sleep |
+| Camera/video and audio | Fresh photo capture user-confirmed after official Exiv2 and Action API packages. Video Stop freezes. Duplicate HIDL argument removed; real audio devices restored, recording/playback retest pending ([042](experiments/042-camera-dependencies-and-video-stop.md)) | Capture/playback, call and media routing, Bluetooth audio, recovery after sleep |
 | Notifications | Current push packages installed; end-to-end test outstanding | Delivery while awake/asleep, wake behavior and application permissions |
 | Charging estimate | User reports inaccurate lock-screen time to full; low priority | Compare lock-screen, indicator and battery-provider values at the same time; fix the responsible layer using upstream behavior |
 | Fingerprint | Driver and enrollment path exist; successful capture/enrollment unproven | Investigate last; preserve calibration and trusted firmware; advertise unavailable unless verified |

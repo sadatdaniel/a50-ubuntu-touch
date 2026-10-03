@@ -91,7 +91,12 @@ It applies to all callers and requires no recurring database-reset service.
 `lomiri-hidden-window-state.patch` includes a real SQLite regression in the
 existing storage tests. `build-lomiri-window-state-package.sh` builds current
 26.04 ARM64 packages through the existing workflow's `lomiri` choice. Native
-compilation and tests are pending at this checkpoint. Full shell integration,
+compilation succeeded in native ARM run
+[37140084464](https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/37140084464).
+The added SQLite regression fails on the original source and passes with the
+shared correction; the storage tests pass. Runtime packages are downloaded to
+the host but are not installed on the phone. The full upstream suite was not
+run. Full shell integration,
 repeated close/reopen, Settings, Recents and shell crash checks remain required
 before calling this a permanent validated fix. The exact trigger that first
 saved the hidden state is not yet established.
@@ -99,7 +104,10 @@ saved the hidden state is not yet established.
 The diagnostic unit also survived in userdata-backed `/etc/systemd/system`,
 despite removing the image copy offline. `cleanup-persisted-diagnostics.sh`
 uses normal administrator authentication, validates its known ExecStart,
-backs up only that unit and removes it. Authenticated execution is pending.
+backs up only that unit and removes it. Authenticated execution completed.
+The unit and enablement symlink are absent, systemd reports not-found/inactive,
+and the saved unit backup is root-owned mode 0600. Authorized USB remains
+available.
 The recovery wrapper now handles both locations. No privilege workaround is
 used to exploit the temporary unit's overly permissive development mode.
 

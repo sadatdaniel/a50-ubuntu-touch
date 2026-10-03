@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-03 — Camera dependencies and audio configuration
+
+- Installed the two signed official Lomiri Action API dependencies needed by
+  Camera 4.1.1. The user confirms Camera opens and photo capture works.
+- Removed the redundant device HIDL helper argument already supplied by the
+  upstream session configuration. Real audio outputs and microphone input now
+  initialize; video Stop and playback remain under test.
+- Published reproducible dependency and audio repair scripts plus a bounded
+  private diagnostic collector. Manual phone commands use the short `fix` and
+  `log` filenames; no media or raw device logs are published.
+- Shared Lomiri hidden-state correction compiled on native ARM; its SQLite
+  regression fails before the patch and passes afterward. Phone integration
+  and shell crash validation remain pending. Diagnostic-unit cleanup completed.
+
+See [Camera and audio evidence](docs/experiments/042-camera-dependencies-and-video-stop.md).
+
+
 ## 2026-10-03 — compatibility repair and Terminal reopening
 
 - Completed the verified offline dependency repair: eight matching upgrades,
