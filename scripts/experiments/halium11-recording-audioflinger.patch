@@ -1,0 +1,25 @@
+From: A50 Ubuntu Touch development
+Subject: [PATCH] Backport Halium 13 recording AudioFlinger lookup removal
+
+Halium 13's recording patch already initializes af to nullptr in
+AudioSystem::getInputFramesLost. Apply the same correction after the
+Halium 11 hybris recording patch, where the call is left active despite
+its result being unused. No AudioFlinger service runs in this recording
+path, so the lookup stalls the callback while holding the AudioSource
+lock and prevents video Stop from completing.
+
+Upstream: Halium/hybris-patches, halium-13.0, frameworks/av/0004-halium-get-rid-of-using-AudioFlinger-for-recording.patch
+Base: GSI 1542 frameworks/av 18186d8f9b4dcaff242ae9ea9b74e6827f14a1cc
+Apply after the standard Halium 11 hybris patches.
+
+--- a/media/libaudioclient/AudioSystem.cpp
++++ b/media/libaudioclient/AudioSystem.cpp
+@@ -508,7 +508,7 @@
+ 
+ uint32_t AudioSystem::getInputFramesLost(audio_io_handle_t ioHandle)
+ {
+-    const sp<IAudioFlinger>& af = AudioSystem::get_audio_flinger();
++    const sp<IAudioFlinger>& af = nullptr; /*AudioSystem::get_audio_flinger();*/
+     uint32_t result = 0;
+     /*if (af == 0) return result;
+     if (ioHandle == AUDIO_IO_HANDLE_NONE) return result;

@@ -1,0 +1,48 @@
+name: Halium recording library backport
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Prepare ephemeral build space and prerequisites
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache
+          df -h
+          free=$(df --output=avail -B1 "$RUNNER_TEMP" | tail -1)
+          test "$free" -ge 102005473280 || { echo 'Insufficient runner space for the full Halium tree (95 GiB minimum).'; exit 1; }
+          sudo apt-get update
+          sudo apt-get -y --no-install-recommends install repo build-essential gcc-multilib g++-multilib git curl python-is-python3 gperf bison flex zip unzip rsync bc lib32z1-dev libncurses5 libxml2-utils xsltproc libssl-dev
+      - name: Resolve and pin the conventional generic-device manifest
+        run: |
+          git config --global user.name "A50 recording build"
+          git config --global user.email "build@localhost"
+          mkdir -p "$RUNNER_TEMP/halium" recording-test
+          cd "$RUNNER_TEMP/halium"
+          repo init -u https://github.com/Halium/android -b ac5d4b48f4b3b8e06fded79dfee13e0620703bad --depth=1 --no-clone-bundle
+          mkdir -p .repo/local_manifests
+          printf '%s\n' '<manifest><project path="device/halium/halium_arm64" name="Halium/android_device_halium_halium_arm64" revision="halium-11.0"/><project path="vendor/vndk" name="phhusson/vendor_vndk" revision="master"/></manifest>' > .repo/local_manifests/a50-generic.xml
+          repo manifest -o "$GITHUB_WORKSPACE/recording-test/resolved-manifest.xml"
+          python3 "$GITHUB_WORKSPACE/scripts/experiments/pin-gsi-manifest.py" "$GITHUB_WORKSPACE/recording-test/resolved-manifest.xml" "$GITHUB_WORKSPACE/scripts/experiments/gsi1542-source-revisions.json" .repo/manifests/a50-locked.xml
+          rm .repo/local_manifests/a50-generic.xml
+          repo init -m a50-locked.xml
+          cp .repo/manifests/a50-locked.xml "$GITHUB_WORKSPACE/recording-test/locked-manifest.xml"
+      - name: Sync the pinned public sources and apply standard Halium patches
+        run: |
+          cd "$RUNNER_TEMP/halium"
+          repo sync -c -j4 --fail-fast --no-clone-bundle --no-tags
+          hybris-patches/apply-patches.sh --mb
+      - name: Build the existing upstream correction for both architectures
+        run: bash scripts/experiments/build-recording-library.sh "$RUNNER_TEMP/halium" "$GITHUB_WORKSPACE/recording-test"
+      - name: Preserve artifacts and build evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: recording-library-test
+          path: recording-test/
+          if-no-files-found: warn
+          retention-days: 7
