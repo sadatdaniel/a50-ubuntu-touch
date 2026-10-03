@@ -15,7 +15,7 @@ sudo apt-get -o APT::Update::Error-Mode=any update
 sudo apt-get -y --no-install-recommends build-dep .
 patch --dry-run -p1 < "$HERE/scripts/experiments/qtmir-mir1-physical-extents.patch"
 patch -p1 < "$HERE/scripts/experiments/qtmir-mir1-physical-extents.patch"
-DEBFULLNAME='A50 port build' DEBEMAIL='noreply@localhost' \
+DEBFULLNAME='A50 port build' DEBEMAIL='noreply@example.invalid' \
     dch --newversion "$VERSION" --distribution UNRELEASED 'Experimental Mir1 physical-extents DPR compatibility fix.'
 # Hardware behavior is checked on the phone; CI cannot reproduce its Mali backend.
 DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage --build=binary --no-sign -j4

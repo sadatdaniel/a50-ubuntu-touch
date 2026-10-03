@@ -13,13 +13,7 @@ compatibility patch once the Mir1/QtMir scaling transition is coordinated.
 
 --- a/src/platforms/mirserver/platformscreen.cpp
 +++ b/src/platforms/mirserver/platformscreen.cpp
-@@ -336,7 +336,8 @@
-     // Scale, DPR & Form Factor
-     // Update the scale & form factor native-interface properties for the windows affected
-     // as there is no convenient way to emit signals for those custom properties on a QScreen
+@@ -339 +339,2 @@
 -    m_devicePixelRatio = screen.scale; // FIXME: I need to announce this changing, probably by delete/recreate Screen
 +    // UBports Mir1 returns physical extents, so native DPR must remain 1.
 +    m_devicePixelRatio = 1.0;
- 
-     auto formFactor = static_cast<qtmir::FormFactor>(screen.form_factor);
-     if (m_formFactor != formFactor) {

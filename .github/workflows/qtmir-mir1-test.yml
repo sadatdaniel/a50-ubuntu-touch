@@ -1,6 +1,13 @@
-name: QtMir Mir1 compatibility experiment
+name: Ubuntu 26.04 ARM64 compatibility experiments
 on:
   workflow_dispatch:
+    inputs:
+      component:
+        description: Experimental package to build
+        type: choice
+        options: [qtmir, tar]
+        default: qtmir
+        required: true
 permissions:
   contents: read
 jobs:
@@ -19,14 +26,20 @@ jobs:
           echo 'deb [signed-by=/usr/share/keyrings/ubports-keyring.gpg] https://repo.ubports.com/ 26.04-1.x main' | sudo tee /etc/apt/sources.list.d/ubports.list
           sudo apt-get -o APT::Update::Error-Mode=any update
           sudo apt-get -y --no-install-recommends install devscripts build-essential git patch
-      - name: Build current QtMir with Mir1 compatibility patch
+      - name: Build and check experimental package
+        env:
+          BUILD_COMPONENT: ${{ inputs.component }}
         run: |
-          mkdir "$RUNNER_TEMP/qtmir-build"
-          bash scripts/experiments/build-qtmir-mir1-package.sh "$RUNNER_TEMP/qtmir-build"
+          mkdir "$RUNNER_TEMP/package-build"
+          case "$BUILD_COMPONENT" in
+            qtmir) bash scripts/experiments/build-qtmir-mir1-package.sh "$RUNNER_TEMP/package-build" ;;
+            tar) bash scripts/experiments/build-tar-openat2-package.sh "$RUNNER_TEMP/package-build" ;;
+            *) exit 2 ;;
+          esac
       - name: Save experimental packages and build record
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: qtmir-mir1-test
-          path: qtmir-test/
+          name: ${{ inputs.component }}-compat-test
+          path: ${{ inputs.component }}-test/
           if-no-files-found: error
           retention-days: 3
