@@ -163,3 +163,21 @@ recorded post-Halium source passes, producing AudioSystem.cpp blob
 Build script rejects another source and verifies this result. Original libraries,
 ABI checks and reboot-reversible deployment remain required. Compilation and
 hardware results for this replacement are pending.
+
+
+Replacement run [37156894732](https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/37156894732)
+completed both builds and uploaded all required artifacts. Compilation took
+about seven minutes after source sync. Both library interfaces match the
+verified originals, including all exports/imports, dependencies and SONAME:
+
+- ARM32 SHA256: 7b0b0bcd6054e9316a9b0648db95b6f7c6468926e2b947681748164573b2ffc8.
+- ARM64 SHA256: ba0433f3682b87082fb48238b01f697275861486e016b5bd46c00647cfcdc92d.
+
+The first temporary libraries were unmounted and both original hashes verified.
+The 32-bit mount needed the existing camera_service stopped before unmounting.
+The reproduction script now verifies private root-owned staged copies before
+mounting, stops the helper normally before replacement, waits for its state,
+and starts it again after verified mounts. Failure cleanup uses the same
+stop/unmount/start sequence. This avoids leaving a busy failed-test mount.
+The new test remains reboot-reversible and is not a permanent image change.
+Hardware record/Stop/playback validation is still required.
