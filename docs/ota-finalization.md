@@ -1,6 +1,6 @@
 # Galaxy A50: suspend and updates
 
-Updated 3 October 2026. Device: SM-A505F. Ubuntu Touch 26.04 only.
+Updated 4 October 2026. Device: SM-A505F. Ubuntu Touch 26.04 only.
 
 ## Current result
 
@@ -8,7 +8,9 @@ The aa12 kernel and supported repowerd Wi-Fi hooks completed 35 automatic
 suspend/resume cycles with zero resume failures. Screen/touch recovered in user
 checks. Permanent startup, fresh-boot behavior, service-crash recovery and long
 idle/battery validation remain release blockers. The native Android activation
-unit has passed an inhibited repowerd restart test, not a fresh boot.
+unit has now started the missing automatic worker on fresh aa13 and passed
+repowerd restart ordering. USB prevents sleep during that check: fresh aa13
+has zero completed cycles so far. Permanent integration remains pending.
 See [the release backlog](release-validation-backlog.md) and
 [activation lifecycle](experiments/032-native-suspend-startup.md).
 
@@ -16,8 +18,9 @@ See [the release backlog](release-validation-backlog.md) and
 
 The clean test installation uses /userdata/ubuntu.img, the existing Halium
 layout for an embedded Android image. Its initial rootfs.img filename selected
-the separate-image layout and failed; see experiment 035. Fresh boot remains
-pending the USB kernel correction in experiment 034. It does not yet have
+the separate-image layout and failed; see experiment 035. The aa13 USB correction and ION access rule allowed fresh boot and onboarding;
+subsequent audio, package and app lifecycle corrections are documented in
+experiments 040–047. These need inclusion and validation in a rebuilt image. It does not yet have
 a working A50 update channel. A newer rootfs alone cannot enable OTA.
 
 The planned one-time migration needs a compatible boot image and system layout,
@@ -28,7 +31,7 @@ is a test requirement, not a promise based on the offline build.
 
 | Item | Verified state | Required work |
 | --- | --- | --- |
-| Root filesystem | Current boot still uses userdata image; clean 26.04 full-376 candidate built read-only | Validate fresh boot/onboarding and boot from the final layout |
+| Root filesystem | Fresh 26.04 now boots/onboards from the userdata image on aa13 | Rebuild with validated corrections and test the final layout |
 | Image size | Candidate 5,452,595,200 bytes (5,200 MiB); measured system 5,557,452,800 bytes (5,300 MiB) | Validate on hardware and retain growth allowance inside the filesystem |
 | Recovery | Unified recovery candidate built and checked offline; 62,095,360 bytes fits 67,633,152-byte partition | Test display, ADB, mounts, reboot modes; preserve TWRP fallback |
 | Cache | Unified recovery candidate uses userdata-backed cache | Verify actual recovery staging and available capacity |
@@ -70,8 +73,9 @@ be rebuilt before sharing.
    schema and downloads, test the local config and then submit it upstream.
 7. Later, establish Waydroid reliability with repeated launch/stop cycles,
    compositor restarts, sleep/wake, networking, sound, updates and extended use.
-   One successful launch is insufficient; an absolute stability guarantee would
-   be unsupported. Camera video remains deferred.
+   Video Stop is currently receiving a shared upstream correction and requires
+   hardware validation plus a conventionally rebuilt Android image. The fresh
+   installation has not initialized Waydroid yet.
 
 Recovery and OTA preparation can proceed while suspend is being fixed. Daily-use
 readiness and update readiness are separate validation targets.

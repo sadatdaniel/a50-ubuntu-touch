@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-10-04 — shared recording fix and fresh-image validation
+
+- Installed matching upstream window-state packages; repeated app reopening
+  was exercised. Normal YouTube audio survived reboot. AppArmor's temporary
+  file allow/deny test passed. Wider first-boot and OTA validation remain.
+- Replaced the failed one-call recording experiment with exact Halium PR 84's
+  shared AudioFlinger accessor correction. Both ABIs built and passed original
+  interface/dependency comparisons; reversible hardware Stop/playback test is
+  pending, with the original GSI lock and vendor image retained.
+- Established opt-in runtime SSH over USB through normal authentication.
+  Native suspend activation and repowerd restart lifecycle passed; the new
+  image still needs unplugged sleep cycles and permanent startup integration.
+- Added a tested standard systemd writable-path condition for the immutable
+  package-backup destination. Validated missingok only for two optional syslog
+  rotation rules; no log-rotation timer is disabled.
+
+See [current handoff](docs/SESSION-HANDOFF-20.md),
+[recording experiment](docs/experiments/044-recording-audioflinger-backport.md)
+and [fresh-image health](docs/experiments/047-fresh-suspend-startup-and-readonly-health.md).
+
 ## 2026-10-03 - conventional window-state correction
 
 - Found the original upstream Lomiri MR 331 correction for app windows that

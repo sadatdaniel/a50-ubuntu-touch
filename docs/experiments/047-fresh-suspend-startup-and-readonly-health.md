@@ -63,3 +63,28 @@ link on the installed image (the repository link mode was previously corrected),
 and an upstream bluebinder StartLimitIntervalSec option in the Service section.
 Neither warning proves a camera or suspend failure. GNSS first-boot enablement
 and the BlueZ keyboard stability checks remain open.
+
+## Optional syslog files
+
+The later logrotate.timer run failed on missing /var/log/syslog and auth.log.
+Both log destinations and /var/lib/logrotate are writable; this is a separate
+problem from the immutable package-backup destination. The current installation
+does not have rsyslog installed or its service. Its packaged lxc-android-config
+touch-syslog rules nevertheless require those two files to exist.
+
+The exact original config matches upstream revision
+a5cc1a6ee30ac86a5389b38edf15e2a327c29f7a after LF normalization, SHA256
+b57bf95c313e0137946f47797d76d8bcb7084a114ecdaf30ca6f9683826c88e1.
+The overlay adds only the documented [logrotate missingok option](https://github.com/logrotate/logrotate/blob/main/logrotate.8.in)
+to those two rules. Existing size limits, rotations and reload actions stay
+as packaged. It does not disable log rotation or hide existing-log errors.
+check-optional-logrotate.sh validates both config hashes, tests the complete
+normal configuration with logrotate's debug mode, then starts the ordinary
+service under a reversible runtime file mount. The test must pass before
+claiming live validation; reboot restores the original until a new image is built.
+
+The phone validation passed: LOGROTATE_OPTIONAL_LOGS=PASS. The complete debug
+parse and ordinary service both succeeded, failed-unit count is zero, and root
+remains read-only. The candidate config SHA256 is
+9705f696066c9bf19e455c16e129466b0799f45bb590f308c93596f52a543f33.
+The live correction is a runtime file mount, removed by reboot.

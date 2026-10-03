@@ -1,3 +1,57 @@
+# Current checkpoint — 4 October 2026
+
+Read this checkpoint before the historical September entries below. The phone
+now runs Ubuntu Touch 26.04 on aa13 with AppArmor enabled and read-only root.
+The old aa1/AppArmor-N observations below describe earlier boots only.
+
+- Normal administrator authentication established temporary root OpenSSH over
+  authorized USB. It listens only on phone localhost; runtime keys/configuration
+  disappear on reboot. Private credentials, computer keys and logs are not in
+  either repository. See [maintenance and Restart](experiments/046-usb-maintenance-and-restart.md).
+- YouTube sound works normally before and after reboot. Audio startup links and
+  the namespace setting are corrected in the image overlay. See experiment 043.
+- Original upstream Lomiri MR 331 save/load guards are installed in four matching
+  packages. The user completed the requested Terminal/Settings close/reopen
+  repetitions; broad lifecycle and first-boot tests remain. See experiment 041.
+- Camera photo capture works. Video Stop blocked in AudioFlinger lookup at both
+  callback and destructor paths. The first one-line backport failed and was
+  removed. Exact Halium PR 84 shared accessor correction built for both Android
+  ABIs (run 37156894732), passed interface/dependency comparisons and is currently
+  mounted for a reversible hardware test. A new Camera instance is ready; user
+  Stop/playback confirmation is pending. GSI lock remains 1542. See experiment 044.
+- Fresh aa13 lacked an automatic suspend worker. Native Android activation now
+  starts it; repowerd restart lifecycle passed. USB keeps it awake, so current
+  suspend success/fail remain zero. Earlier aa12's 35 successful cycles are
+  historical evidence, not proof of fresh-image startup. See experiment 047.
+- Midnight package-backup destination is immutable. A standard systemd writable
+  path condition passed its runtime test and is in the overlay. The later
+  logrotate missing-file error also passed its separate native missingok test,
+  now in the overlay. Both live corrections are runtime-only until image rebuild.
+- aa14 Bluetooth kernel compiled and packed, unflashed. aa15 disables RT groups
+  per systemd/Halium requirements; Samsung's two incompatible scheduler accesses
+  now use existing standard Linux 4.14 helpers. Retry container
+  a50-kbuild-aa15-native-realtime-retry is the current build. Check completion
+  before starting another. Both candidates require hardware tests; phone aa13
+  is unchanged. Kernel repo docs/native-realtime-config.md records the guards.
+- Graphical Restart is still unresolved: policy checks and CanReboot pass, but
+  the window-closing/dialog path needs a controlled trace. Authenticated reboot
+  previously changed kernel boot ID. Launcher CLI registry-teardown errors are
+  distinct from Camera crashes; do not infer app failure from the CLI alone.
+- OTA is not enabled. Unified recovery remains offline-only, with no signed A50
+  channel or installer integration validated. Waydroid is not initialized on
+  this fresh installation. Recents rendering, Bluetooth keyboard, VPN, Libertine,
+  reset, notifications, charging estimates and first-boot/OTA regression checks
+  remain on the release agenda. Fingerprint is last. Final agent.md and
+  first_contact.md are deferred until the checklist is resolved.
+
+Repositories: C:/Users/sadat/Development/a50-ubuntu-touch and a50-halium.
+Host private work: this Codex task's work/session02 and work/private.
+Use official upstream solutions first and the Ponytail workflow. Publish each
+validated fix and its reproduction script. Do not ship temporary maintenance
+SSH, runtime library mounts, signature bypasses or unvalidated kernel candidates.
+
+---
+
 # Session 20 — suspend source investigation
 
 2026-09-12. Prior handoffs preserved. Work in progress.
