@@ -47,7 +47,7 @@ reboot is still needed. It does not restart the display session.
 ## Release requirements
 
 The conventional Settings package build is now reproducible through the
-existing native Ubuntu 26.04 ARM64 workflow's `settings` choice. Source is
+existing native Ubuntu 26.04 ARM64 workflow's `settings` choice. [Run 37134674283](https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/37134674283) succeeded, including the targeted Qt 5 validator check. Its three runtime packages total approximately 1.15 MB and have been verified and staged on the phone. Source is
 pinned to official d10c4792deb79e9c995bbb0b9eecd1226338a1ef; only the QtQuick
 2.4 to 2.14 import correction is applied. A targeted Qt 5 validator reproducer
 runs in CI; the full upstream integration suite is not represented as passed.
@@ -58,3 +58,20 @@ the ordinary Settings page, onboarding, administrator authentication, camera,
 Recents, and a clean reboot without the private panel or library overrides.
 The published final image must include verified fixes before first boot.
 The repaired development phone alone is not a final image or an OTA channel.
+
+
+The final staged repair also includes those three matching Settings packages.
+The complete local-package simulation upgrades eight packages, configures the
+three custom QtMir packages, removes nothing and requires no further dependency
+upgrade. Private preflight and installation logs are saved on userdata.
+
+When Terminal could not reopen, an offline recovery route was prepared in
+`scripts/experiments/repair-packages-twrp.sh`. It backs up and compares the
+existing `/data/ubuntu.img` before modifications, preserves the backup on
+userdata, binds the existing home/extrausers/log directories, uses the standard
+Debian chroot policy to prevent service startup, and reuses the package repair
+with a guarded `--offline` option. The guard refuses offline mode on the
+currently booted system root. Vendor, recovery and credentials are not written.
+Do not mistake preparation or syntax validation for completed recovery repair;
+TWRP execution remains pending. This wrapper is for this development image,
+not the final installation procedure.

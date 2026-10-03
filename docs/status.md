@@ -12,8 +12,7 @@ requires a newer content-hub; the matching signed dependency repair is staged
 and simulated ([040](experiments/040-compatibility-package-repair.md)). Tar and
 the official camera compatibility library installed successfully. The corrected
 lock-security page worked through a standard temporary Settings panel and the
-user chose a private credential; the conventional Settings package build is
-pending. Recents previews remain distorted and Waydroid is not initialized. See [display comparison](experiments/037-clean-wizard-mir1-scaling.md),
+user chose a private credential; the conventional Settings package build passed and is staged. Terminal then crashed when closed and could not reopen; an offline recovery repair is prepared ([041](experiments/041-authentication-and-terminal-runtime.md)). Recents previews remain distorted and Waydroid is not initialized. See [display comparison](experiments/037-clean-wizard-mir1-scaling.md),
 [tar compatibility](experiments/038-tar-openat2-compatibility.md) and
 [fresh diagnostics](experiments/039-lock-security-import-regression.md). Fresh
 confinement/suspend and USB checks remain open.
