@@ -4,7 +4,9 @@
 
 - Corrected three ordinary startup files to conventional Git symlinks for the
   existing audio and GNSS units. Added an archive regression check and a
-  backed-up authenticated audio startup repair; audible verification is pending.
+  backed-up authenticated audio startup repair. Restored the missing HIDL
+  namespace setting in the first-boot overlay; normal YouTube sound is
+  user-confirmed before and after reboot.
 - Clean reboot reproduced video Stop blocking. The recorder callback waits on
   an unused AudioFlinger lookup left by the Halium recording patch. Published
   the improved bounded collector and evidence; no video fix is claimed yet.

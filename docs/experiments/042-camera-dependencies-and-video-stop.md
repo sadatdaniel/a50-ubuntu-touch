@@ -126,3 +126,17 @@ see [startup packaging](043-audio-startup-packaging.md). Loading droid modules
 and exposing named sinks does not establish that the hardware HAL is mapped.
 The earlier clean-boot retest requirement above has now been completed and
 failed; the new stack supersedes the earlier unspecified blocked-service lead.
+
+
+## Existing newer Halium correction found
+
+The official [Halium 13 recording patch](https://github.com/Halium/hybris-patches/blob/halium-13.0/frameworks/av/0004-halium-get-rid-of-using-AudioFlinger-for-recording.patch)
+already replaces the getInputFramesLost AudioFlinger lookup with nullptr,
+causing its existing zero-result return. This is the upstream backport candidate
+for Halium 11; it avoids inventing a device-specific Camera workaround.
+The official generic_arm64 recipe uses lineage_halium_arm64-userdebug and
+UBports' halium-build-tools with the normal hybris-patches application.
+AOSP Android 11 r48 alone does not accept the complete existing Halium AudioSystem
+patch, so the actual source base must be established before claiming clean
+application or compiling replacement libraries. No recording library has yet
+been replaced and no successful video Stop is claimed.
