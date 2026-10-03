@@ -40,3 +40,11 @@ The current graphical dialog calls lomiriSessionService.reboot(). logind is
 running with zero service restarts; its inspected journal contains no reboot
 request in the current boot. Trace the session-service dispatcher and capture
 a controlled menu request before assigning a cause or claiming this fixed.
+
+The explicit PID/start-time/UID subject for the actual Lomiri process passes
+both normal and multiple-session reboot policy checks. Its own session-service
+CanReboot returns true. The graphical power dialog closes all windows before
+calling the backend. A controlled capture of that path remains necessary;
+no reboot-policy relaxation was applied. The unsuccessful camera test was
+removed through the normal launcher and helper stop/start, and both original
+library hashes were restored without a system reboot.

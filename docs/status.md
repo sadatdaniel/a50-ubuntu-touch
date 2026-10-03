@@ -22,8 +22,9 @@ Official Action API dependencies restored Camera loading; the user confirmed pho
 Ordinary Settings, repeated app lifecycle and shell crashes remain under test.
 Recents previews remain distorted and Waydroid is not initialized. See [display comparison](experiments/037-clean-wizard-mir1-scaling.md),
 [tar compatibility](experiments/038-tar-openat2-compatibility.md) and
-[fresh diagnostics](experiments/039-lock-security-import-regression.md). Fresh
-confinement/suspend and USB checks remain open.
+[fresh diagnostics](experiments/039-lock-security-import-regression.md). Fresh AppArmor allow/deny enforcement passed. Native automatic suspend
+activation and runtime repowerd restart passed; fresh unplugged sleep/USB
+recovery and permanent activation remain open ([047](experiments/047-fresh-suspend-startup-and-readonly-health.md)). A native read-only destination condition resolves the newly observed midnight package-backup failure in runtime and image overlay.
 See [release validation](release-validation-backlog.md), [USB diagnosis](experiments/034-clean-boot-usb-configfs.md),
 [startup layout](experiments/035-clean-startup-layout.md) and
 [ION access](experiments/036-clean-boot-ion-permissions.md). Earlier bring-up
