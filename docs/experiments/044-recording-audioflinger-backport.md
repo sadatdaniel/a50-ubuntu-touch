@@ -68,3 +68,11 @@ Current original-library SHA256 fingerprints on the phone:
 
 - system/lib/libaudioclient.so (503824 bytes): 61ccb6554dcef9fdc30099a88d3c7773901e616aeefccc1845d8045d56d1e89d.
 - system/lib64/libaudioclient.so (703480 bytes): ddcdf2a8e68eae5a01f91f1ab92e4175205ed38f31f0aec76e513e0992fa91f6.
+
+
+First remote run 37152064170 passed capacity/prerequisite and manifest
+preparation, then stopped during source sync: the pinning helper had incorrectly
+used the default Lineage branch for a project whose AOSP remote specifies an
+Android release tag. The helper now uses project revision, then remote revision,
+then default revision, matching repo manifest semantics. Its regression covers
+this AOSP case. No compilation or phone deployment occurred in that attempt.
