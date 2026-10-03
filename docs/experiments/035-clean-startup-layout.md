@@ -1,7 +1,7 @@
 # 035 — Self-contained image layout and read-only container startup
 
-Status: userspace regression checks passed, staged on the phone; full fresh
-boot pending the USB kernel fix in experiment 034. Ubuntu Touch stays 26.04.
+Status: userspace regression checks passed and Android starts with aa13;
+setup renders after the ION rule in experiment 036. Ubuntu Touch stays 26.04.
 
 ## Image filename
 
@@ -63,3 +63,9 @@ available privately but has the earlier layout and startup defects.
 
 Kernel 034, first onboarding, second boot, AppArmor, native suspend startup,
 USB reconnect/mode testing and final conventional OTA migration remain pending.
+
+Official installation documentation also specifies ubuntu.img for userdata
+image boots and warns that rootfs.img selects incorrect partition mounting:
+https://docs.ubports.com/en/latest/porting/build_and_boot/standalone_kernel_install.html
+The filesystem hash above is from before the subsequent ION rule and temporary
+diagnostic unit; it is historical, not the current phone image hash.

@@ -1,12 +1,15 @@
 # Status
 
-Current checkpoint (3 October 2026): the 26.04 clean test image is installed
-using the supported `/userdata/ubuntu.img` layout. Its first boot failed;
-USB configfs correction aa13 is built and flashed with verified readback,
-with native LXC hook and partition-probe fixes staged. Clean boot validation is pending. See [release validation](release-validation-backlog.md),
-[USB diagnosis](experiments/034-clean-boot-usb-configfs.md) and
-[startup layout](experiments/035-clean-startup-layout.md). The detailed older
-bring-up evidence below is historical, not proof of current clean-boot success.
+Current checkpoint (3 October 2026): the clean 26.04 test image now reaches
+the setup wizard, and the user confirmed touch works. The aa13 USB configfs
+fix, supported ubuntu.img layout, native LXC hooks and partition-probe typo
+correction resolved the early startup failures. Matching Samsung/upstream
+ION permissions resolved the remaining desktop allocation failure. Setup
+completion, second boot, fresh confinement/suspend and USB checks remain open.
+See [release validation](release-validation-backlog.md), [USB diagnosis](experiments/034-clean-boot-usb-configfs.md),
+[startup layout](experiments/035-clean-startup-layout.md) and
+[ION access](experiments/036-clean-boot-ion-permissions.md). Earlier bring-up
+evidence below is historical; this is still a development port.
 
 **Current checkpoint: 2026-10-02.** Development port, not a stable release.
 

@@ -10,7 +10,7 @@ reproduction, validation and rollback for every fix, and publish the scripts.
 | Suspend/resume | aa12 plus supported repowerd Wi-Fi hooks completed 35 automatic cycles, zero resume failures; user confirmed screen/touch | Calendar timer passed across sleep; repeated cycles, network recovery, screen-on inhibition, service restart and battery drain; reproducible permanent enablement |
 | AppArmor | Real allowed/denied file-access probe passes on aa12; normal biometry/location permissions work | Final image must boot the hardened kernel by default, remove testing bypasses, verify application confinement after clean install and OTA |
 | Authentication | Installed polkit's supported legacy helper fixed password validation; duplicate local account removal fixed swipe; user confirmed PIN/swipe | Clean-image and reboot/OTA tests for passphrase, PIN, swipe; preserve authentication protection and package-managed ownership |
-| First-run setup | Clean 26.04 image 376 installed; first boot panicked in Samsung USB configfs; conventional linking fix aa13 built and flashed with verified readback; supported ubuntu.img layout, native LXC hooks and upstream schedtune typo correction staged and regression checked | Fresh install, setup wizard, user-chosen credentials, no development SSH/default password, second boot |
+| First-run setup | Clean 26.04 image 376 reaches setup with touch confirmed after aa13 USB fix, supported ubuntu.img layout, native LXC hooks, schedtune correction and Samsung/upstream ION rule | Complete wizard, user-chosen credentials, normal developer authorization, remove temporary diagnostics, second boot |
 | Recovery and OTA | Unified recovery candidate built and checked offline; TWRP backup retained; no candidate recovery flash yet | Conventional layout/build pipeline, safe recovery boot test, signed local OTA, second update and userdata preservation, signed channel hosting, installer configuration |
 | Waydroid | During reported disappearance, both Gio and LAL still list Waydroid; session/container have no counted restarts; drawer investigation ongoing | Reproduce launcher disappearance and distinguish drawer cache from desktop-file changes; repeated launches/stops, network/audio, sleep/wake, compositor restart, extended use; remove stopgap adaptations only after valid replacements |
 | Bluetooth keyboard | User reports unsolicited disconnect/reconnect | Capture controller/connection logs; idle, typing, reconnect and suspend tests |
@@ -22,8 +22,7 @@ reproduction, validation and rollback for every fix, and publish the scripts.
 | Charging estimate | User reports inaccurate lock-screen time to full; low priority | Compare lock-screen, indicator and battery-provider values at the same time; fix the responsible layer using upstream behavior |
 | Fingerprint | Driver and enrollment path exist; successful capture/enrollment unproven | Investigate last; preserve calibration and trusted firmware; advertise unavailable unless verified |
 
-The conventional calendar-timer workaround passed auto9. First resolve the clean
-boot failures in experiments 034 and 035, complete onboarding and a second boot,
+The conventional calendar-timer workaround passed auto9. Clean setup now renders after experiments 034–036; complete onboarding and a second boot,
 then rerun confinement and suspend startup on the fresh image. Waydroid must be
 installed and validated without the erased old Helper/Android state. Close the
 OTA release blockers and remaining functional checks above.

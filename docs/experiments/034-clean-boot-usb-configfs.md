@@ -1,6 +1,6 @@
 # 034 — Clean first boot: USB configfs ownership
 
-Status: aa13 built and flashed with verified readback; clean boot validation pending. Ubuntu Touch
+Status: aa13 built and flashed with verified readback; clean setup reached after experiment 036. Ubuntu Touch
 26.04 rootfs 376 remains installed. Vendor and TWRP were preserved.
 
 ## Recorded failure
@@ -94,3 +94,17 @@ Rollback: from TWRP flash the retained aa12 boot donor using the same partition
 and size checks. Its USB configfs defect remains, so it is a diagnostic fallback,
 not a working clean-install release. Vendor and recovery were not modified.
 The earlier userdata was intentionally erased; no old-userdata rollback exists.
+
+## Hardware result after the first aa13 boots
+
+Fresh persistent logs no longer show the earlier configfs NULL dereference.
+Android starts and the compositor renders. Onboarding was then blocked by
+host ION permissions; experiment 036 fixes that and the user confirms the
+setup wizard and touch. Runtime USB mode/reconnect testing remains pending.
+
+The isolated regression did not run: creating its second unbound gadget fails
+with ENOMEM before any link test. Samsung's android_device_create() always
+creates the singleton android0 device; gadgets_make() converts its creation
+error to ENOMEM. This is a test-environment restriction, not a passing result.
+Do not remove the active gadget just to run this check. Exercise the normal
+USB mode path and verify repeated actual reconnects instead.

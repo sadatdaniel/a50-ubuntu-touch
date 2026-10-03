@@ -1,0 +1,5 @@
+# Samsung vendor ueventd.rc gives ION 0666 system:system, as do existing
+# UBports Mali device rules (70-manta.rules). The host has its own /dev;
+# Android's node permissions do not carry across to it. Root-only ION lets
+# the compositor spinner work while Lomiri/greeter buffer allocation fails.
+ACTION=="add", KERNEL=="ion", OWNER="system", GROUP="system", MODE="0666"
