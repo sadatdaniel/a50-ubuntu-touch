@@ -1,0 +1,32 @@
+name: QtMir Mir1 compatibility experiment
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Configure signed Ubuntu Touch 26.04 repository
+        run: |
+          curl --fail --location https://repo.ubports.com/keyring.gpg -o /tmp/ubports-keyring.gpg
+          echo 'b9834f239d7eef9c919292b454f4ecb5098b969704cdc6ea91d5ccc652bce0ca  /tmp/ubports-keyring.gpg' | sha256sum -c -
+          sudo install -m 0644 /tmp/ubports-keyring.gpg /usr/share/keyrings/ubports-keyring.gpg
+          echo 'deb [signed-by=/usr/share/keyrings/ubports-keyring.gpg] https://repo.ubports.com/ 26.04-1.x main' | sudo tee /etc/apt/sources.list.d/ubports.list
+          sudo apt-get -o APT::Update::Error-Mode=any update
+          sudo apt-get -y --no-install-recommends install devscripts build-essential git patch
+      - name: Build current QtMir with Mir1 compatibility patch
+        run: |
+          mkdir "$RUNNER_TEMP/qtmir-build"
+          bash scripts/experiments/build-qtmir-mir1-package.sh "$RUNNER_TEMP/qtmir-build"
+      - name: Save experimental packages and build record
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: qtmir-mir1-test
+          path: qtmir-test/
+          if-no-files-found: error
+          retention-days: 3
