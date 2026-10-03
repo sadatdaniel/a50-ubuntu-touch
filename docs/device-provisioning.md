@@ -1,5 +1,11 @@
 # Provisioning notes — things a fresh install needs
 
+Historical development-install notes. The clean 26.04 candidate now uses
+`/userdata/ubuntu.img` at 5,200 MiB with read-only operation; the procedures
+below describe the earlier writable development image. Use the current
+[release backlog](release-validation-backlog.md) and
+[clean startup record](experiments/035-clean-startup-layout.md) for new images.
+
 Everything here is a one-time (or after-reflash) operation on the device
 itself. It is not part of the build, and none of it belongs in `overlay/`
 because it changes storage or state rather than shipping a file.

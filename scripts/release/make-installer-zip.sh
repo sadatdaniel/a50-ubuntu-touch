@@ -55,6 +55,7 @@ fi
     echo "halium=${deviceinfo_halium_version}"
     echo "version=${VERSION}"
     echo "variant=${VARIANT}"
+    echo "rootfs_target=/data/ubuntu.img"
     echo "rootfs_bytes=$(stat -c%s "$ROOTFS")"
     echo "boot_bytes=$(stat -c%s "$BOOT")"
     # Which Android system is inside the rootfs. Unpinned this was unknowable

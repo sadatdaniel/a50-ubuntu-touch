@@ -1,5 +1,13 @@
 # Status
 
+Current checkpoint (3 October 2026): the 26.04 clean test image is installed
+using the supported `/userdata/ubuntu.img` layout. Its first boot failed;
+USB configfs correction is compiling, with native LXC hook and partition-probe
+fixes staged. See [release validation](release-validation-backlog.md),
+[USB diagnosis](experiments/034-clean-boot-usb-configfs.md) and
+[startup layout](experiments/035-clean-startup-layout.md). The detailed older
+bring-up evidence below is historical, not proof of current clean-boot success.
+
 **Current checkpoint: 2026-10-02.** Development port, not a stable release.
 
 - aa12 plus supported repowerd Wi-Fi preparation completed 35 automatic suspend

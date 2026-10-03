@@ -87,6 +87,12 @@ You will lose everything on the phone. Back it up first.
 
 ## Install
 
+Clean-install validation on 3 October 2026 exposed boot defects. Current source
+uses the supported self-contained `ubuntu.img` layout and native LXC hooks;
+the USB kernel correction is awaiting a fresh boot test. Earlier release ZIPs
+predate these corrections. See [the clean startup record](docs/experiments/035-clean-startup-layout.md)
+and [release backlog](docs/release-validation-backlog.md) before testing.
+
 Download the zip from
 [Releases](https://github.com/sadatdaniel/a50-ubuntu-touch/releases), copy it to
 the phone (SD card, internal storage, or `adb push` from TWRP), then:
@@ -101,7 +107,7 @@ The installer writes exactly two things, and verifies both by reading them back:
 | what | where |
 | --- | --- |
 | `boot.img` - kernel + Halium initramfs | the `boot` partition (`sda14`, 57,671,680 bytes) |
-| `rootfs.img` - Ubuntu Touch 26.04 + Halium 11 GSI + this port | `/data/rootfs.img`, loop-mounted as `/` |
+| `rootfs.img` - Ubuntu Touch 26.04 + Halium 11 GSI + this port | `/data/ubuntu.img`, loop-mounted as `/` (current source) |
 
 It does **not** touch `vendor`, `system`, `efs`, `modem`, `recovery` or the
 bootloader. TWRP stays installed and remains the way back.
