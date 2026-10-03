@@ -11,8 +11,10 @@ with no private QtMir override ([040](experiments/040-compatibility-package-repa
 Tar and the official camera compatibility library are installed. The corrected
 lock-security page previously allowed the user to choose a private credential.
 Terminal's saved hidden window state prevented reopening; a backed-up targeted
-repair restored it and the user confirmed it opens. A shared Lomiri storage fix
-passed native ARM compilation and storage regression tests; phone installation remains pending ([041](experiments/041-authentication-and-terminal-runtime.md)).
+repair restored it and the user confirmed it opens. The first shared Lomiri package candidate passed compilation and storage tests
+but failed the phone dependency preflight without changing installed packages.
+An existing upstream window-state correction is now the preferred backport;
+its logic regression passes and a build against matching runtime headers is pending ([041](experiments/041-authentication-and-terminal-runtime.md)).
 Official Action API dependencies restored Camera loading; the user confirmed photo capture. Video Stop freezes and remains under investigation. Removing a duplicate device HIDL argument restored audio module initialization; a clean reboot still reproduced the video Stop lock. The recorder callback blocks on an unused AudioFlinger lookup. YouTube silence also exposed incorrectly packaged audio startup links, corrected in Git; startup links and the missing namespace setting are restored, and the user confirmed normal YouTube sound before and after reboot. Both corrections are in the image overlay ([043](experiments/043-audio-startup-packaging.md)) ([042](experiments/042-camera-dependencies-and-video-stop.md)). The migrated temporary diagnostic unit has been removed through normal authentication.
 Ordinary Settings, repeated app lifecycle and shell crashes remain under test.
 Recents previews remain distorted and Waydroid is not initialized. See [display comparison](experiments/037-clean-wizard-mir1-scaling.md),

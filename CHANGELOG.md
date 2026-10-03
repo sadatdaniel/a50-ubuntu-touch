@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-03 - conventional window-state correction
+
+- Found the original upstream Lomiri MR 331 correction for app windows that
+  remain hidden across relaunch. Replaced the experimental build's local
+  storage patch with that upstream save/load correction and a regression.
+- Installation preflight rejected the first package candidate's newer library
+  requirements. Retained signed rollback packages and pinned the disposable
+  builder to matching runtime libraries; the phone remains unchanged.
+
+See [app lifecycle follow-up](docs/experiments/041-authentication-and-terminal-runtime.md).
+
 ## 2026-10-03 - startup dependency links and recording diagnosis
 
 - Corrected three ordinary startup files to conventional Git symlinks for the

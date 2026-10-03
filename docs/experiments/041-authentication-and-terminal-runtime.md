@@ -1,4 +1,4 @@
-# 041 — Authentication CPU loop and Terminal reopening
+# 041 â€” Authentication CPU loop and Terminal reopening
 
 3 October 2026. These are development-image release blockers. The failed-authentication CPU loop remains unresolved. Terminal reopening now
 has a verified stale-state cause and a narrowly scoped package candidate.
@@ -64,7 +64,7 @@ that crash is not represented as fixed by the database repair.
 
 ## Verified saved-hidden-state cause
 
-Narrow QtMir logging showed Terminal create a normal 1080�2257 surface, then
+Narrow QtMir logging showed Terminal create a normal 1080×2257 surface, then
 receive `requestState(hidden)`, lose its window and be suspended. Its row in
 Lomiri's window-state SQLite database contained state 13 (HiddenState), rather
 than 1 (RestoredState). `Stage.qml` loads this state when the window becomes
@@ -95,7 +95,8 @@ compilation succeeded in native ARM run
 [37140084464](https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/37140084464).
 The added SQLite regression fails on the original source and passes with the
 shared correction; the storage tests pass. Runtime packages are downloaded to
-the host but are not installed on the phone. The full upstream suite was not
+the host but are not installed on the phone. The dependency preflight below
+rejected this first candidate; do not install it. The full upstream suite was not
 run. Full shell integration,
 repeated close/reopen, Settings, Recents and shell crash checks remain required
 before calling this a permanent validated fix. The exact trigger that first
@@ -113,3 +114,38 @@ used to exploit the temporary unit's overly permissive development mode.
 
 Keep raw runtime logs and database backups private. The failed-auth CPU loop,
 shell SIGSEGV and first-boot/OTA regressions remain release blockers.
+
+## Upstream replacement and dependency preflight
+
+The 3 October follow-up found official [Lomiri MR 331](https://gitlab.com/ubports/development/core/lomiri/-/merge_requests/331),
+which describes the same persistent hidden-window failure. It remains open.
+Its original commit [598d550](https://gitlab.com/ubports/development/core/lomiri/-/commit/598d550be9d8175e645ee5f0585421b7c9c412ca)
+sanitizes transient states on save and load in WindowStateSaver.qml. Prefer
+this existing correction over the earlier local C++ candidate. The later MR
+revision b28ae27 uses `state` in load() without declaring it and does not
+retain the save guard; it is not suitable for direct backport as inspected.
+This assessment concerns that exact unmerged revision, not a future fix.
+
+`lomiri-window-state-upstream.patch` contains the original upstream diff.
+`check-window-state-saver.js` executes the actual QML JavaScript load/save
+functions in an isolated context: usable states survive, and Minimized,
+Hidden and Unknown fall back to a usable previous state or Restored.
+The regression fails against installed source fcac00b and passes with the
+original upstream patch. This is a logic test; full QML/compositor and phone
+lifecycle validation remain necessary. The old storage patch is historical
+and is no longer applied by the build script.
+
+The first package build used newer builder libraries. Normal APT simulation
+refused installation because connectivity and gesture minimum versions had
+advanced, and the builder used stock LightDM 1.32 while the phone uses the
+UBports LightDM 1.30 fork. No package was installed and dependencies were not
+bypassed. The four original Lomiri packages were downloaded from the signed
+UBports repository to a private rollback directory on the phone.
+
+The revised conventional native ARM build pins the relevant development and
+runtime libraries to the installed 26.04 versions, preserving the current
+phone base and LightDM fork. Package suffix is `+a50state.2`. Pins and resulting
+runtime dependencies accompany the artifact. A complete APT dependency
+simulation is still required before installation; compilation alone is
+insufficient. No authentication, vendor or recovery change is part of this
+correction.

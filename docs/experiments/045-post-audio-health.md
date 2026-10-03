@@ -32,3 +32,11 @@ Fresh suspend/resume, Bluetooth keyboard, microphone/calls and remaining
 release checklist validation are still open. The remote recording-library
 build is the immediate camera dependency. No new kernel or Android framework
 library was installed during this health check. Keep raw phone logs private.
+
+At 22:55 CEST the load average was about 17, while a three-sample vmstat
+check reported 98–100% CPU idle, no swap activity and zero I/O wait in the
+interval samples. Seventeen tasks appeared in D state: eight tz workers,
+scsi_srpmb_work, ree_time, tz_iwsock and six simpleinteractive workers.
+This does not show CPU saturation or prove these workers are faulty.
+Their wait paths need privileged bounded diagnostics before any kernel fix
+is justified; no process was terminated or scheduling setting changed.
