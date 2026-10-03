@@ -157,3 +157,21 @@ than a subset of their binary packages, using APT's documented `src:` syntax
 ([apt_preferences](https://manpages.debian.org/bookworm/apt/apt_preferences.5.en.html)).
 This builder-only correction keeps the toolkit, its development packages and
 runtime libraries coherent. The phone still has no new Lomiri packages.
+
+Native ARM run [37153996911](https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/37153996911)
+successfully built `+a50state.2` with the original upstream correction and
+matching source-family pins. Its regression passed. Phone APT simulation
+confirmed four upgrades, zero new packages and zero removals. The user then
+ran the hash-checked short `fix` installer through ordinary sudo.ws
+authentication. All four package versions and the installed QML guards are
+verified; dpkg audit is clean. `install-lomiri-window-state.sh` reproduces the
+bounded four-package operation and supports --rollback using the retained
+signed original packages.
+
+The requested private screenshot shows successful package configuration and
+the verification message, followed by a busy read-only remount. Root remains
+writable until the requested ordinary reboot; the installer explicitly reports
+that condition. It also warns that the _apt sandbox account is absent, which
+needs comparison with the clean UBports account layout. That warning does not
+invalidate the hash-checked local package operation. New shell runtime,
+close/reopen checks and read-only boot verification are still pending.

@@ -61,3 +61,9 @@ broken by a missing serial-port protocol. No pairing or connection was made.
 System failed units remain zero. Suspend counters are zero successes and
 zero failures in this boot, so it contains no successful suspend evidence.
 The RTKit cgroup runtime budget remains zero.
+
+The pinned Samsung Bluetooth Makefile comments out the RFCOMM, BNEP and
+HIDP build entries despite enabled Kconfig symbols. Restoring the exact
+standard Linux 4.14 entries is now a compiled kernel candidate; see the
+[kernel reproduction](https://github.com/sadatdaniel/a50-halium/blob/main/docs/bluetooth-standard-protocols.md).
+This candidate has not been flashed or tested with a keyboard.
