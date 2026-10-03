@@ -25,8 +25,11 @@ existing audio units, starts the existing HIDL bridge, restarts user audio,
 and starts the existing primary-output routing service. Stage as /home/phablet/fix
 and run `sudo.ws sh fix`. It does not weaken authentication or alter vendor.
 
-At this checkpoint the live repair is staged, not yet user-run or audibly
-verified. It must be followed by playback, microphone and normal reboot tests.
+The user ran the live startup repair. Both audio units are enabled/active,
+and their dependency entries are now symbolic links. Root remains read-only.
+This does not establish working audio: after the restart the HIDL wrapper
+fails to resolve libaudiohal.so, leaving only the dummy SCO output.
+Playback, microphone and normal reboot tests remain outstanding.
 The historical host HIDL wrapper/linker configuration adaptation is unchanged;
 its upstream replacement investigation remains a release task. No audio
 stability or video-stop fix is claimed from startup enablement alone.
@@ -35,10 +38,39 @@ Regression: `python3 scripts/experiments/test-startup-links.py` checks the
 committed overlay archive; pass the built device tarball as an argument to
 check the delivered artifact. Before the correction it fails on the audio
 startup entry. After committing the correction all dependency entries must
-be links with valid targets.
+be links. Port-owned system unit links must resolve to units in the overlay;
+the existing datetime link targets a unit supplied by the upstream package,
+so its target is intentionally outside the device-only archive.
 
 Backups and repair output are private under /home/phablet/a50-audio-startup.*.
 To roll back the live startup metadata, disable the two services and restore
 the saved ordinary entries. Reboot to discard the existing bridge's temporary
 host mount and generated linker configuration change. Release rollback uses
 the previously tested device image. Do not publish raw logs or recordings.
+
+
+## Remaining namespace setting, prepared but unverified
+
+The earlier working installation had a PulseAudio service drop-in which
+unset HYBRIS_USE_VENDOR_NAMESPACE. It was not included in the fresh overlay.
+The current upstream session sets that variable, and libhybris selects
+/vendor/bin/yes as its configuration identity when the variable exists.
+Without the variable it selects /system/bin/app_process64. See the
+[installed-source linker implementation](https://github.com/libhybris/libhybris/blob/7079712/hybris/common/q/linker_main.cpp).
+This port loads a system HIDL wrapper to reach Samsung's 32-bit audio service,
+so the earlier system-namespace setting must also be restored and validated.
+The generated linker configuration still contains the earlier sphal allowlist
+entries; namespace selection is a separate missing prerequisite.
+
+scripts/experiments/audio-namespace.sh prepares the narrow user-service
+configuration, refuses to overwrite an existing override, restarts audio,
+selects the primary output, and checks the process mappings and hwbinder
+descriptor. It runs as phablet without sudo and does not alter authentication.
+Remove the created user drop-in, reload the user service configuration and
+restart PulseAudio to undo this experiment. Its successful execution, audible
+result and permanent image integration are still pending.
+
+Automatic approval review's allowance was exhausted on the first attempt,
+so that change was not executed. After the user requested continuation and
+review recovered, USB was offline. Normal ADB reconnection did not restore
+access; a cable reconnect was requested. No reboot or TWRP requested.

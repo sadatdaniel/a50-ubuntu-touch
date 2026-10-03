@@ -19,7 +19,7 @@ with archive:
     for m in entries:
         assert m.issym(), f'{m.name}: expected symlink, got ordinary file'
         # A relative link resolves from its containing directory.
-        if not m.linkname.startswith('/'):
+        if '/system/multi-user.target.wants/a50-' in m.name:
             target = PurePosixPath(m.name).parent / m.linkname
             parts = []
             for part in target.parts:
