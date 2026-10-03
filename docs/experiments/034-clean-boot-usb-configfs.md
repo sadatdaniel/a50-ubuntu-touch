@@ -1,6 +1,6 @@
 # 034 — Clean first boot: USB configfs ownership
 
-Status: candidate kernel building; hardware validation pending. Ubuntu Touch
+Status: aa13 built and flashed with verified readback; clean boot validation pending. Ubuntu Touch
 26.04 rootfs 376 remains installed. Vendor and TWRP were preserved.
 
 ## Recorded failure
@@ -62,3 +62,35 @@ running it on aa12 can reproduce the panic. Full USB mode/reconnect testing
 and a clean second boot remain required beyond that isolated check.
 
 Raw pstore and journal logs remain private in the development workspace.
+
+## aa13 build and installation, 2026-10-03
+
+Kernel port source: c74b0ff. The corrected incremental build exited zero at
+10:30:17 UTC; the existing .config hash stayed unchanged. PLATFORM_VERSION must
+be 12.0.0, as set by Documentation/device-db/a50.sh, giving ANDROID_VERSION=120000
+and ANDROID_MAJOR_VERSION=s. The first probe omitted that environment variable;
+its output was discarded without flashing. The corrected compiler macros match
+the retained aa11/aa12 builds. This vendor build setting does not change the
+Android 11 vendor base or Halium version.
+
+Image: 45,053,968 bytes; SHA256
+9ecb60339027e0024cfcded50eddd351c90a0d5fe17b4d06eb6fe70f93dd2840.
+boot-aa13.img: 55,851,008 bytes; SHA256
+8ae7ab85c08c13b0a7f454882dda3c52162a004a718de2be657d3cd75218fca6.
+The existing pack-boot-image.py retained the aa12 header and ramdisk, verified
+the unpacked kernel/ramdisk and command line, and checked the partition limit.
+No recovery image or system partition migration was performed.
+
+The guarded scripts/experiments/flash-aa13-twrp.sh requires the exact aa12
+preimage, exact new image, boot partition mapping/size and ubuntu.img layout.
+It writes only boot and checks its readback plus the preserved vendor and
+recovery hashes. The first invocation stopped before writing because TWRP's
+shell aliases the name hash; renaming the helper file_sha256 resolved that
+shell collision. The corrected invocation passed all checks. The read-only
+root image inspection mount was removed, and the phone rebooted for clean
+onboarding. User-visible setup and runtime results are still pending.
+
+Rollback: from TWRP flash the retained aa12 boot donor using the same partition
+and size checks. Its USB configfs defect remains, so it is a diagnostic fallback,
+not a working clean-install release. Vendor and recovery were not modified.
+The earlier userdata was intentionally erased; no old-userdata rollback exists.
