@@ -28,4 +28,9 @@ with archive:
                 elif part != '.':
                     parts.append(part)
             assert '/'.join(parts) in members, f'{m.name}: missing target {m.linkname}'
-    print(f'PASS: {len(entries)} startup dependencies are symbolic links')
+    configs = [m for m in members.values() if m.name.endswith(
+        '/etc/systemd/user/pulseaudio.service.d/zz-a50-hybris.conf')]
+    assert len(configs) == 1, 'Missing first-boot audio namespace configuration'
+    with archive.extractfile(configs[0]) as config:
+        assert b'UnsetEnvironment=HYBRIS_USE_VENDOR_NAMESPACE' in config.read()
+    print(f'PASS: {len(entries)} startup links and first-boot audio configuration')

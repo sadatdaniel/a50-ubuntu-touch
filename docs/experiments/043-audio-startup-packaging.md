@@ -49,7 +49,7 @@ host mount and generated linker configuration change. Release rollback uses
 the previously tested device image. Do not publish raw logs or recordings.
 
 
-## Remaining namespace setting, prepared but unverified
+## Missing namespace setting restored and verified
 
 The earlier working installation had a PulseAudio service drop-in which
 unset HYBRIS_USE_VENDOR_NAMESPACE. It was not included in the fresh overlay.
@@ -67,10 +67,31 @@ configuration, refuses to overwrite an existing override, restarts audio,
 selects the primary output, and checks the process mappings and hwbinder
 descriptor. It runs as phablet without sudo and does not alter authentication.
 Remove the created user drop-in, reload the user service configuration and
-restart PulseAudio to undo this experiment. Its successful execution, audible
-result and permanent image integration are still pending.
+restart PulseAudio to undo this experiment. The live script executed successfully after normalizing its Windows staging
+line endings to LF. PulseAudio mapped libaudiohal.so, libaudiohal@5.0.so and
+libaudiohal_deathhandler.so and opened /dev/hwbinder. The primary output and
+microphone source were available. The user confirmed YouTube sound is normal.
+
+A normal authenticated reboot then verified both audio units enabled/active,
+the primary output selected automatically, /dev/hwbinder open, no new audio
+initialization failure, clean package audit and read-only root. The user
+confirmed YouTube sound still works normally after reboot.
+
+The equivalent device configuration is now in the image overlay at
+etc/systemd/user/pulseaudio.service.d/zz-a50-hybris.conf. The archive regression
+check requires it, alongside the real startup dependency links. A newly built
+clean image must still be tested; live persistence is not a complete fresh
+install validation. Microphone capture, calls and Bluetooth audio remain open.
 
 Automatic approval review's allowance was exhausted on the first attempt,
 so that change was not executed. After the user requested continuation and
 review recovered, USB was offline. Normal ADB reconnection did not restore
 access; a cable reconnect was requested. No reboot or TWRP requested.
+
+
+The completed chain is: upstream session audio arguments (no duplicated
+helper=false), real startup links for the existing device bridge, system
+namespace for its framework wrapper, and the existing primary-output route.
+No raw ALSA replacement, manual mixer writes, authentication change or vendor
+partition edit was needed. The generated linker allowlist adaptation remains
+explicitly tracked for upstream replacement; this checkpoint does not remove it.
