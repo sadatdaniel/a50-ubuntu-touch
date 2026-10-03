@@ -10,6 +10,8 @@
 : "${ZIP:=${A50_ZIP:-}}"
 : "${DRYRUN:=${A50_DRYRUN:-}}"
 : "${TMP:=/tmp/a50-install}"
+# Recovery may default to umask 000; the root image must not be user-writable.
+umask 077
 mkdir -p "$TMP"
 
 # Standalone / dry-run: update-binary normally supplies these.

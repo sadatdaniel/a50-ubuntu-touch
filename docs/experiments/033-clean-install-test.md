@@ -65,3 +65,18 @@ A second dry-run defect was 32-bit shell arithmetic overflowing rootfs_bytes.
 The size calculation now uses awk and correctly reports 5,324,800 KiB instead
 of 1,130,496 KiB. The corrected complete dry run passed in TWRP after Format
 Data. Both findings were caught before writing boot or rootfs.
+
+## Installation result
+
+The final ZIP passed verification on the phone. TWRP installation completed and
+both boot and rootfs read-back hashes matched the inputs above. The vendor
+partition (838,860,800 bytes, /dev/block/sda26) retained SHA256
+48f5e9bfb9ef2dfd032ec7c92986ac1c8886abe7d658430b57ccacb5e3cffe3b.
+The full recovery partition hash also remained unchanged.
+
+A final metadata check found TWRP's umask created rootfs.img as root:root/0666.
+The installer now sets umask 077. Its equivalent was verified in TWRP and the
+installed file corrected to root:root/0600 before boot. This last permission
+fix is newer than the test ZIP hash above; rebuild from current source before
+sharing an installer. No bytes inside the verified filesystem image changed.
+First boot was then requested; onboarding and runtime results remain pending.
