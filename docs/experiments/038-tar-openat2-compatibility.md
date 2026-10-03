@@ -56,3 +56,11 @@ on the computer with its native archive tool, and the library was copied into
 a private user directory. Installed packages remain intact. This diagnostic
 staging is not a substitute for resolving tar before normal installation,
 Libertine, updates or a public ROM.
+
+## Installed package checkpoint
+
+The current security source rebuild is now installed as
+`1.35+dfsg-4ubuntu0.4+a50openat2.1`. The offline dependency repair completed
+using normal package extraction, and the next boot has a read-only root and
+clean dpkg audit. Earlier candidate-only statements above are historical.
+Libertine and OTA still require their own functional tests.

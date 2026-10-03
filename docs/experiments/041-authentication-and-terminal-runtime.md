@@ -1,13 +1,13 @@
 # 041 â€” Authentication CPU loop and Terminal reopening
 
-3 October 2026. These are development-image release blockers. No permanent
-authentication or app-lifecycle correction has been established by these checks.
+3 October 2026. These are development-image release blockers. The failed-authentication CPU loop remains unresolved. Terminal reopening now
+has a verified stale-state cause and a narrowly scoped package candidate.
 
 The user's newer installer output was real: sudo and dpkg logs show an
 authenticated installation at 17:45 phone local time. It replayed the original
 dependency-incomplete installer and left the three QtMir packages unpacked.
-The corrected repair has since replaced both `/tmp/a50-fix.sh` and
-`/tmp/a50-repair.sh`; its authenticated execution remains pending.
+The corrected repair was completed offline in TWRP; experiment 040 records the
+verified package operation and read-only normal boot.
 
 ## Runaway authentication process
 
@@ -56,13 +56,52 @@ Terminal process connected and loaded its normal QML, but focus still lacked a
 window. Resuming it once changed its process state from stopped to sleeping
 without establishing a functional visible window.
 
-The temporary `90-a50-layout-probe.conf` wizard wrapper was then removed. The
-full greeter was restarted with the standard `lomiri-systemd-wrapper
---mode=full-greeter` command; the tested QtMir library override remains until
-normal package installation is complete. Terminal was requested through its
-ordinary launcher again. The user confirmed that tapping Terminal still returns to the drawer. Recovery repair is therefore staged and recovery access has been requested; no offline package operation has yet been performed.
+The temporary wizard wrapper was removed and normal package installation was
+completed offline. A fresh boot uses the package-owned QtMir library and normal
+full-greeter command, with root mounted read-only. Terminal still returned to
+the drawer. The shell also restarted with SIGSEGV during an app close/relaunch;
+that crash is not represented as fixed by the database repair.
 
-No authentication dialog was bypassed, credential captured, or Terminal data
-erased. Preserve private runtime logs locally. Required next: finish package
-repair, recover normal Terminal UI, verify repeated close/reopen and other
-apps, remove the remaining temporary overrides, then validate a clean boot.
+## Verified saved-hidden-state cause
+
+Narrow QtMir logging showed Terminal create a normal 1080×2257 surface, then
+receive `requestState(hidden)`, lose its window and be suspended. Its row in
+Lomiri's window-state SQLite database contained state 13 (HiddenState), rather
+than 1 (RestoredState). `Stage.qml` loads this state when the window becomes
+ready. `WindowStateSaver.qml` saves the state when a delegate is destroyed and
+only normalizes MinimizedState; the shared storage accepted HiddenState.
+
+`scripts/experiments/repair-terminal-hidden-state.py` made a private SQLite
+backup, stopped only Terminal's launch unit and changed only that app's verified
+hidden row to RestoredState. The next normal launch produced the authentication
+window, and the user confirmed Terminal opens. No credential was collected,
+authentication disabled, application data erased or entire database reset.
+Settings was reported to return to the drawer too, but its saved state was 1;
+its failure is not attributed to the same stale hidden row.
+
+## Shared correction candidate
+
+Official upstream source and recent commits were checked first; no matching
+fix was found in the inspected revision. The candidate patches exact installed
+[Lomiri fcac00b](https://gitlab.com/ubports/development/core/lomiri/-/tree/fcac00b977a96f050ebcde4fdbd78e77c2e9b26a):
+`AsyncQuery::saveState` ignores transient HiddenState, preserving the previous
+usable state; `WindowStateStorage::getState` falls back for legacy hidden rows.
+It applies to all callers and requires no recurring database-reset service.
+
+`lomiri-hidden-window-state.patch` includes a real SQLite regression in the
+existing storage tests. `build-lomiri-window-state-package.sh` builds current
+26.04 ARM64 packages through the existing workflow's `lomiri` choice. Native
+compilation and tests are pending at this checkpoint. Full shell integration,
+repeated close/reopen, Settings, Recents and shell crash checks remain required
+before calling this a permanent validated fix. The exact trigger that first
+saved the hidden state is not yet established.
+
+The diagnostic unit also survived in userdata-backed `/etc/systemd/system`,
+despite removing the image copy offline. `cleanup-persisted-diagnostics.sh`
+uses normal administrator authentication, validates its known ExecStart,
+backs up only that unit and removes it. Authenticated execution is pending.
+The recovery wrapper now handles both locations. No privilege workaround is
+used to exploit the temporary unit's overly permissive development mode.
+
+Keep raw runtime logs and database backups private. The failed-auth CPU loop,
+shell SIGSEGV and first-boot/OTA regressions remain release blockers.

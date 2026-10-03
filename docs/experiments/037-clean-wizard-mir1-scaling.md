@@ -95,3 +95,13 @@ force-ADB marker must be removed before final fresh-image validation.
 Host authorization stays enabled throughout. Raw screenshots and logs remain
 private. Vendor, recovery, calibration and account credentials are untouched
 by the scaling investigation.
+
+## Normal package installation checkpoint
+
+Experiment 040 records completed normal QtMir installation with its matching
+content-hub dependency set. After recovery repair, the normal boot maps the
+package-owned library with SHA256
+`825ef29b11cbc5a543bd53a18040a7d6309be89e5489dd3d507d8f22b25bc183`,
+uses the standard full-greeter command and no private library override. Root is
+read-only. Earlier temporary staging statements above describe the experiment,
+not the current package state. Recents and app lifecycle remain open.

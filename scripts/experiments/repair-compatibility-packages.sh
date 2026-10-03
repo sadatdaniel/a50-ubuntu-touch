@@ -32,8 +32,16 @@ for package in ./*.deb; do
     test "$(dpkg-deb -f "$package" Version)" = "$version"
     test "$(dpkg-deb -f "$package" Architecture)" = arm64
 done
+# --no-download also forbids copying local debs into APT's archive cache.
+# Populate that conventional cache from the hash-checked files before preflight.
+mkdir -p "$probe/cache/archives/partial"
+for package in ./*.deb ../settings/*.deb ../libqt5mir1server1.deb \
+    ../qml-module-qtmir0.1.deb ../qtmir-qt5-mir1.deb; do
+    archive="$(dpkg-deb -f "$package" Package)_$(dpkg-deb -f "$package" Version)_$(dpkg-deb -f "$package" Architecture).deb"
+    cp "$package" "$probe/cache/archives/$archive"
+done
 apt_local() {
-    apt-get -o Dir::State::lists="$probe/lists" -o Dir::Cache="$probe/cache" \
+    apt-get -o Dpkg::Use-Pty=0 -o Dir::State::lists="$probe/lists" -o Dir::Cache="$probe/cache" \
         -o Dir::Etc::sourcelist="$probe/sources.list" -o Dir::Etc::sourceparts=- \
         --fix-broken --no-remove --no-download --no-install-recommends "$@" \
         install ./*.deb ../libqt5mir1server1.deb ../qml-module-qtmir0.1.deb \

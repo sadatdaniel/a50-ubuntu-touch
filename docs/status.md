@@ -5,14 +5,16 @@ the setup wizard, and the user confirmed touch works. The aa13 USB configfs
 fix, supported ubuntu.img layout, native LXC hooks and partition-probe typo
 correction resolved the early startup failures. Matching Samsung/upstream
 ION permissions resolved the remaining desktop allocation failure. The current-source QtMir compatibility build now renders the wizard correctly,
-and the user completed onboarding with swipe-only unlocking. Its library is
-still loaded through a temporary diagnostic override. The normal installation
-unpacked three QtMir packages but left them unconfigured because their build
-requires a newer content-hub; the matching signed dependency repair is staged
-and simulated ([040](experiments/040-compatibility-package-repair.md)). Tar and
-the official camera compatibility library installed successfully. The corrected
-lock-security page worked through a standard temporary Settings panel and the
-user chose a private credential; the conventional Settings package build passed and is staged. Terminal then crashed when closed and could not reopen; an offline recovery repair is prepared ([041](experiments/041-authentication-and-terminal-runtime.md)). Recents previews remain distorted and Waydroid is not initialized. See [display comparison](experiments/037-clean-wizard-mir1-scaling.md),
+and the user completed onboarding with swipe-only unlocking. Normal QtMir and Settings packages plus their complete signed dependency set
+are installed; package audit is clean and the second boot has a read-only root
+with no private QtMir override ([040](experiments/040-compatibility-package-repair.md)).
+Tar and the official camera compatibility library are installed. The corrected
+lock-security page previously allowed the user to choose a private credential.
+Terminal's saved hidden window state prevented reopening; a backed-up targeted
+repair restored it and the user confirmed it opens. A shared Lomiri storage fix
+and native package build are prepared ([041](experiments/041-authentication-and-terminal-runtime.md)).
+Ordinary Settings, repeated app lifecycle and shell crashes remain under test.
+Recents previews remain distorted and Waydroid is not initialized. See [display comparison](experiments/037-clean-wizard-mir1-scaling.md),
 [tar compatibility](experiments/038-tar-openat2-compatibility.md) and
 [fresh diagnostics](experiments/039-lock-security-import-regression.md). Fresh
 confinement/suspend and USB checks remain open.

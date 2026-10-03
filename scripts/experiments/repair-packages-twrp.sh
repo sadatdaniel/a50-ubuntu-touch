@@ -2,6 +2,7 @@
 # Offline repair of the existing Ubuntu image; never writes vendor or recovery.
 set -eu
 test "$(id -u)" = 0
+chroot_binary=$(command -v chroot)
 image=/data/ubuntu.img
 backup=/data/ubuntu.before-compatibility-20261003.img
 verified=$backup.verified
@@ -66,6 +67,18 @@ if [ ! -e "$root/usr/sbin/policy-rc.d" ] && [ ! -L "$root/usr/sbin/policy-rc.d" 
     policy_created=1
 fi
 cp "$bundle/repair-compatibility-packages.sh" "$root/tmp/a50-offline-package-repair.sh"
-DEBIAN_FRONTEND=noninteractive chroot "$root" /bin/sh /tmp/a50-offline-package-repair.sh --offline
+"$chroot_binary" "$root" /usr/bin/env -i \
+    PATH=/usr/sbin:/usr/bin:/sbin:/bin HOME=/root TMPDIR=/tmp TERM=dumb \
+    DEBIAN_FRONTEND=noninteractive \
+    /bin/sh /tmp/a50-offline-package-repair.sh --offline
 rm -f "$root/tmp/a50-offline-package-repair.sh"
+# /etc/systemd/system is rebound from userdata during Ubuntu boot.
+# Removing only the image copy does not remove a migrated diagnostic unit.
+unit=/data/system-data/etc/systemd/system/a50-aa13-diagnostics.service
+if [ -f "$unit" ]; then
+    grep -qx 'ExecStart=/bin/sh /userdata/.a50-aa13-diagnostics/probe.sh' "$unit"
+    rm -f /data/system-data/etc/systemd/system/multi-user.target.wants/a50-aa13-diagnostics.service
+    rm -f "$unit"
+fi
+
 echo 'Offline package repair passed; credentials and vendor were preserved.'

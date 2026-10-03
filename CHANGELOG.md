@@ -1,22 +1,23 @@
 # Changelog
 
-## 2026-10-03 — fresh-install compatibility diagnostics
+## 2026-10-03 � compatibility repair and Terminal reopening
 
-- Current-source QtMir ARM64 build restores wizard geometry; the user confirms
-  correct display and completed swipe-only onboarding. Temporary library loading
-  remains; Recents distortion and permanent installation/second boot are open.
-- Current-source tar rebuild passes 222 upstream tests and native 4.14 archive/
-  dpkg-deb extraction checks. Normal tar installation now passes; the QtMir dependency repair remains pending.
-- Unlock-method Settings cannot load: the Qt 6 preparation change introduced a
-  validator unavailable under its QtQuick 2.4 import. The isolated 2.14 import
-  correction passes on the phone. A standard temporary panel then allowed the user to choose a private credential. A conventional ARM64 package build is now available.
-- Fresh Camera lacks libexiv2.so.27; the signed 26.04 compatibility package is
-  installed and the plugin resolves all shared libraries. Waydroid package is present but Android images are absent
-  after the wipe. No camera/Waydroid fix or stable-release result is claimed.
+- Completed the verified offline dependency repair: eight matching upgrades,
+  three configured QtMir packages, no removals and clean package audit. The next
+  normal boot uses the packaged QtMir library without overrides and read-only root.
+- Current-source tar and signed camera compatibility library are installed;
+  camera capture and Recents rendering still require validation.
+- The conventional Settings package includes the tested QtQuick 2.14 import fix.
+  The temporary Settings test manifest is disabled; ordinary UI validation remains.
+- Terminal's saved hidden state prevented reopening. A private backup and one-row
+  correction restored the normal authentication window; the user confirms it opens.
+  A shared storage correction and SQLite regression test are prepared for native
+  ARM package validation. Failed-auth CPU looping and shell crashes remain open.
+- Recovery cleanup now covers the migrated diagnostic unit on userdata. Its live
+  authenticated cleanup is staged; vendor and recovery hashes remain unchanged.
 
-The first QtMir installation left three packages unconfigured because of a newer content-hub dependency. The complete signed repair is staged and simulated; root read-only restoration and clean-boot validation remain pending.
-
-See [fresh diagnostics](docs/experiments/039-lock-security-import-regression.md) and [package repair](docs/experiments/040-compatibility-package-repair.md).
+See [package repair](docs/experiments/040-compatibility-package-repair.md) and
+[Terminal investigation](docs/experiments/041-authentication-and-terminal-runtime.md).
 
 ## 2026-09-13 — watchdog freezer-state development validation
 

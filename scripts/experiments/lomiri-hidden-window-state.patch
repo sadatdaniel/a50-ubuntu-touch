@@ -1,0 +1,71 @@
+--- a/plugins/Utils/windowstatestorage.cpp
++++ b/plugins/Utils/windowstatestorage.cpp
+@@ -195,6 +195,10 @@
+ 
+     void saveState(const QString &windowId, Mir::State state)
+     {
++        // Hidden is transient teardown state, not a state to restore on launch.
++        if (state == Mir::HiddenState) {
++            return;
++        }
+         if (!m_ok) {
+             return;
+         }
+@@ -311,7 +315,7 @@
+                             Q_ARG(const QString&, windowId)
+                             );
+ 
+-    if (state == -1) {
++    if (state == -1 || state == Mir::HiddenState) {
+         return defaultValue;
+     }
+ 
+--- a/tests/plugins/Utils/WindowStateStorageTest.cpp
++++ b/tests/plugins/Utils/WindowStateStorageTest.cpp
+@@ -18,6 +18,9 @@
+ 
+ #include <QTest>
+ #include <QStandardPaths>
++#include <QSqlDatabase>
++#include <QSqlQuery>
++#include <QTemporaryDir>
+ 
+ class WindowStateStorageTest : public QObject
+ {
+@@ -78,6 +81,36 @@
+         QTRY_COMPARE(storage->getState(QTest::currentTestFunction(), Mir::MaximizedBottomRightState), state);
+     }
+ 
++    void testHiddenStateDoesNotPreventReopening() {
++        QTemporaryDir directory;
++        QVERIFY(directory.isValid());
++        const QString databasePath = directory.filePath("states.sqlite");
++        const QString id = QStringLiteral("test-terminal");
++        delete storage;
++        storage = new WindowStateStorage(databasePath, this);
++
++        storage->saveState(id, Mir::MaximizedState);
++        QCOMPARE(storage->getState(id, Mir::RestoredState), Mir::MaximizedState);
++        storage->saveState(id, Mir::HiddenState);
++        QCOMPARE(storage->getState(id, Mir::RestoredState), Mir::MaximizedState);
++
++        // Simulate a hidden state saved by a previous shell version.
++        const QString connectionName = QStringLiteral("legacy-hidden-state-test");
++        {
++            auto database = QSqlDatabase::addDatabase("QSQLITE", connectionName);
++            database.setDatabaseName(databasePath);
++            QVERIFY(database.open());
++            QSqlQuery query(database);
++            query.prepare("UPDATE state SET state=? WHERE windowId=?");
++            query.addBindValue(static_cast<int>(Mir::HiddenState));
++            query.addBindValue(id);
++            QVERIFY(query.exec());
++            QCOMPARE(query.numRowsAffected(), 1);
++        }
++        QSqlDatabase::removeDatabase(connectionName);
++        QCOMPARE(storage->getState(id, Mir::RestoredState), Mir::RestoredState);
++    }
++
+     void testSaveRestoreGeometry() {
+         const QRect geometry{10, 20, 30, 40};
+         storage->saveGeometry(QTest::currentTestFunction(), geometry);
