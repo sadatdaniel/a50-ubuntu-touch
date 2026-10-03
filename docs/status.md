@@ -4,8 +4,16 @@ Current checkpoint (3 October 2026): the clean 26.04 test image now reaches
 the setup wizard, and the user confirmed touch works. The aa13 USB configfs
 fix, supported ubuntu.img layout, native LXC hooks and partition-probe typo
 correction resolved the early startup failures. Matching Samsung/upstream
-ION permissions resolved the remaining desktop allocation failure. Setup
-completion is blocked by a cropped language page: current QtMir exposes native scaling while Mir1 still returns physical extents. See [the old/new display comparison](experiments/037-clean-wizard-mir1-scaling.md). A compatibility rebuild is pending; second boot, fresh confinement/suspend and USB checks remain open.
+ION permissions resolved the remaining desktop allocation failure. The current-source QtMir compatibility build now renders the wizard correctly,
+and the user completed onboarding with swipe-only unlocking. Its library is
+still loaded through a temporary diagnostic override; normal package installation
+and second boot remain pending. The fresh lock-security page cannot load because
+its QtQuick import predates its validator type; an isolated import-only correction
+passes. Camera is missing its signed compatibility dependency, Recents previews
+are distorted, and Waydroid has not been initialized. See [display comparison](experiments/037-clean-wizard-mir1-scaling.md),
+[tar compatibility](experiments/038-tar-openat2-compatibility.md) and
+[fresh diagnostics](experiments/039-lock-security-import-regression.md). Fresh
+confinement/suspend and USB checks remain open.
 See [release validation](release-validation-backlog.md), [USB diagnosis](experiments/034-clean-boot-usb-configfs.md),
 [startup layout](experiments/035-clean-startup-layout.md) and
 [ION access](experiments/036-clean-boot-ion-permissions.md). Earlier bring-up

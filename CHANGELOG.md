@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-03 — fresh-install compatibility diagnostics
+
+- Current-source QtMir ARM64 build restores wizard geometry; the user confirms
+  correct display and completed swipe-only onboarding. Temporary library loading
+  remains; Recents distortion and permanent installation/second boot are open.
+- Current-source tar rebuild passes 222 upstream tests and native 4.14 archive/
+  dpkg-deb extraction checks. Normal package installation remains pending.
+- Unlock-method Settings cannot load: the Qt 6 preparation change introduced a
+  validator unavailable under its QtQuick 2.4 import. The isolated 2.14 import
+  correction passes on the phone without changing credentials or configuration.
+- Fresh Camera lacks libexiv2.so.27; the signed 26.04 compatibility package is
+  verified and staged. Waydroid package is present but Android images are absent
+  after the wipe. No camera/Waydroid fix or stable-release result is claimed.
+
+See [fresh diagnostics](docs/experiments/039-lock-security-import-regression.md).
+
 ## 2026-09-13 — watchdog freezer-state development validation
 
 - aa8 preserves the secondary watchdog's previous enable state. Two freezer

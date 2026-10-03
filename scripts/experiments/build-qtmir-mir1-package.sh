@@ -8,9 +8,12 @@ VERSION='0.7.2+0~20261001152353.82+ubports26.04.1~1.gbp38268e+a50mir1.1'
 [ "$(dpkg --print-architecture)" = arm64 ]
 [ "$(. /etc/os-release; printf '%s' "$VERSION_ID")" = 26.04 ]
 [ -z "$(ls -A "$BUILD_DIR")" ] || { echo 'E: build directory must be empty' >&2; exit 1; }
-git clone --depth 1 https://gitlab.com/ubports/development/core/qtmir.git "$BUILD_DIR/qtmir"
+git init "$BUILD_DIR/qtmir"
 cd "$BUILD_DIR/qtmir"
-[ "$(git rev-parse HEAD)" = "$SOURCE_SHA" ] || { echo 'E: upstream changed; review the new source first' >&2; exit 1; }
+git remote add origin https://gitlab.com/ubports/development/core/qtmir.git
+git fetch --depth 1 origin "$SOURCE_SHA"
+git checkout --detach FETCH_HEAD
+[ "$(git rev-parse HEAD)" = "$SOURCE_SHA" ]
 sudo apt-get -o APT::Update::Error-Mode=any update
 sudo apt-get -y --no-install-recommends build-dep .
 patch --dry-run -p1 < "$HERE/scripts/experiments/qtmir-mir1-physical-extents.patch"

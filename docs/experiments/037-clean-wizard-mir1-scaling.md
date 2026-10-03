@@ -1,7 +1,12 @@
 # 037 — Clean wizard Mir1 scaling regression
 
-Status: root cause traced; a temporary rebuild of current QtMir is being
-prepared. No permanent display change or completed-onboarding claim yet.
+Status: the current-source native package build passed. Its privately loaded
+library restores the measured wizard geometry and scrollable content. The user
+now confirms that the installation wizard displays correctly. They also report
+distorted app content in Recents, Camera not starting, and no Waydroid launcher.
+These fresh-installation reports require screenshot/log collection before
+declaring the display or onboarding path fully validated. No permanent package
+installation or second-boot claim yet.
 
 ## Why the earlier image worked
 
@@ -53,6 +58,24 @@ same clipping remained. The override was removed and the shell restarted.
 Do not ship this flag or reduce the device's grid unit to hide the issue.
 
 ## Candidate and required checks
+
+The [native Ubuntu 26.04 ARM64 build](https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/37122912585)
+passed on 3 October. The three runtime .debs total about 625 KB, with dependency
+manifest and verified checksums. Source 38268ef and the one-line compatibility
+patch are published with scripts/experiments/build-qtmir-mir1-package.sh. This
+uses ordinary dpkg-buildpackage; hardware-dependent tests are deferred to the
+phone, not reported as passing in CI. The source revision is fetched explicitly
+so later movement of upstream main does not prevent reproducing this experiment.
+
+The temporary wizard process maps the candidate library from a private user
+directory. Installed packages remain intact. The header is now 336 pixels,
+the list viewport 1899, rows 147 and content height 5145; the footer sits at
+2235 with height 105. The list now correctly has content to scroll. The service
+has zero automatic restarts. The user subsequently confirmed correct wizard
+display and completed onboarding with swipe-only unlocking. The same full-greeter
+process continues to host the session with its temporary library override.
+Recents distortion and a separate lock-settings page-loading regression remain
+open; see experiment 039. The QML probe changes no behavior.
 
 Build current QtMir 38268ef against signed Ubuntu Touch 26.04 dependencies,
 restoring native DPR 1 for its existing Mir1-only build. Its CMake explicitly

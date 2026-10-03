@@ -1,0 +1,5 @@
+--- a/plugins/security-privacy/LockSecurity.qml
++++ b/plugins/security-privacy/LockSecurity.qml
+@@ -23 +23 @@
+-import QtQuick 2.4
++import QtQuick 2.14

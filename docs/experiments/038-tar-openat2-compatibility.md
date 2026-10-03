@@ -1,7 +1,9 @@
 # 038 — Ubuntu 26.04 tar and old-kernel compatibility
 
-Status: fresh-phone extraction failure reproduced; existing Ubuntu report
-identified; a rebuild retaining GNU tar's existing fallback is being tested.
+Status: fresh-phone failure reproduced; existing Ubuntu report identified;
+the current-source rebuild passed 222 upstream tests, the CI ENOSYS reproducer,
+and a nested archive round trip on the real 4.14 kernel. The candidate is staged
+privately; installed system packages remain intact.
 No older package, global sandbox change or kernel change has been installed.
 
 The clean image has tar 1.35+dfsg-4ubuntu0.4 and glibc 2.43-2ubuntu2.4.
@@ -36,8 +38,17 @@ Reproduction is in scripts/experiments/build-tar-openat2-package.sh and
 test-tar-openat2-fallback.c. The manually triggered native Ubuntu 26.04 ARM64
 workflow accepts component=tar; no emulation or large local build download is
 needed. Source, configuration, dependency manifest and package checksums are
-recorded with the experimental artifact. Hardware validation and a normal
-package installation remain required. Prefer an official fixed build once
+recorded with the experimental artifact. The [corrected remote build](https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/37124633502)
+passed. On the phone, the installed tar exits 2 on nested archive creation;
+the candidate exits 0, extracts the nested path and preserves the fixture.
+Run scripts/experiments/check-tar-archive.sh with the installed or candidate
+executable to reproduce this comparison without touching existing data.
+Command-local PATH pointing to the private candidate also lets normal
+dpkg-deb extraction of the verified QtMir package succeed; the resulting
+library matches its verified runtime copy. This provides a bootstrap for normal
+package installation without a global PATH change. A normal package installation
+and repeat-boot check remain required.
+Prefer an official fixed build once
 the archive provides it.
 
 For the initial QtMir library experiment only, the verified .deb was extracted
