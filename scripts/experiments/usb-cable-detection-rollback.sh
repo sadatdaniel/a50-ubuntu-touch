@@ -2,7 +2,13 @@
 # Restore this test's runtime files and bind mount; never edit normal config.
 set -eu
 P=/userdata/a50-usb-detection-20261004
-case "${1:-}" in "") ;; --android-tracking) P="$P/android-1" ;; *) exit 2 ;; esac
+case "${1:-}" in
+    "") ;;
+    --android-tracking) P="$P/android-1" ;;
+    --aa17) P=/userdata/a50-aa17-test/usb-1 ;;
+    --aa16) P=/userdata/a50-aa16-test/usb-1 ;;
+    *) exit 2 ;;
+esac
 E=/run/usb-moded/zz-a50-cable-test.conf
 test "$(cat /proc/sys/kernel/random/boot_id)" = "$(cat "$P/expected-boot-id")"
 changed=0

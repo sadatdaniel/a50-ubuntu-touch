@@ -88,3 +88,20 @@ its executable mode and the real relative startup link. The existing public
 test-startup-links.py regression now checks all port-owned wants links resolve
 and requires the automatic-suspend dependency. It can check the committed tree
 or a generated device tarball; this does not substitute for clean-boot testing.
+
+## aa17 follow-up
+
+The existing scripts now accept --aa17; default aa13 behavior is preserved.
+Stage under /userdata/a50-aa17-test, with the exact new boot/expected ID guard,
+and invoke the same detached test with --aa17. Cleanup receives that flag too,
+and its timer is a50-aa17-auto-stop. Native USB configuration must be retained
+through sleep; its independent ten-minute rollback was renewed before the test,
+then the awake USB hold was released only after suspend preflight passed.
+
+aa17 completed four actual deep cycles totaling 87.409 seconds, zero failures.
+Unlike the earlier aa13 test, USB returned automatically after reconnect,
+without Developer Mode intervention. Screen/touch are user-confirmed and Wi-Fi
+association returned. Actual AppArmor enforcement passed afterward. See
+[the USB/kernel evidence](049-usb-native-cable-detection.md). Test timers,
+logger and holds were cleaned; native worker activation remains runtime until
+the already packaged startup unit is included in a clean rebuilt image.

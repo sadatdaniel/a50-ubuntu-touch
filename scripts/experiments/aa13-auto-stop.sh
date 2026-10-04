@@ -2,6 +2,11 @@
 # Keep the phone awake through a runtime power-manager inhibitor after the test.
 set -eu
 B=/userdata/a50-session30-aa13/auto-1
+case "${1:-}" in
+    "") ;;
+    --aa17) B=/userdata/a50-aa17-test/auto-1 ;;
+    *) exit 2 ;;
+esac
 test "$(cat /proc/sys/kernel/random/boot_id)" = "$(cat "$B/boot-id")"
 echo "a50-auto-test-hold 3600000000000" > /sys/power/wake_lock
 if ! systemctl is-active --quiet a50-test-awake.service; then

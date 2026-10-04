@@ -122,3 +122,72 @@ call. Kernel candidate aa16 compiled and packed from the guarded aa15 cache. Its
 config is unchanged and the boot image fits; a verified working aa13 fallback
 and guarded test scripts are staged. No flash has occurred. See a50-halium/docs/usb-supply-cable-events.md. Hardware validation
 and the graphical Restart/other release blockers remain separate work.
+
+## aa16 notifications passed; controller reconnect remained broken
+
+Controlled aa16 boot passed. The awake test kept the user's charging_only_adb
+mode; standard mtp_adb and rndis_adb are also accepted without forcing a mode.
+No Android tracking or -r/-f was enabled. A confirmed removal at 09:04:51 and
+reinsertion at 09:05:21 Berlin produced two USB kernel and two USB udev events,
+ONLINE 1 -> 0 -> 1, manager detection and adbd stop/start. Suspend stayed 0/0.
+Reinserted DWC3 skipped pullup(1) as "already on": its earlier off request had
+returned before updating cached state while runtime-suspended. Developer Mode
+restored USB. Runtime test files/hold were removed at 09:12:13; collector exit
+143 from intentional stop was inspected and cleared. New collectors accept
+124 and 143 as expected statuses rather than appearing as health failures.
+
+aa17 adapts upstream DWC3 ordering to preserve pull-up intent before the
+powered-off return. The actual-function regression fails on the original and
+passes on the patch. Compilation, header/partition checks and controlled boot
+passed; user confirms display/touch. Existing test/rollback scripts now support
+--aa17 with exact boot-image guards. Physical USB recovery is still being tested.
+Kernel source/provenance and guarded reproduction are documented in the kernel
+repository's docs/usb-pullup-state.md. Do not ship a daemon-reset workaround or
+advertise sleep/USB stability before real hardware validation.
+
+## aa17 hardware result: awake reconnect and real sleep passed
+
+4 October: three awake cable removal/reinsert cycles returned authorized ADB
+automatically, without Developer Mode toggles. Native power-supply detection
+reported every ONLINE transition; adbd stopped on removal and produced a new
+FUNCTIONFS_ENABLE on reinsert. The first removal/reinsert was 09:32:40/09:33:10,
+then 09:36:09/09:36:32 and 09:36:54/09:37:18 Berlin. All used the same kernel
+boot. This supersedes the pending hardware result above.
+
+The established native automatic-suspend test then completed four deep cycles,
+success 0 -> 4, with zero suspend or resume failures. The current-boot sleep
+durations were 2.267, 14.621, 14.578 and 55.943 seconds: 87.409 seconds total.
+Ignore the earlier boot's two records in the append-only private logger. Wi-Fi
+data wakes were followed by automatic resuspend; the calendar wake deadline was
+07:42:42 UTC and cleanup began one second later. No forced mem write was used.
+The owner confirmed screen/touch. Wi-Fi association returned; USB reinsert at
+09:44:14 produced FUNCTIONFS_ENABLE immediately and authorized host transport,
+with no Developer Mode toggle. Internet routing and longer drain/soak checks
+are separate. AppArmor's real allow/deny probe and RFCOMM/L2CAP socket creation
+passed after this test; root read-only, same boot, protected hashes unchanged
+and no failed system units.
+
+The USB manager still sometimes reports a charging-mode UDC write failure
+after the controller has powered off on removal, followed by fallback to
+undefined. Reconnect now succeeds despite that message. This remaining mode
+transition warning and MTP/wall-charger behavior are recorded for validation;
+do not claim every USB mode is stable from ADB tests.
+
+At 09:47:30 Berlin, the exact tested native settings were installed through the
+packaged device EnvironmentFile interface. USB_MODED_ARGS and hardware adaptation
+args are empty, removing old rescue/always-connected flags. No Android tracking,
+polling daemon, automatic adbd restart hook or debug flag ships. The generated
+daemon command is /usr/sbin/usb_moded --systemd --force-syslog. Temporary files,
+timers, collectors and test wake holds were removed; read-only root and normal
+authorized debugging returned. The root filesystem overlay and guarded
+scripts/experiments/apply-aa17-native-usb.sh reproduce this configuration.
+Backup configuration remains private in /userdata/a50-aa17-test; restoring its
+original-usb-config.conf and restarting USB is the configuration rollback.
+The boot fallback is independent. Final normal-configuration cable check and
+clean-image/first-boot/OTA regression remain distinct validation steps.
+
+Final normal-configuration cable cycle passed at 09:48:22/09:48:59 Berlin,
+with FUNCTIONFS_ENABLE at 09:49:00 and host transport authorized. No -r/-f/-D,
+runtime overrides or test wake holds remained; same boot, root read-only,
+suspend counters still 4/0 and no failed system units. Four awake reconnects
+and one bounded multi-cycle sleep test are verified; longer soak is pending.

@@ -4,15 +4,30 @@ set -eu
 umask 077
 P=/userdata/a50-usb-detection-20261004
 U=a50-usb-detection-rollback
-case "${1:-}" in "") ;; --android-tracking) P="$P/android-1"; U=a50-usb-android-rollback ;; *) exit 2 ;; esac
+case "${1:-}" in
+    "") ;;
+    --android-tracking) P="$P/android-1"; U=a50-usb-android-rollback ;;
+    --aa17) P=/userdata/a50-aa17-test/usb-1; U=a50-aa17-usb-rollback ;;
+    --aa16) P=/userdata/a50-aa16-test/usb-1; U=a50-aa16-usb-rollback ;;
+    *) exit 2 ;;
+esac
 E=/run/usb-moded/zz-a50-cable-test.conf
 test "$(id -u)" = 0
 test "$(cat /proc/sys/kernel/random/boot_id)" = "$(cat "$P/expected-boot-id")"
 test "$(cat /sys/class/power_supply/usb/online)" = 1
 test "$(cat /sys/module/apparmor/parameters/enabled)" = Y
+if [ "${1:-}" = --aa17 ]; then
+    test "$(head -c 55984128 /dev/disk/by-partlabel/boot | sha256sum | cut -d ' ' -f1)" = a413d2bc4a605489225a0b5d8e512965af83eea39b7abb6097dbc2f7420775c8
+fi
+if [ "${1:-}" = --aa16 ]; then
+    test "$(head -c 55984128 /dev/disk/by-partlabel/boot | sha256sum | cut -d ' ' -f1)" = 05a84a04cb162cb8ef0b193859cc8dbc1ad2c20d665f1b978de5e3c52a3531a5
+fi
 test ! -e "$E"
 mode=$(gdbus call --system --dest com.meego.usb_moded --object-path /com/meego/usb_moded --method com.meego.usb_moded.get_config)
-test "$mode" = "('rndis_adb',)"
+case "$mode" in
+    "('charging_only_adb',)"|"('mtp_adb',)"|"('rndis_adb',)") ;;
+    *) echo 'An existing developer mode is required' >&2; exit 1 ;;
+esac
 printf '%s\n' "$mode" > "$P/saved-mode"
 if [ "${1:-}" = --android-tracking ]; then
     T=/etc/usb-moded/90-device-specific-config.ini

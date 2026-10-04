@@ -6,26 +6,36 @@ on:
         description: Build and package the complete pinned Halium image
         type: boolean
         default: false
+      full_image_runner:
+        description: JSON runner labels for a provisioned Linux x64 full-image builder
+        type: string
+        default: '["self-hosted", "linux", "x64", "a50-halium-build"]'
 permissions:
   contents: read
 jobs:
   build:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 360
+    runs-on: ${{ inputs.full_image && fromJSON(inputs.full_image_runner) || 'ubuntu-22.04' }}
+    timeout-minutes: ${{ inputs.full_image && 720 || 360 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Prepare ephemeral build space and prerequisites
         run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache
+          # Never remove installed software from an owner's self-hosted machine.
+          if [ "${{ runner.environment }}" = github-hosted ]; then
+            sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache
+          fi
           df -h
           free=$(df --output=avail -B1 "$RUNNER_TEMP" | tail -1)
-          test "$free" -ge 102005473280 || { echo 'Insufficient runner space for the full Halium tree (95 GiB minimum).'; exit 1; }
+          minimum=102005473280 # Library-only job: its earlier build passed.
+          if [ "${{ inputs.full_image }}" = true ]; then minimum=268435456000; fi
+          test "$free" -ge "$minimum" || { echo 'Insufficient build storage: full images require 250 GiB free before sync; libraries require 95 GiB.'; exit 1; }
           sudo apt-get update
           sudo apt-get -y --no-install-recommends install repo build-essential gcc-multilib g++-multilib git curl python-is-python3 gperf bison flex zip unzip rsync bc lib32z1-dev libncurses5 libxml2-utils xsltproc libssl-dev file e2fsprogs
       - name: Resolve and pin the conventional generic-device manifest
         run: |
           git config --global user.name "A50 recording build"
           git config --global user.email "build@localhost"
+          test ! -e "$RUNNER_TEMP/halium"
           mkdir -p "$RUNNER_TEMP/halium" recording-test
           cd "$RUNNER_TEMP/halium"
           repo init -u https://github.com/Halium/android -b ac5d4b48f4b3b8e06fded79dfee13e0620703bad --depth=1 --no-clone-bundle
@@ -44,7 +54,7 @@ jobs:
           df -h
           if [ "${{ inputs.full_image }}" = true ]; then
             free=$(df --output=avail -B1 . | tail -1)
-            test "$free" -ge 26843545600 || { echo 'Full image needs at least 25 GiB free after sync.'; exit 1; }
+            test "$free" -ge 161061273600 || { echo 'Full image needs at least 150 GiB free after sync for output and packaging.'; exit 1; }
           fi
       - name: Build the upstream CameraRecordService guard for both architectures
         run: |

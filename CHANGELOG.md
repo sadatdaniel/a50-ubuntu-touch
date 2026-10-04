@@ -2,6 +2,19 @@
 
 ## 2026-10-04 — shared recording fix and fresh-image validation
 
+- aa16 boots with actual AppArmor enforcement, RFCOMM availability and working
+  RTKit audio scheduling. Native USB supply events now report removal/reinsert,
+  but Samsung's stale DWC3 pull-up state blocked enumeration. Published the
+  narrow upstream ordering adaptation, actual-function regression and guarded
+  aa17 build/flash/native USB test scripts. aa17 boots with screen/touch working;
+  three awake cable cycles and four real deep cycles now recover USB without
+  Developer Mode toggles. Actual confinement and normal scheduling pass.
+  Removed old rescue/always-connected settings through supported device config;
+  clean image, other USB modes and longer soak remain.
+- Full pinned Android build failed on runner storage at 68%; no complete image
+  or new GSI pin exists. Larger conventional build capacity is required. Camera
+  mounts ended on kernel reboot; previous video success was a temporary test.
+
 - Confirmed awake USB cable failure independently of suspend. The upstream
   Android detector recognized removal but not reinsertion; native trace showed
   no USB supply events. Published guarded ten-minute experiment/rollback scripts.

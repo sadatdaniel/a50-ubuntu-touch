@@ -3,19 +3,29 @@
 set -eu
 umask 077
 P=/userdata/a50-session30-aa13
+U=a50-oct04-auto1-stop
+case "${1:-}" in
+    "") ;;
+    --aa17) P=/userdata/a50-aa17-test; U=a50-aa17-auto-stop ;;
+    *) exit 2 ;;
+esac
 B="$P/auto-1"
 test ! -e "$B"
 test "$(cat /proc/sys/kernel/random/boot_id)" = "$(cat "$P/expected-boot-id")"
 test "$(cat /sys/module/apparmor/parameters/enabled)" = Y
 grep -q '\[none\]' /sys/power/pm_test
-test "$(head -c 55851008 /dev/disk/by-partlabel/boot | sha256sum | cut -d ' ' -f1)" = 8ae7ab85c08c13b0a7f454882dda3c52162a004a718de2be657d3cd75218fca6
+if [ "${1:-}" = --aa17 ]; then
+    test "$(head -c 55984128 /dev/disk/by-partlabel/boot | sha256sum | cut -d ' ' -f1)" = a413d2bc4a605489225a0b5d8e512965af83eea39b7abb6097dbc2f7420775c8
+else
+    test "$(head -c 55851008 /dev/disk/by-partlabel/boot | sha256sum | cut -d ' ' -f1)" = 8ae7ab85c08c13b0a7f454882dda3c52162a004a718de2be657d3cd75218fca6
+fi
 systemctl is-active --quiet repowerd
 systemctl is-active --quiet a50-kmsg-capture
 test -f "$P/aa13-auto-stop.sh"
 mkdir "$B"
 cat /proc/sys/kernel/random/boot_id > "$B/boot-id"
 echo "a50-auto-test-hold 600000000000" > /sys/power/wake_lock
-trap 'sh "$P/aa13-auto-stop.sh"' EXIT HUP INT TERM
+trap 'sh "$P/aa13-auto-stop.sh" "${1:-}"' EXIT HUP INT TERM
 cat /sys/kernel/debug/suspend_stats > "$B/before.stats"
 cat /sys/kernel/debug/wakeup_sources > "$B/before.wakeup-sources"
 dmesg > "$B/before.dmesg"
@@ -51,9 +61,9 @@ cat /sys/kernel/debug/wakeup_sources > "$B/disconnected.wakeup-sources"
 # Use the established calendar-timer workaround for systemd issue #29245.
 deadline=$(date -u -d '+90 seconds' '+%Y-%m-%d %H:%M:%S UTC')
 printf '%s\n' "$deadline" > "$B/deadline"
-systemd-run --unit=a50-oct04-auto1-stop --on-calendar="$deadline" --timer-property=AccuracySec=1s --timer-property=WakeSystem=yes /bin/sh "$P/aa13-auto-stop.sh"
-systemctl is-active --quiet a50-oct04-auto1-stop.timer
-systemctl show a50-oct04-auto1-stop.timer -p WakeSystem -p NextElapseUSecRealtime -p AccuracyUSec > "$B/timer"
+systemd-run --unit="$U" --on-calendar="$deadline" --timer-property=AccuracySec=1s --timer-property=WakeSystem=yes /bin/sh "$P/aa13-auto-stop.sh" "${1:-}"
+systemctl is-active --quiet "$U.timer"
+systemctl show "$U.timer" -p WakeSystem -p NextElapseUSecRealtime -p AccuracyUSec > "$B/timer"
 grep -q '^WakeSystem=yes$' "$B/timer"
 # Android 11 AIDL method 1 is enableAutosuspend(); method 3 would force sleep.
 timeout 8 lxc-attach -n android -- /system/bin/service call suspend_control 1 > "$B/activation"

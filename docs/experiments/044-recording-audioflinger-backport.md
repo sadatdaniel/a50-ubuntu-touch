@@ -228,3 +228,44 @@ verified installation, boot and repeated recording/playback tests before
 selecting its artifact hash for a release. The generic recovery ramdisk is
 not a tested A50 recovery image and must not be flashed as one. Kernel,
 vendor partition, authentication and user data are unchanged by this workflow.
+
+## Full-image run failed on build storage
+
+[Run 37172560900](https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/37172560900)
+ended in failure at 07:15:48 UTC on 4 October. The runner had 109 GiB free
+before sync and 31 GiB after sync. At 68% (50042/72659), ld.lld could not write
+the 32-bit linker: "No space left on device". No complete candidate image was
+packaged; this is a capacity failure, not evidence against the camera patch.
+The 95 GiB/25 GiB checks were insufficient. Do not rerun unchanged or replace
+gsi.lock with a nonexistent artifact. Use a conventional Linux build machine
+with enough source/output space; retain the exact manifest/patches and standard
+Halium build targets. Temporary camera binds disappeared on the subsequent
+aa16/aa17 reboots; the earlier three-video success remains historical evidence
+until complete-image integration and a new reboot test.
+
+### Provisioned full-image builder
+
+The existing workflow now keeps the successful library-only job on the standard
+Ubuntu runner and routes full_image to provisioned Linux x64 runner labels.
+Default labels are [self-hosted, linux, x64, a50-halium-build]; the optional JSON
+full_image_runner input accepts another already provisioned runner. No runner
+is currently registered, no paid service was provisioned and no retry was
+dispatched. Do not trigger a full job until capacity is available.
+
+Full-image guards now require 250 GiB free before sync and 150 GiB after sync,
+with a 12-hour job limit at the unchanged two build jobs. These conservative
+project guards address the observed failure; they are not a measured final
+size or a guarantee. Current [AOSP requirements](https://source.android.com/docs/setup/start/requirements)
+cover newer Android branches and describe substantially larger capacity.
+This pinned Halium 11 tree remains unchanged. No debug symbols, architectures,
+sources or installed components are removed to squeeze the image into the
+failed runner. Cleanup of preinstalled runner software is restricted to
+GitHub-hosted machines, never an owner's self-hosted computer.
+
+Follow [GitHub's runner setup](https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/add-runners)
+on an isolated dedicated Linux builder, or use an already authorized larger
+hosted runner. This workflow is manual only, with read-only repository access;
+do not expose a personal self-hosted machine to untrusted PR workflows.
+[Larger hosted runner sizes](https://docs.github.com/en/actions/reference/runners/larger-runners)
+and billing are separate provisioning decisions. Existing local C: capacity
+is insufficient; do not download this full tree onto the owner's PC.

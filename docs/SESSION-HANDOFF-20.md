@@ -1,3 +1,38 @@
+# Latest checkpoint: 4 October 2026, aa17
+
+This supersedes the earlier aa13/unflashed/build-running statements below.
+Phone now runs aa17, boot SHA256
+a413d2bc4a605489225a0b5d8e512965af83eea39b7abb6097dbc2f7420775c8,
+with AppArmor Y, read-only root, no failed system units and owner-confirmed
+screen/touch. Vendor and recovery are unchanged. Private fallbacks and guarded
+scripts are in /userdata/a50-aa17-test. USB-only temporary maintenance SSH was
+re-established through normal authentication; no public credentials or logs.
+
+aa16 actual AppArmor allow/deny and RFCOMM/L2CAP sockets passed. Both aa16 and
+aa17 grant audio realtime scheduling. Keyboard behavior remains untested.
+aa16 native cable events and adbd lifecycle worked, but DWC3 retained stale
+softconnect state after runtime-suspended disconnect. aa17 applies the upstream
+state-before-power-check ordering; old-function regression fails, new passes,
+build/pack/controlled boot pass. Three awake cable cycles and actual sleep passed: four deep cycles,
+87.409 seconds total, zero failures; automatic USB, Wi-Fi association and user
+screen/touch recovery. Actual AppArmor allow/deny passed afterward. Native USB
+configuration is installed and in the overlay; -r/-f and runtime test files,
+timers/collectors/holds are removed. The same native sleep scripts support
+--aa17. Current-boot tests are separate from older aa13 logger records.
+Final normal-configuration awake reconnect also passed; no -r/-f/-D or runtime test holds remain. Charging-mode UDC warning, other USB modes and clean-boot/longer soak remain.
+
+Full GSI run 37172560900 failed at 68% with No space left on device. No complete
+image exists. Initial 109 GiB became 31 GiB after sync; previous capacity guards
+are insufficient. Conventional larger Linux build storage is required before
+retry. The owner has no additional Linux machine or spare drive; no full
+retry is dispatched. Investigate supported image integration/upstream build
+options while continuing independent phone checks. gsi.lock remains 1542; camera library binds ended on aa16 reboot, so
+three successful videos describe the earlier temporary test, not current image.
+OTA, clean first-boot integration, graphical Restart/Recents, Waydroid and other
+release checklist items remain. Fingerprint is last; final handoff files deferred.
+
+---
+
 # Current checkpoint — 4 October 2026
 
 Read this checkpoint before the historical September entries below. The phone

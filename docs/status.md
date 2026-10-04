@@ -1,5 +1,27 @@
 # Status
 
+Current checkpoint: 4 October 2026. Development port, not a stable release.
+aa17 now passes three awake native USB reconnects and a real four-cycle
+deep-suspend/resume test (87.409 seconds, zero failures), recovering authorized
+USB without Developer Mode toggles. Screen/touch and Wi-Fi association return.
+Actual AppArmor allow/deny, RFCOMM/L2CAP socket creation and normal audio RTKit
+scheduling pass. The old -r/-f USB workaround is removed through supported
+device configuration, with source fixes, regression and guarded reproduction
+published. Remaining charging-mode warning, MTP and clean-image/soak checks are
+in [the evidence](experiments/049-usb-native-cable-detection.md).
+
+Full Android image build failed at 68% on server disk capacity; no complete
+camera-corrected GSI exists yet. A larger conventional builder path is prepared,
+but no machine is registered or paid service provisioned. Previous camera
+library test mounts ended on reboot. Image/startup integration, Waydroid,
+OTA/recovery and other release checklist items remain; fingerprint last.
+Read [the latest handoff](SESSION-HANDOFF-20.md) and
+[release backlog](release-validation-backlog.md). Older checkpoints below
+describe earlier installations/builds.
+
+---
+
+
 Current checkpoint (3 October 2026): the clean 26.04 test image now reaches
 the setup wizard, and the user confirmed touch works. The aa13 USB configfs
 fix, supported ubuntu.img layout, native LXC hooks and partition-probe typo
