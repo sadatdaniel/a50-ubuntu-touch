@@ -17,6 +17,7 @@ fetch() {
 }
 fetch waydroid https://github.com/waydroid/waydroid.git "$SOURCE_SHA"
 fetch packaging https://gitlab.com/ubports/development/core/packaging/waydroid.git "$PACKAGING_SHA"
+mv "$BUILD_DIR/waydroid/debian" "$BUILD_DIR/upstream-debian"
 cp -a "$BUILD_DIR/packaging/debian" "$BUILD_DIR/waydroid/"
 cd "$BUILD_DIR/waydroid"
 sudo apt-get -y --no-install-recommends build-dep .
