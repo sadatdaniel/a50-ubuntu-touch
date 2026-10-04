@@ -18,7 +18,10 @@ launcher. Candidate .2 removes that unnecessary unlink; stronger actual-generato
 regression fails .1 and passes .2. Build 37192963426 passes, .2 is installed
 and persists across another full reboot without binds. Package audit clean,
 AppArmor Y, root read-only, no failed units. Waydroid left STOPPED for the user
-to launch from the drawer; visible close/reopen test pending. See 050.
+to launch from the drawer; all three user close/reopens now PASS with the icon
+visible. Four normal native sessions reach Android-ready, including immediate
+restarts after stopping. Final audit/root/launcher/container checks pass.
+Wider sleep/audio/network/extended use remains. See 050.
 F-Droid downloads reproduce a slow IPv4 server on both host and Android; other
 Android destinations are much faster. No network configuration changed; general
 browsing/search checks remain (052).

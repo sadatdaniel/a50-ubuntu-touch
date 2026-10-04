@@ -232,3 +232,22 @@ reopen cycles with up to 40 seconds for Android startup. Visible validation
 remains pending. The previous post-reboot .1 failure remains part of the record.
 No automatic Waydroid boot-start service was installed; the earlier immediate
 appearance after reboot was the administrator's explicit LAL test launch.
+
+### Second candidate visible result: passed
+
+The user confirms all three requested single-tap reopens work after the full
+reboot and the icon remains visible. Native logs record four sessions started
+from the drawer at 11:49:03, 11:49:40, 11:50:44 and 11:51:45 Berlin, all reaching
+Android-ready in 23–25 seconds. The first and third reopens start one or two
+seconds after the prior unit stops. Final session/container are RUNNING,
+Android boot_complete=1 and the container wrapper has zero automatic restarts.
+The desktop remains phablet-owned 0644, visible and single-instance, with the
+native show-full-ui command. Installed generator still has the recorded .2
+hash, package audit is clean, root read-only and no system units failed.
+
+This closes the specific post-reboot drawer-reopen/icon test for candidate .2.
+It does not establish long-use stability, immediate reopening during unfinished
+shutdown, every shell restart, Android audio/peripheral behavior, sleep/wake,
+all application networking, or a clean release-image/OTA result. The conventional
+package must still be integrated into the final image or superseded by a
+compatible upstream release; no manual repair should be required for users.

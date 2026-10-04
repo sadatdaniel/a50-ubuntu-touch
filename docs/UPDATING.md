@@ -48,7 +48,8 @@ must be recorded as separate milestones. The archived ZIP predates recent fixes.
 For Waydroid, .1 passed the first three runtime reopens but failed the next
 post-reboot user test. Candidate .2 preserves the main desktop file during
 regeneration, passed its stronger regression/build/install and survives reboot.
-Visible lifecycle validation remains open. See
+All three post-reboot user drawer close/reopens and icon persistence pass.
+Wider sleep/audio/network and extended-use validation remains open. See
 [the complete record](experiments/050-fresh-waydroid.md). This is not evidence
 that every upstream update requires redoing every fix; it is an incomplete
 fix exposed by an additional required test.
