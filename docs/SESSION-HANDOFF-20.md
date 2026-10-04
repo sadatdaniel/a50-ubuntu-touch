@@ -15,7 +15,10 @@ reopen did not work, a later click worked, and after the next close the icon
 disappeared. Desktop file/Gio remain visible; no Android session remains running.
 Source inspection identifies desktop unlink/recreate as a removal event to the
 launcher. Candidate .2 removes that unnecessary unlink; stronger actual-generator
-regression fails .1 and passes .2. Build/hardware validation pending; see 050.
+regression fails .1 and passes .2. Build 37192963426 passes, .2 is installed
+and persists across another full reboot without binds. Package audit clean,
+AppArmor Y, root read-only, no failed units. Waydroid left STOPPED for the user
+to launch from the drawer; visible close/reopen test pending. See 050.
 F-Droid downloads reproduce a slow IPv4 server on both host and Android; other
 Android destinations are much faster. No network configuration changed; general
 browsing/search checks remain (052).

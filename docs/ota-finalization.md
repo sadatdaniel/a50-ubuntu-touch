@@ -59,8 +59,8 @@ be rebuilt before sharing.
 
 ## Implementation sequence
 
-1. Finish USB resume and validate full suspend/wake, including repeated cycles,
-   networking, display/touch and delayed stability. Automatic screen-off sleep
+1. Extend the successful aa17 cable/sleep recovery checks to final-image cold
+   boot, MTP/charging modes, long idle, networking and delayed stability. Automatic screen-off sleep
    and battery behavior require their own checks.
 2. Pin the adaptation build tools and reconcile their kernel build with the
    tested a50-halium source, configuration, patches and firmware. Build a fresh

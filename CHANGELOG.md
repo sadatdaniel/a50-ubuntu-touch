@@ -15,7 +15,8 @@
   root is read-only and the temporary source bind removed. Installed source and
   native entry survive a real reboot, but the user reproduced delayed reopening
   and icon loss. A second candidate removes unnecessary launcher unlinking; its
-  stronger regression passes, build/hardware validation pending. Documented matched F-Droid server tests; no network setting changed.
+  stronger regression and build pass. Candidate .2 is installed and persists
+  across a real reboot; visible user lifecycle validation remains pending. Documented matched F-Droid server tests; no network setting changed.
 
 - aa16 boots with actual AppArmor enforcement, RFCOMM availability and working
   RTKit audio scheduling. Native USB supply events now report removal/reinsert,

@@ -19,8 +19,9 @@ with a verified official rollback; root is read-only and the source bind removed
 The installed fix survives a real system reboot without a source mount.
 Post-reboot user test failed: a launch worked after waiting, but the icon
 then disappeared although its file remained visible. A second candidate removes
-unnecessary desktop unlinking; its stronger regression passes, hardware validation
-is pending. Sleep/audio and wider lifecycle checks remain ([050](experiments/050-fresh-waydroid.md)).
+unnecessary desktop unlinking; its stronger regression and conventional build
+pass. Package .2 is installed and survives a real reboot; visible user lifecycle
+validation is pending. Sleep/audio and wider lifecycle checks remain ([050](experiments/050-fresh-waydroid.md)).
 F-Droid fixed-peer downloads reproduce a slow server on both Ubuntu and Android;
 other Android peers are much faster. General browsing/search validation remains
 open; no network settings were changed ([052](experiments/052-waydroid-network.md)).

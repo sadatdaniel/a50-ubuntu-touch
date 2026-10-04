@@ -210,3 +210,25 @@ visible/hidden/visible updates without unlinking. Candidate generator SHA256:
 Normal .2 package build and phone validation are pending. The installed .1
 package and verified original rollback remain available; no .2 source mount
 has been applied.
+
+### Second candidate package and real reboot
+
+Build [37192963426](https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/37192963426)
+succeeded with the stronger generator regression. Version suffix
+`+a50singleinstance.2`; archive SHA256
+`6d5444c20afea2409c8e00aa073df4ceee2630df75af3303fbaf1ad6eaad8cb5`.
+Extracted paths, modes and symlinks again differ from the signed original only
+in generator/changelog. Maintainer scripts and dependencies remain identical.
+Normal APT preflight/install changed only Waydroid. The installer accepts the
+known base or .1 predecessor and retains `--rollback` to the signed base.
+The .1 archive is retained privately as well.
+
+A second real system reboot changed boot ID. Candidate .2 version/source hash
+and visible native launcher key persist without a source bind. Package audit
+is clean, AppArmor is enabled, root read-only and no system units failed.
+Waydroid is STOPPED at this checkpoint: the user is opening it from the drawer
+rather than an external test launch, then exercising three close/single-tap
+reopen cycles with up to 40 seconds for Android startup. Visible validation
+remains pending. The previous post-reboot .1 failure remains part of the record.
+No automatic Waydroid boot-start service was installed; the earlier immediate
+appearance after reboot was the administrator's explicit LAL test launch.

@@ -3,16 +3,20 @@
 set -eu
 [ "$(id -u)" = 0 ] || exit 1
 base='1.6.3-0ubports1~20260917185450.14~7ebfea8+ubports26.04.1'
-new="$base+a50singleinstance.1"
+new="$base+a50singleinstance.2"
 cd /userdata/a50-waydroid-package-test
 case "${1:-}" in
     '') file=/userdata/a50-waydroid-package-test/candidate.deb; expected=$base; version=$new
-        hash=3f2233b1c20486e907e45932d0dca37452e29bef07ffef01534e3cfdf0aed540 ;;
+        hash=6d5444c20afea2409c8e00aa073df4ceee2630df75af3303fbaf1ad6eaad8cb5 ;;
     --rollback) file="/userdata/a50-waydroid-package-test/waydroid_${base}_all.deb"; expected=$new; version=$base
         hash=c62fe6dd5cb90cf67392481e13f5e7c1170a1fd822dee6463c4c363cac17226e ;;
     *) exit 2 ;;
 esac
-[ "$(dpkg-query -W -f='${Version}' waydroid)" = "$expected" ]
+case "$(dpkg-query -W -f='${Version}' waydroid)" in
+    "$expected") ;;
+    "$base+a50singleinstance.1") [ "$version" = "$new" ] ;;
+    *) exit 1 ;;
+esac
 [ "$(dpkg-deb -f "$file" Package)" = waydroid ]
 [ "$(dpkg-deb -f "$file" Version)" = "$version" ]
 echo "$hash  $file" | sha256sum -c -
