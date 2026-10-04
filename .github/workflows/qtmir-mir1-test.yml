@@ -5,7 +5,7 @@ on:
       component:
         description: Experimental package to build
         type: choice
-        options: [qtmir, tar, settings, lomiri]
+        options: [qtmir, tar, settings, lomiri, waydroid]
         default: qtmir
         required: true
 permissions:
@@ -36,6 +36,7 @@ jobs:
             tar) bash scripts/experiments/build-tar-openat2-package.sh "$RUNNER_TEMP/package-build" ;;
             settings) bash scripts/experiments/build-lock-settings-package.sh "$RUNNER_TEMP/package-build" ;;
             lomiri) bash scripts/experiments/build-lomiri-window-state-package.sh "$RUNNER_TEMP/package-build" ;;
+            waydroid) bash scripts/experiments/build-waydroid-single-instance-package.sh "$RUNNER_TEMP/package-build" ;;
             *) exit 2 ;;
           esac
       - name: Save experimental packages and build record

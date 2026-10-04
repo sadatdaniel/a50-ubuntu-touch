@@ -1,5 +1,19 @@
 # Latest checkpoint: 4 October 2026, aa17
 
+Fresh Waydroid official initialization completed: Android 13 VANILLA / HALIUM_11,
+verified official archives, userdata storage, native generated launcher. User
+confirms the icon appears and Android stays open; basic Internet/DNS probes
+pass. Third close/reopen failed with Android still running and an empty crash
+buffer. Native single-instance generator candidate is runtime-mounted for
+repeated user tests: all three reopen and icon checks pass. Conventional
+package build prepared; source hashes/regression/rollback in experiment 050.
+Old custom user session service remains inactive. Camera-provider
+adaptation remains installed; broader stability is unproven. See experiment 050.
+K380 now pairs and user confirms input works, with a Linux keyboard device.
+No disconnect captured during the bounded observer; actual idle/reconnect/
+sleep checks remain. Initial empty list has no established cause. See 051.
+No paid cloud resource was provisioned; revisit builder after remaining fixes.
+
 This supersedes the earlier aa13/unflashed/build-running statements below.
 Phone now runs aa17, boot SHA256
 a413d2bc4a605489225a0b5d8e512965af83eea39b7abb6097dbc2f7420775c8,

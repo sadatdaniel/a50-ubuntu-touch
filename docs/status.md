@@ -10,10 +10,19 @@ device configuration, with source fixes, regression and guarded reproduction
 published. Remaining charging-mode warning, MTP and clean-image/soak checks are
 in [the evidence](experiments/049-usb-native-cable-detection.md).
 
+Fresh Waydroid now initializes through the official defaults; the user confirms
+the native icon appears and Android stays open. Basic routing/DNS passes.
+The third close/reopen failed while Android stayed running; a supported native
+single-instance setting passes three user reopens and icon persistence in a
+reversible runtime test. A conventional package build is prepared. Sleep/audio/reboot
+checks remain ([050](experiments/050-fresh-waydroid.md)).
+The K380 paired and user-confirmed keyboard input works; actual idle/reconnect/
+sleep tests remain ([051](experiments/051-bluetooth-keyboard.md)).
+
 Full Android image build failed at 68% on server disk capacity; no complete
 camera-corrected GSI exists yet. A larger conventional builder path is prepared,
 but no machine is registered or paid service provisioned. Previous camera
-library test mounts ended on reboot. Image/startup integration, Waydroid,
+library test mounts ended on reboot. Image/startup integration, Waydroid stability,
 OTA/recovery and other release checklist items remain; fingerprint last.
 Read [the latest handoff](SESSION-HANDOFF-20.md) and
 [release backlog](release-validation-backlog.md). Older checkpoints below

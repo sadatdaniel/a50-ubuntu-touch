@@ -1,0 +1,10 @@
+--- a/tools/services/user_manager.py
++++ b/tools/services/user_manager.py
+@@ -31,6 +31,7 @@
+ Categories=X-WayDroid-App;
+ X-Purism-FormFactor=Workstation;Mobile;
+ X-Lomiri-Supported-Orientations=portrait;
++X-Lomiri-Single-Instance=true
+ Icon=/usr/share/icons/hicolor/512x512/apps/waydroid.png
+ NoDisplay={str(hide).lower()}
+ """)

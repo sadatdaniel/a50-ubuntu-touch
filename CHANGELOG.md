@@ -2,6 +2,16 @@
 
 ## 2026-10-04 — shared recording fix and fresh-image validation
 
+- Initialized fresh Waydroid using official defaults and verified Android images;
+  native icon/first launch are user-confirmed and basic Internet/DNS passes.
+  Added guarded setup reproduction and recorded exact inputs. K380 now pairs
+  and user-confirmed input works; published metadata-only diagnostics.
+  Waydroid lifecycle/audio/sleep and keyboard idle/reconnect remain open.
+  Reproduced third-reopen failure with Android still healthy; a one-line native
+  single-instance setting passes generator regression and is in a reversible
+  hardware test; all three user reopens and icon checks pass. Added exact-source
+  patch, regression, rollback script and conventional package build.
+
 - aa16 boots with actual AppArmor enforcement, RFCOMM availability and working
   RTKit audio scheduling. Native USB supply events now report removal/reinsert,
   but Samsung's stale DWC3 pull-up state blocked enumeration. Published the
