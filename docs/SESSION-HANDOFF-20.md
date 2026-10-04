@@ -22,9 +22,12 @@ The old aa1/AppArmor-N observations below describe earlier boots only.
   also decode cleanly. Full-image/reboot integration remains. GSI lock remains
   1542. See experiment 044 and its full_image workflow candidate.
 - Fresh aa13 lacked an automatic suspend worker. Native Android activation now
-  starts it; repowerd restart lifecycle passed. USB keeps it awake, so current
-  suspend success/fail remain zero. Earlier aa12's 35 successful cycles are
-  historical evidence, not proof of fresh-image startup. See experiment 047.
+  starts it; repowerd restart lifecycle passed. Fresh aa13 then completed two deep cycles (89.765 seconds total), zero
+  failures, same boot, and user-confirmed screen/touch. Wi-Fi association returned.
+  USB debugging needed a Developer Mode toggle; investigation remains. The exact
+  tested activation helper/unit is now in the overlay through a normal repowerd
+  wants symlink; clean-boot/container-restart validation remains. Earlier aa12's
+  35 cycles are historical. See experiments 047 and 048.
 - Midnight package-backup destination is immutable. A standard systemd writable
   path condition passed its runtime test and is in the overlay. The later
   logrotate missing-file error also passed its separate native missingok test,

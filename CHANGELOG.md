@@ -12,8 +12,11 @@
   upstream full-image build option; reboot/image validation remains, with the
   original GSI lock and vendor image retained.
 - Established opt-in runtime SSH over USB through normal authentication.
-  Native suspend activation and repowerd restart lifecycle passed; the new
-  image still needs unplugged sleep cycles and permanent startup integration.
+  Native suspend activation and repowerd restart lifecycle passed. Fresh aa13
+  completed two deep cycles totaling 89.765 seconds with zero failures and normal
+  screen/touch recovery. Packaged the tested activation helper/unit in the overlay;
+  clean-boot validation remains. USB debugging needed a Developer Mode toggle.
+  Published the adapted guarded test and updated the release/update checklist.
 - Added a tested standard systemd writable-path condition for the immutable
   package-backup destination. Validated missingok only for two optional syslog
   rotation rules; no log-rotation timer is disabled.

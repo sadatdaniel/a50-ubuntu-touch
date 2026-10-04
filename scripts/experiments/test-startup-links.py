@@ -19,7 +19,7 @@ with archive:
     for m in entries:
         assert m.issym(), f'{m.name}: expected symlink, got ordinary file'
         # A relative link resolves from its containing directory.
-        if '/system/multi-user.target.wants/a50-' in m.name:
+        if PurePosixPath(m.name).name.startswith('a50-'):
             target = PurePosixPath(m.name).parent / m.linkname
             parts = []
             for part in target.parts:
@@ -28,6 +28,8 @@ with archive:
                 elif part != '.':
                     parts.append(part)
             assert '/'.join(parts) in members, f'{m.name}: missing target {m.linkname}'
+    assert any(m.name.endswith('/repowerd.service.wants/a50-enable-autosuspend.service')
+               for m in entries), 'Missing automatic suspend startup dependency'
     configs = [m for m in members.values() if m.name.endswith(
         '/etc/systemd/user/pulseaudio.service.d/zz-a50-hybris.conf')]
     assert len(configs) == 1, 'Missing first-boot audio namespace configuration'

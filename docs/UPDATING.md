@@ -1,155 +1,73 @@
-# Updating
+# Updating and preserving A50 fixes
 
-Three different questions get called "updating", and they have three different
-answers. Only one of them is a switch you flip.
+Updated 4 October 2026. Ubuntu Touch 26.04 only; this port is still a
+development build. [OTA finalization](ota-finalization.md) and the
+[release backlog](release-validation-backlog.md) track the current evidence.
 
-| | |
-|---|---|
-| **A new kernel** on an installed device | `dd` the boot image. No reflash, no data loss |
-| **A new Ubuntu Touch rootfs** (26.04 daily → rc → stable) | rebuild the image, reflash, **wipes the device** |
-| **OTA, from Settings → Updates** | does not exist for this device, and cannot until the port has a channel on a system-image server |
+## Current update support
 
----
+Settings OTA is not enabled. A channel.ini naming A50 does not create a hosted
+device channel. Unified recovery and the system-layout candidate are only
+offline-checked; the currently booted clean installation uses /userdata/ubuntu.img.
+A release needs hardware-tested recovery, correctly packaged device/rootfs
+components, signature trust, maintained channel metadata and an installer flow.
 
-## There is no OTA, and here is the proof
+The next test installation is intended to validate every fix automatically from
+first boot. Preserve vendor and the known working recovery fallback. The user
+has authorized wiping this development installation, but retained userdata
+across subsequent OTA updates remains a separate release requirement. Do not
+promise either data preservation or routine destructive reflashing before the
+actual update path has been tested.
 
-Ubuntu Touch updates itself by asking `system-image.ubports.com` for
-`<channel>/<device>/index.json`. This port has no device entry in any channel:
+## Where fixes must live
 
-```console
-$ curl -o /dev/null -w '%{http_code}\n' \
-    https://system-image.ubports.com/26.04-1.x/arm64/android9plus/daily/a50/index.json
-404
-$ curl -o /dev/null -w '%{http_code}\n' \
-    https://system-image.ubports.com/24.04-2.x/arm64/android9plus/stable/a50/index.json
-404
-```
+- Shared application and middleware bugs: upstream fixes in matching native
+  packages or the Android image. Pending merges require explicit source
+  backports, versioned packages/images and recorded dependencies.
+- Kernel corrections: normal reproducible kernel profile and configuration,
+  included in the device build and update payload.
+- Device settings: supported DeviceInfo fields, packaged configuration and
+  native startup hooks in the device tarball. Keep file modes and startup
+  symlinks correct in Git and generated archives.
 
-The image this port builds still ships an `/etc/system-image/channel.ini`
-naming that channel, because the tooling writes one and a missing one confuses
-`system-image-cli` differently. So Settings → Updates will spin and then find
-nothing. That is expected, it is not a bug in the port, and no amount of
-retrying changes it.
+A rebuilt rootfs can replace live edits, runtime mounts and temporary units.
+Every required fix therefore needs a build-time home and an update component
+that reinstalls it. Temporary USB maintenance SSH and diagnostic mounts are
+for development; they are not release prerequisites. Permission bypasses and
+unsigned recovery-updater overrides must not ship.
 
-Getting real OTA needs one of:
+## Reproducibility and regression checks
 
-* **the port adopted by UBports**, which puts an `a50` entry on their
-  system-image server and hands the build to their CI; or
-* **our own system-image server** — the format is public and small (an
-  `index.json` per device, tarballs in a pool, a signing key), but it is a
-  service to run, not a file to publish, and GitHub Releases cannot serve it
-  because the client fetches by path.
+Record the Ubuntu rootfs URL/checksum, kernel source/configuration/patches and
+compiler, Android manifest/patches/image checksum, package versions and recovery
+inputs. Moving dependencies is a deliberate candidate build, followed by
+verification; never silently replace a tested input with lastSuccessfulBuild.
 
-Until then, updating the userspace means reflashing, which means wiping. Say so
-in every release.
+The baseline gsi.lock is still build 1542. The exact Halium PR 84 backport has
+passed three temporary camera recording/playback tests, and its complete pinned
+image is building in [run 37172560900](https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/37172560900).
+It must pass filesystem/interface checks and boot/reboot tests before replacing
+the baseline. The rootfs builder still consumes the Jenkins pin, and the ZIP
+manifest still reads that pin; candidate input/provenance integration is required
+before packaging the corrected image. Installing replacement libraries only
+on the test phone does not complete this work. aa15 is compiled and packed, but not hardware-tested.
 
----
+Use a testing channel to check clean install, authentication, confinement,
+media, app lifecycle, sleep/network recovery and updates before promotion.
+Apply a second update and confirm userdata and fixes survive. Review each new
+upstream rootfs against the supported device/package interfaces; do not claim
+that source pinning prevents every future regression. Remove backports when
+the compatible upstream release contains them, instead of maintaining stale
+file replacements or freezing all packages indefinitely.
 
-## A new kernel: no reflash needed
+## Conventional OTA path
 
-This is the easy one, and it is why `boot.img` is published on its own next to
-every installer zip.
-
-```sh
-# from running Ubuntu Touch, over SSH
-sudo dd if=boot-a50-<version>.img of=/dev/disk/by-partlabel/boot bs=4M
-sync
-# read it back BEFORE rebooting - dd does not fail on a short write to a
-# block device, so this is the only thing that proves it
-SIZE=$(stat -c%s boot-a50-<version>.img)
-sudo dd if=/dev/disk/by-partlabel/boot bs=512 count=$(( (SIZE + 511) / 512 )) \
-    | head -c "$SIZE" | sha256sum
-```
-
-Keep the image you are replacing on `/userdata` first. Getting back into TWRP
-from a running Linux is unreliable on this device; **Volume Up + Power from
-powered off** is the dependable route.
-
----
-
-## A new rootfs: what actually has to change
-
-26.04-1.x currently publishes **only `daily`**, and `channels.json` flags it
-`hidden: true`. There is no `rc` and no `stable` for it yet — 24.04-2.x has all
-three, so that is what the progression looks like when it happens.
-
-### The one-string part
-
-```sh
-./scripts/release/build-rootfs-image.sh --channel stable --device-tarball out/device_a50.tar.xz
-```
-
-or set `deviceinfo_ubuntu_touch_channel="stable"` in `deviceinfo`. The script
-resolves the newest published rootfs from that channel's own index, so nothing
-is pinned to a filename that will rot.
-
-**That part is genuinely just a switch.** The rest is not.
-
-### The part that is not
-
-This port reaches into the rootfs in eleven places. A rootfs that changes any of
-them breaks the port *silently* — the image builds, it flashes, it boots, and
-one subsystem is dead. Check each against a new rootfs before releasing it.
-
-| what the port assumes | where | how it fails |
-|---|---|---|
-| `/etc/pulse/touch.pa` has a line starting `load-module module-droid-discover ` | `a50-device-setup.sh` | the `sed` matches nothing, PulseAudio segfaults in a restart loop, no audio |
-| `/var/lib/lxc/android/mount.sh` exists and is appendable | `a50-container-prepare.sh` | none of the container overrides bind — no audio HAL, watchdogd hangs every misc device, no display |
-| `lxc-android-config` still owns `/usr/libexec/lxc-android-config/device-hacks` | `overlay/system/...` | we overwrite a packaged file; if it moves, our per-boot hook never runs |
-| `device-hacks.service` is enabled and ordered after the container | overlay | same |
-| `/etc/ssh/sshd_config.d/50-lxc-android-config.conf` sets `PasswordAuthentication no` | `add-devel-access.sh` | our `99-` drop-in stops winning; the debug image has no SSH |
-| `/etc/default/adbd` carries `ADBD_SECURE=` | `add-devel-access.sh` | the `sed` matches nothing, ADB stays locked |
-| `root` is in `/etc/shadow`, `phablet` in `/var/lib/extrausers` | `add-devel-access.sh` | root password not set |
-| `lomiri-location-service` honours `TRUST_STORE_PERMISSION_MANAGER_IS_RUNNING_UNDER_TESTING` | `50-a50-trust-store.conf` | every location session refused again |
-| `biometryd` honours `BIOMETRYD_DBUS_SKELETON_IS_RUNNING_UNDER_TESTING` | `50-a50-testing.conf` | System Settings crashes on the Fingerprint page again |
-| the rootfs ships libxml2 with the **new** SONAME | `add-openstore-compat.sh` | if it ever ships 2.9 again, we co-install a duplicate; if the ICU dependency moves, OpenStore still will not start |
-| the Halium GSI | `gsi.lock` | **pinned** since 2026-09-08, and verified by sha256 at build time. Moving the pin is a deliberate edit + a boot test |
-
-That last row used to be the loose end. The GSI came from
-`.../halium-11.0/lastSuccessfulBuild/...`, which Jenkins rebuilds **daily** —
-measured over three days: builds 1542, 1543, 1544 and 1545 are four different
-artifacts. Two builds of this port a week apart therefore contained different
-Android systems, with nothing recording which, so a regression with an
-unchanged kernel and rootfs had no third suspect to rule out.
-
-It is now pinned in [`gsi.lock`](../gsi.lock) by build number, and
-`build-rootfs-image.sh` verifies the download against the recorded sha256 and
-**refuses to build** on a mismatch. The hash is written into the bundle's
-`manifest.txt` and, as a comment, into its `SHA256SUMS` — including the hash of
-`android-rootfs.img` as it lands, which is checkable on a running phone:
-
-```sh
-sha256sum /var/lib/lxc/android/android-rootfs.img
-```
-
-To move the pin deliberately:
-
-```sh
-./scripts/release/build-rootfs-image.sh --gsi-build latest ...   # prints the new hash
-# put it in gsi.lock, rebuild, reflash, boot-test, then commit with the evidence
-```
-
-### The procedure
-
-1. Build with `--channel <new>`.
-2. Mount the image and walk the table above. `docs/RELEASING.md` has the
-   verification pass; extend it rather than eyeballing.
-3. Flash the **debug** build first — it is the one you can get a shell on when
-   something in the table has moved.
-4. Only then cut the normal build.
-
-### And it wipes the device
-
-Because there is no OTA, "moving to stable" for an existing install means
-Format Data and reflash. Back up `/home/phablet` first; nothing in this port
-does that for you.
-
----
-
-## Which rootfs this port is on, and why
-
-`deviceinfo_ubuntu_touch_release="26.04-1.x"`, and the reasoning — including
-that 24.04-2.x was tried and **bootloops at ~15 s on this device** — is in
-[`device-provisioning.md`](device-provisioning.md) and in `deviceinfo`'s own
-comment. Do not switch releases casually; switching *channels* within 26.04-1.x
-is the cheap move, switching to 24.04 is not.
+Follow [UBports unified recovery and OTA finalization](https://docs.ubports.com/en/latest/porting/finalize/UBports_recovery.html).
+Validate actual A50 partition mappings, display, USB, staging, reset and reboot
+modes. The documented fake-OTA bypass is isolated test material and must never
+be included in a published recovery; release updates retain signature checking.
+Then validate signed local updates, a maintained system-image channel and the
+[installer configuration](https://github.com/ubports/installer-configs).
+Samsung requires its supported Download Mode transport rather than assuming
+the guide's fastboot examples work. Official UBports hosting/registration
+requires coordination; a GitHub artifact alone is not an update channel.

@@ -9,8 +9,10 @@ suspend/resume cycles with zero resume failures. Screen/touch recovered in user
 checks. Permanent startup, fresh-boot behavior, service-crash recovery and long
 idle/battery validation remain release blockers. The native Android activation
 unit has now started the missing automatic worker on fresh aa13 and passed
-repowerd restart ordering. USB prevents sleep during that check: fresh aa13
-has zero completed cycles so far. Permanent integration remains pending.
+repowerd restart ordering. Fresh aa13 has since completed two deep cycles totaling 89.765 seconds with
+zero failures; screen/touch and Wi-Fi association recovered. USB debugging
+needed a Developer Mode toggle. The tested activation is packaged in the overlay
+but clean-boot and container-restart tests remain. See experiment 048.
 See [the release backlog](release-validation-backlog.md) and
 [activation lifecycle](experiments/032-native-suspend-startup.md).
 
@@ -73,8 +75,8 @@ be rebuilt before sharing.
    schema and downloads, test the local config and then submit it upstream.
 7. Later, establish Waydroid reliability with repeated launch/stop cycles,
    compositor restarts, sleep/wake, networking, sound, updates and extended use.
-   Video Stop is currently receiving a shared upstream correction and requires
-   hardware validation plus a conventionally rebuilt Android image. The fresh
+   Video Stop is currently receiving a shared upstream correction and passed three user recording/playback tests with sound, but still requires
+   a conventionally rebuilt Android image and reboot validation. The fresh
    installation has not initialized Waydroid yet.
 
 Recovery and OTA preparation can proceed while suspend is being fixed. Daily-use
