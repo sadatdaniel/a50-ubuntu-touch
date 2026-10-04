@@ -4,6 +4,8 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 TREE="$(realpath "${1:?Halium source tree required}")"
 readonly A50_RECORDING_ARTIFACT_DIR="$(realpath -m "${2:?Output directory required}")"
+readonly A50_RECORDING_BUILD_MODE="${3:-libraries}"
+case "$A50_RECORDING_BUILD_MODE" in libraries|full-image) ;; *) echo 'E: mode must be libraries or full-image' >&2; exit 2 ;; esac
 PATCH="$HERE/halium11-camera-record-service.patch"
 cd "$TREE"
 actual=$(git hash-object frameworks/av/media/libaudioclient/AudioSystem.cpp)
@@ -19,7 +21,12 @@ unset USE_CCACHE
 set +u
 source build/envsetup.sh
 lunch lineage_halium_arm64-userdebug
-make -j"${BUILD_JOBS:-2}" libaudioclient
+if [ "$A50_RECORDING_BUILD_MODE" = full-image ]; then
+    # Same generic Halium 11 targets as UBports' halium-build-tools/build.sh.
+    make -j"${BUILD_JOBS:-2}" recoveryramdisk systemimage simg2img
+else
+    make -j"${BUILD_JOBS:-2}" libaudioclient
+fi
 set -u
 mkdir -p "$A50_RECORDING_ARTIFACT_DIR/lib" "$A50_RECORDING_ARTIFACT_DIR/lib64"
 for arch in lib lib64; do
@@ -34,4 +41,4 @@ grep -q 'Class:.*ELF64' "$A50_RECORDING_ARTIFACT_DIR/lib64/elf-header.txt"
 (cd "$A50_RECORDING_ARTIFACT_DIR" && sha256sum lib/libaudioclient.so lib64/libaudioclient.so > SHA256SUMS)
 repo manifest -r -o "$A50_RECORDING_ARTIFACT_DIR/built-manifest.xml"
 git -C frameworks/av diff > "$A50_RECORDING_ARTIFACT_DIR/frameworks-av.patch"
-echo 'Compiled both Android library architectures; phone validation still required.'
+echo 'Built the pinned upstream correction; image integration/boot validation remains separate.'

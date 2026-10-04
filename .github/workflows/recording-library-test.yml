@@ -1,6 +1,11 @@
-name: Halium recording library backport
+name: Halium recording correction
 on:
   workflow_dispatch:
+    inputs:
+      full_image:
+        description: Build and package the complete pinned Halium image
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -16,7 +21,7 @@ jobs:
           free=$(df --output=avail -B1 "$RUNNER_TEMP" | tail -1)
           test "$free" -ge 102005473280 || { echo 'Insufficient runner space for the full Halium tree (95 GiB minimum).'; exit 1; }
           sudo apt-get update
-          sudo apt-get -y --no-install-recommends install repo build-essential gcc-multilib g++-multilib git curl python-is-python3 gperf bison flex zip unzip rsync bc lib32z1-dev libncurses5 libxml2-utils xsltproc libssl-dev
+          sudo apt-get -y --no-install-recommends install repo build-essential gcc-multilib g++-multilib git curl python-is-python3 gperf bison flex zip unzip rsync bc lib32z1-dev libncurses5 libxml2-utils xsltproc libssl-dev file e2fsprogs
       - name: Resolve and pin the conventional generic-device manifest
         run: |
           git config --global user.name "A50 recording build"
@@ -36,12 +41,45 @@ jobs:
           cd "$RUNNER_TEMP/halium"
           repo sync -c -j4 --fail-fast --no-clone-bundle --no-tags
           hybris-patches/apply-patches.sh --mb
+          df -h
+          if [ "${{ inputs.full_image }}" = true ]; then
+            free=$(df --output=avail -B1 . | tail -1)
+            test "$free" -ge 26843545600 || { echo 'Full image needs at least 25 GiB free after sync.'; exit 1; }
+          fi
       - name: Build the upstream CameraRecordService guard for both architectures
         run: |
-          bash scripts/experiments/build-recording-library.sh "$RUNNER_TEMP/halium" "$GITHUB_WORKSPACE/recording-test"
+          bash scripts/experiments/build-recording-library.sh "$RUNNER_TEMP/halium" "$GITHUB_WORKSPACE/recording-test" "${{ inputs.full_image && 'full-image' || 'libraries' }}"
           test -s recording-test/lib/libaudioclient.so
           test -s recording-test/lib64/libaudioclient.so
           (cd recording-test && sha256sum -c SHA256SUMS)
+      - name: Package the complete image with pinned upstream Halium tools
+        if: inputs.full_image
+        run: |
+          set -euo pipefail
+          git clone --no-checkout https://gitlab.com/ubports/porting/community-ports/jenkins-ci/halium-build-tools.git "$RUNNER_TEMP/halium-tools"
+          git -C "$RUNNER_TEMP/halium-tools" checkout --detach 9ace25eaf6e71aa38a1e18f94019b19f92d547e9
+          test "$(git -C "$RUNNER_TEMP/halium-tools" rev-parse HEAD)" = 9ace25eaf6e71aa38a1e18f94019b19f92d547e9
+          git -C "$RUNNER_TEMP/halium-tools" rev-parse HEAD > recording-test/packaging-tools.commit
+          sudo mkdir -p /opt/halium_build
+          test ! -e /opt/halium_build/11.0
+          sudo ln -s "$RUNNER_TEMP/halium" /opt/halium_build/11.0
+          cd "$RUNNER_TEMP/halium"
+          mkdir out/target/product/halium_arm64/images
+          mv out/target/product/halium_arm64/*.img out/target/product/halium_arm64/images/
+          # Use the built native sparse-image tool; no extra Android SDK download.
+          export PATH="$PWD/out/host/linux-x86/bin:$PATH"
+          bash "$RUNNER_TEMP/halium-tools/build-tarball.sh" halium_arm64 "$GITHUB_WORKSPACE/recording-test" 11.0 true false
+          cd "$GITHUB_WORKSPACE/recording-test"
+          tar -xOf halium_halium_arm64.tar.xz system/var/lib/lxc/android/android-rootfs.img > "$RUNNER_TEMP/a50-gsi-candidate.img"
+          e2fsck -fn "$RUNNER_TEMP/a50-gsi-candidate.img"
+          for arch in lib lib64; do
+            debugfs -R "dump /system/$arch/libaudioclient.so $RUNNER_TEMP/a50-image-$arch.so" "$RUNNER_TEMP/a50-gsi-candidate.img"
+            cmp "$RUNNER_TEMP/a50-image-$arch.so" "$arch/libaudioclient.so"
+          done
+          sha256sum "$RUNNER_TEMP/a50-gsi-candidate.img" | sed 's|  .*|  android-rootfs.img|' > ANDROID_ROOTFS_SHA256SUM
+          stat -c%s "$RUNNER_TEMP/a50-gsi-candidate.img" > ANDROID_ROOTFS_BYTES
+          sha256sum halium_halium_arm64.tar.xz ramdisk-recovery.img > IMAGE_SHA256SUMS
+          sha256sum -c IMAGE_SHA256SUMS
       - name: Preserve artifacts and build evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a

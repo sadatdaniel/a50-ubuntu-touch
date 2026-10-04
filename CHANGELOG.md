@@ -7,8 +7,10 @@
   file allow/deny test passed. Wider first-boot and OTA validation remain.
 - Replaced the failed one-call recording experiment with exact Halium PR 84's
   shared AudioFlinger accessor correction. Both ABIs built and passed original
-  interface/dependency comparisons; reversible hardware Stop/playback test is
-  pending, with the original GSI lock and vendor image retained.
+  interface/dependency comparisons. The user confirms three Stop/playback tests
+  with picture and sound; three private samples decode cleanly. Added a pinned
+  upstream full-image build option; reboot/image validation remains, with the
+  original GSI lock and vendor image retained.
 - Established opt-in runtime SSH over USB through normal authentication.
   Native suspend activation and repowerd restart lifecycle passed; the new
   image still needs unplugged sleep cycles and permanent startup integration.

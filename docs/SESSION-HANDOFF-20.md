@@ -17,8 +17,10 @@ The old aa1/AppArmor-N observations below describe earlier boots only.
   callback and destructor paths. The first one-line backport failed and was
   removed. Exact Halium PR 84 shared accessor correction built for both Android
   ABIs (run 37156894732), passed interface/dependency comparisons and is currently
-  mounted for a reversible hardware test. A new Camera instance is ready; user
-  Stop/playback confirmation is pending. GSI lock remains 1542. See experiment 044.
+  mounted for a reversible hardware test. The user confirms all three requested
+  recordings stop and play normally with picture and sound; three private samples
+  also decode cleanly. Full-image/reboot integration remains. GSI lock remains
+  1542. See experiment 044 and its full_image workflow candidate.
 - Fresh aa13 lacked an automatic suspend worker. Native Android activation now
   starts it; repowerd restart lifecycle passed. USB keeps it awake, so current
   suspend success/fail remain zero. Earlier aa12's 35 successful cycles are

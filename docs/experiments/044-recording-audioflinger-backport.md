@@ -181,3 +181,50 @@ and starts it again after verified mounts. Failure cleanup uses the same
 stop/unmount/start sequence. This avoids leaving a busy failed-test mount.
 The new test remains reboot-reversible and is not a permanent image change.
 Hardware record/Stop/playback validation is still required.
+
+## A50 repeated Stop/playback validation — 4 October 2026
+
+The user reports successful Stop and then confirms all three requested
+recordings stop and play normally with picture and sound. The same kernel
+boot ID and the exact PR 84 candidate hashes remain active inside Android.
+The recording helper is running; its captured native stack now waits normally
+in Binder rather than the previous AudioFlinger callback/destructor loops.
+
+Three privately retained samples passed ffprobe stream inspection and full
+FFmpeg video/audio decoding with exit 0 and no reported decode errors:
+
+| Sample | Duration | Video | Audio |
+| --- | --- | --- | --- |
+| First Stop test | 5.192 s | H.264, 3840×2160 | AAC, stereo, 48 kHz |
+| Later recording | 4.885 s | H.264, 3840×2160 | AAC, stereo, 48 kHz |
+| Later recording | 3.733 s | H.264, 2336×1080 | AAC, stereo, 48 kHz |
+
+The first audio stream contains nonzero samples (peak −45.7 dB); physical
+playback is separately user-confirmed. Logs still contain Samsung preview/flush
+timeout warnings. These did not prevent the observed recordings finishing and
+do not justify claiming every camera mode or prolonged use stable. Media and
+raw logs remain private. Post-reboot validation needs the actual rebuilt image,
+because the current library mounts disappear on reboot.
+
+## Conventional full-image candidate
+
+The existing recording workflow now accepts full_image=true. It retains the
+same pinned 879-project GSI 1542 manifest, standard Halium patches and exact
+PR 84 source guard, and builds recoveryramdisk/systemimage using the generic
+targets in the [UBports Halium builder](https://gitlab.com/ubports/porting/community-ports/jenkins-ci/halium-build-tools/-/blob/9ace25eaf6e71aa38a1e18f94019b19f92d547e9/build.sh).
+The normal compiled simg2img tool is also built for upstream packaging.
+
+Its [upstream build-tarball.sh](https://gitlab.com/ubports/porting/community-ports/jenkins-ci/halium-build-tools/-/blob/9ace25eaf6e71aa38a1e18f94019b19f92d547e9/build-tarball.sh)
+is pinned, called without a local replacement, and creates the conventional
+halium_halium_arm64.tar.xz layout. Offline e2fsck must pass; debugfs extracts
+both libraries from the packaged image and cmp must match the compiled copies.
+The tarball/image hashes, size, source manifest and packer commit are retained.
+The runner requires 25 GiB free after source sync; it fails early if the full
+build cannot fit. No source download is made on the phone or local host.
+
+This is a candidate build, not a new registered Jenkins GSI or signed OTA.
+gsi.lock remains the historical 1542 baseline. A successful candidate needs
+verified installation, boot and repeated recording/playback tests before
+selecting its artifact hash for a release. The generic recovery ramdisk is
+not a tested A50 recovery image and must not be flashed as one. Kernel,
+vendor partition, authentication and user data are unchanged by this workflow.
