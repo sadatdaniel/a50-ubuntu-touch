@@ -38,6 +38,21 @@ unsigned recovery-updater overrides must not ship.
 
 ## Reproducibility and regression checks
 
+The scripts and pinned fix sources are reproducible development inputs, not
+proof that the current release-image builder includes every tested correction.
+Native compatibility package builds exist, including the Waydroid .2 launcher
+candidate; explicit rootfs build-time package integration and first-boot/OTA
+checks remain. A runtime test, an installed package and a clean-image result
+must be recorded as separate milestones. The archived ZIP predates recent fixes.
+
+For Waydroid, .1 passed the first three runtime reopens but failed the next
+post-reboot user test. Candidate .2 preserves the main desktop file during
+regeneration, passed its stronger regression/build/install and survives reboot.
+Visible lifecycle validation remains open. See
+[the complete record](experiments/050-fresh-waydroid.md). This is not evidence
+that every upstream update requires redoing every fix; it is an incomplete
+fix exposed by an additional required test.
+
 Record the Ubuntu rootfs URL/checksum, kernel source/configuration/patches and
 compiler, Android manifest/patches/image checksum, package versions and recovery
 inputs. Moving dependencies is a deliberate candidate build, followed by
@@ -50,7 +65,8 @@ It must pass filesystem/interface checks and boot/reboot tests before replacing
 the baseline. The rootfs builder still consumes the Jenkins pin, and the ZIP
 manifest still reads that pin; candidate input/provenance integration is required
 before packaging the corrected image. Installing replacement libraries only
-on the test phone does not complete this work. The aa15 scheduling correction and Bluetooth protocol availability passed on descendant aa16; actual keyboard validation remains.
+on the test phone does not complete this work. The aa15 scheduling correction and Bluetooth protocol availability pass on
+aa16/aa17. K380 pairing/typing is user-confirmed; idle/reconnect/sleep checks remain.
 
 Use a testing channel to check clean install, authentication, confinement,
 media, app lifecycle, sleep/network recovery and updates before promotion.
