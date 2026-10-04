@@ -2,6 +2,12 @@
 
 ## 2026-10-04 — shared recording fix and fresh-image validation
 
+- Confirmed awake USB cable failure independently of suspend. The upstream
+  Android detector recognized removal but not reinsertion; native trace showed
+  no USB supply events. Published guarded ten-minute experiment/rollback scripts.
+  Preparing the existing Samsung cable-notification correction as an unflashed
+  kernel candidate; no permanent detector workaround is installed.
+
 - Installed matching upstream window-state packages; repeated app reopening
   was exercised. Normal YouTube audio survived reboot. AppArmor's temporary
   file allow/deny test passed. Wider first-boot and OTA validation remain.

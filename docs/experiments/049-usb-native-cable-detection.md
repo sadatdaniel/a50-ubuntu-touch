@@ -83,3 +83,42 @@ Next: capture both android_usb and power_supply events around a confirmed
 physical unplug/reconnect, then test [udev] android_tracking=1 with a guarded
 runtime configuration and rollback. No new kernel patch or permanent USB
 configuration was applied in this experiment.
+
+## Confirmed Android-detector cable test: failed
+
+The second phase used --android-tracking and a separate android-1 private
+output directory. The updated scripts schedule rollback after ten minutes
+and bound the awake hold to eleven minutes. A bind-mounted runtime INI enabled
+only [udev] android_tracking=1; root stayed read-only. Hash guards restore the
+placeholder INI and remove only this experiment's runtime EnvironmentFile.
+An EXIT trap also rolls back unsuccessful setup. Stage both scripts and the
+expected-boot-id file in /userdata/a50-usb-detection-20261004/android-1 and invoke
+the detached test with --android-tracking. The timer uses the same argument.
+Do not install this failed detector configuration in the image.
+
+Startup passed at 03:59:17 UTC: saved rndis_adb, normal authorized ADB, and
+CONFIGURED state returned with the candidate command line. The confirmed
+awake physical cable removal was recorded at 04:00:04 UTC; battery events
+show reinsertion about 46 seconds later. The ten-minute trace contains battery
+ONLINE 4 -> 1 -> 4 and Android DISCONNECTED on removal, but zero
+POWER_SUPPLY_NAME=usb events. The manager read online=0 and stopped adbd on
+removal. There was no Android return event to re-evaluate the reinserted cable.
+USB remained unavailable. This isolates the problem from deep sleep: the boot
+ID stayed the same and suspend counters stayed success=2/fail=0.
+
+Rollback completed at 04:09:16 UTC and restored the original INI and flags,
+but a Developer Mode toggle was still required to restore ADB. At collection,
+USB ONLINE=1 and android0 CONFIGURED, AppArmor Y, read-only root and no test
+wake hold remained. The bounded collector's expected timeout status 124 was
+cleared from systemd's failed list after preserving the evidence. Future
+collector units should set SuccessExitStatus=124. Private logs stay private.
+
+The matching conventional correction is documented in the
+[Sailfish porting guide](https://sailfishos.wiki/books/hardware/page/hadk-hot)
+and implemented in this [Samsung Exynos5433 cable-work commit](https://github.com/edp17/android_kernel_samsung_exynos5433/commit/b57dfff88bb9149de5e5966e08543442a8207909).
+It notifies the USB power supply once after cable changes rather than during
+periodic battery polling. The A50 adaptation is a single existing Linux helper
+call. Kernel candidate aa16 compiled and packed from the guarded aa15 cache. Its
+config is unchanged and the boot image fits; a verified working aa13 fallback
+and guarded test scripts are staged. No flash has occurred. See a50-halium/docs/usb-supply-cable-events.md. Hardware validation
+and the graphical Restart/other release blockers remain separate work.

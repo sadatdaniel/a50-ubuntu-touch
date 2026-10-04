@@ -28,14 +28,17 @@ The old aa1/AppArmor-N observations below describe earlier boots only.
   tested activation helper/unit is now in the overlay through a normal repowerd
   wants symlink; clean-boot/container-restart validation remains. Earlier aa12's
   35 cycles are historical. See experiments 047 and 048.
-- USB reconnect investigation found the old -r/-f command line. A reversible
-  test without either flag passed manager startup and authorized ADB return;
-  physical reconnect was not confirmed before its timer restored old settings.
-  Exact source shows -f forces the initial state, not rejection of later events.
-  Samsung's USB supply has readable ONLINE but no USB notification call was
-  found in its battery driver. The manager's existing android_tracking option
-  can use the exposed android0 node; capture real cable events before selecting
-  it or a kernel correction. No permanent USB change. See experiment 049.
+- USB reconnect: removing -r/-f alone was not a proven fix. A confirmed awake
+  cable test with the existing Android detector stopped adbd on removal but did
+  not detect reinsertion. Battery events showed cable state changes, with zero
+  USB power-supply events. Runtime settings rolled back at 04:09:16 UTC;
+  Developer Mode restored access. Same boot, suspend counters 2/0, AppArmor Y,
+  read-only root and no remaining test hold. The detector is not shipped.
+  Existing Samsung/Sailfish correction adds one USB power-supply notification
+  after cable work. aa16 compiled and packed from guarded aa15 source/cache; exact config retained.
+  Boot SHA256 05a84a04cb162cb8ef0b193859cc8dbc1ad2c20d665f1b978de5e3c52a3531a5.
+  Verified candidate/aa13 fallback and guarded scripts are staged privately in
+  /userdata/a50-aa16-test. No flash; wait for the owner to be beside the phone. See experiment 049 and kernel docs/usb-supply-cable-events.md.
 - Midnight package-backup destination is immutable. A standard systemd writable
   path condition passed its runtime test and is in the overlay. The later
   logrotate missing-file error also passed its separate native missingok test,
