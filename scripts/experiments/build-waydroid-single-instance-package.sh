@@ -32,7 +32,7 @@ dpkg-source --before-build .
 echo '5fdb97bccca110ae88389121001bf41055bad9721e68b663042344421867dec4  tools/services/user_manager.py' | sha256sum -c -
 python3 "$HERE/scripts/experiments/check-waydroid-single-instance.py" tools/services/user_manager.py
 DEBFULLNAME='A50 port build' DEBEMAIL='noreply@example.invalid' \
-    dch --newversion "$VERSION" --distribution UNRELEASED 'Use native Lomiri single-instance identity for the shared Waydroid UI session.'
+    dch --force-bad-version --newversion "$VERSION" --distribution UNRELEASED 'Use native Lomiri single-instance identity for the shared Waydroid UI session.'
 dpkg-buildpackage --build=binary --no-sign -j4
 mkdir -p "$HERE/waydroid-test"
 cp "$BUILD_DIR"/waydroid_*_all.deb "$HERE/waydroid-test/"
