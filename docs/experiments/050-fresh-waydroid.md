@@ -122,7 +122,49 @@ Android data is retained. The targeted hardware check passes. The existing compa
 now has a Waydroid option to build this one-line change using upstream source
 5b7e2e71be3f6bfaaaab3b461251dacaf1ce4991 and UBports packaging
 7ebfea8f880a2d7c9c641070fe3cb273fa6c268d, preserving all twelve UBports patches.
-Package build/install/reboot validation and upstream submission remain pending.
+### Conventional package installed
+
+Build [37191717067](https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/37191717067)
+passed on Ubuntu 26.04 ARM. The original generator fails the actual-function
+regression and the patched generator passes. Build corrections replace the
+upstream Debian directory with UBports packaging rather than merging both, and
+allow UBports' generated version relative to the unmangled source changelog.
+All twelve official UBports patches are retained.
+
+Candidate version:
+`1.6.3-0ubports1~20260917185450.14~7ebfea8+ubports26.04.1+a50singleinstance.1`.
+Candidate package SHA256:
+`3f2233b1c20486e907e45932d0dca37452e29bef07ffef01534e3cfdf0aed540`.
+Original package retrieved using the signed UBports repository metadata:
+`c62fe6dd5cb90cf67392481e13f5e7c1170a1fd822dee6463c4c363cac17226e`.
+
+Every extracted payload path, mode and symlink was compared. Only the actual
+generator and Debian changelog differ; maintainer scripts are identical.
+Package control differs only in version, with unchanged dependencies and size.
+APT simulation changes exactly Waydroid, no additions/removals. The temporary
+source mount was removed, then normal local APT installation succeeded.
+The source checksum and regenerated native visible launcher match the candidate,
+package audit is clean, no system units failed, and root is read-only again.
+The native generator is now package-managed, with no runtime source bind.
+
+`install-waydroid-single-instance.sh` checks exact versions/hashes and the
+one-package plan, uses a private local APT cache, restores read-only root and
+retains Android data. Place the two recorded packages under the script's
+private userdata directory before using it. `--rollback` installs the verified
+original package through normal APT. The script refuses a remaining source bind;
+restore the temporary experiment first. A first installation attempt with a
+relative archive path failed before changing packages; the established absolute
+path/local cache convention corrected it. Rebuilding later may change archive
+hashes with build metadata/tooling; compare payloads and update the guarded hash
+after review rather than bypassing it.
+
+A full system reboot changed the kernel boot ID. The installed candidate source
+checksum, native single-instance entry and package version survived without a
+source mount. AppArmor remains enabled, package audit is clean, root read-only
+and no system units failed. Native LAL launch reached Android-ready; the user
+is exercising close/reopen after this reboot. Visible post-reboot repetitions,
+wider lifecycle testing and upstream submission remain pending.
+Network comparisons are recorded separately in [052](052-waydroid-network.md).
 
 Repeated close/reopen, container restart, Android application network/audio, sleep/wake,
 compositor restart, reboot and extended use remain unvalidated. The older port
@@ -137,3 +179,34 @@ For rollback of this setup, stop the user session normally with
 `waydroid session stop`. This initialization does not change the ROM, kernel or
 vendor partition. Retain images and userdata for diagnosis; there is no automatic
 delete or forced reinitialization. No paid cloud resource was created.
+
+## Post-reboot failure and second candidate
+
+The user reports first close followed by a failed immediate reopening, a later
+successful click, then icon disappearance after the next close. This falsifies
+any claim that candidate .1 completely resolves Waydroid lifecycle behavior.
+Android-ready startup took 23–27 seconds in the two recorded sessions; both
+closed normally. At failure, session/container are stopped, the main desktop
+entry exists with NoDisplay=false and Gio considers it visible. Lomiri logs
+missing launcher-model entries and stop events for an app it no longer manages.
+
+Current UBports packaging branch still resolves to the pinned 7ebfea8 revision.
+Its makeWaydroidDesktopFile unlinks the main entry before recreating it on every
+Android-ready notification. Inspected Lomiri XdgWatcher::onFileChanged treats
+an inode no longer watched as appRemoved; lomiri-app-launch's legacy store also
+handles deletion separately from modification. This is a specific candidate
+cause, not yet hardware proof. Upstream issue
+[39](https://gitlab.com/ubports/development/core/lomiri/-/issues/39)
+documents another Waydroid desktop-update/drawer problem; it is related context,
+not proof it is the identical failure or an available merged correction.
+
+The .2 candidate removes only the unnecessary two-line unlink block while
+retaining the native single-instance key, command and visibility updates. It
+updates the existing entry through ordinary file writing, avoiding application
+removal. No polling, custom session process or frozen permissions are added.
+The actual generator regression now records file removal: .1 fails; .2 passes
+visible/hidden/visible updates without unlinking. Candidate generator SHA256:
+`a888527e10171aecb7645bc9d8e9608a11310a7491fe0a1760e0909a1480ca65`.
+Normal .2 package build and phone validation are pending. The installed .1
+package and verified original rollback remain available; no .2 source mount
+has been applied.

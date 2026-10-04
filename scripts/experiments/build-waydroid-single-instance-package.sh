@@ -5,7 +5,7 @@ HERE=$(cd "$(dirname "$0")/../.." && pwd)
 BUILD_DIR=$(realpath "${1:?usage: $0 <empty build directory>}")
 SOURCE_SHA=5b7e2e71be3f6bfaaaab3b461251dacaf1ce4991
 PACKAGING_SHA=7ebfea8f880a2d7c9c641070fe3cb273fa6c268d
-VERSION='1.6.3-0ubports1~20260917185450.14~7ebfea8+ubports26.04.1+a50singleinstance.1'
+VERSION='1.6.3-0ubports1~20260917185450.14~7ebfea8+ubports26.04.1+a50singleinstance.2'
 [ "$(. /etc/os-release; printf '%s' "$VERSION_ID")" = 26.04 ]
 [ -z "$(ls -A "$BUILD_DIR")" ] || { echo 'E: build directory must be empty' >&2; exit 1; }
 fetch() {
@@ -30,7 +30,7 @@ fi
 cp "$HERE/scripts/experiments/waydroid-lomiri-single-instance.patch" debian/patches/0013-lomiri-single-instance-launcher.patch
 printf '%s\n' 0013-lomiri-single-instance-launcher.patch >> debian/patches/series
 dpkg-source --before-build .
-echo '5fdb97bccca110ae88389121001bf41055bad9721e68b663042344421867dec4  tools/services/user_manager.py' | sha256sum -c -
+echo 'a888527e10171aecb7645bc9d8e9608a11310a7491fe0a1760e0909a1480ca65  tools/services/user_manager.py' | sha256sum -c -
 python3 "$HERE/scripts/experiments/check-waydroid-single-instance.py" tools/services/user_manager.py
 DEBFULLNAME='A50 port build' DEBEMAIL='noreply@example.invalid' \
     dch --force-bad-version --newversion "$VERSION" --distribution UNRELEASED 'Use native Lomiri single-instance identity for the shared Waydroid UI session.'

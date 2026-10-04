@@ -4,9 +4,21 @@ Fresh Waydroid official initialization completed: Android 13 VANILLA / HALIUM_11
 verified official archives, userdata storage, native generated launcher. User
 confirms the icon appears and Android stays open; basic Internet/DNS probes
 pass. Third close/reopen failed with Android still running and an empty crash
-buffer. Native single-instance generator candidate is runtime-mounted for
-repeated user tests: all three reopen and icon checks pass. Conventional
-package build prepared; source hashes/regression/rollback in experiment 050.
+buffer. Native single-instance runtime test passed all three user reopens/icon checks.
+Conventional build 37191717067 passed and its package is installed. Payloads
+differ only in generator/changelog from the verified official rollback package;
+APT changes exactly Waydroid. Root is read-only, no source bind remains, audit
+is clean. Full system reboot changed boot ID and retained the installed source
+hash/launcher key without a bind; AppArmor Y, read-only root and no failed units.
+Native launch reached Android-ready. User post-reboot test FAILED: immediate
+reopen did not work, a later click worked, and after the next close the icon
+disappeared. Desktop file/Gio remain visible; no Android session remains running.
+Source inspection identifies desktop unlink/recreate as a removal event to the
+launcher. Candidate .2 removes that unnecessary unlink; stronger actual-generator
+regression fails .1 and passes .2. Build/hardware validation pending; see 050.
+F-Droid downloads reproduce a slow IPv4 server on both host and Android; other
+Android destinations are much faster. No network configuration changed; general
+browsing/search checks remain (052).
 Old custom user session service remains inactive. Camera-provider
 adaptation remains installed; broader stability is unproven. See experiment 050.
 K380 now pairs and user confirms input works, with a Linux keyboard device.

@@ -14,8 +14,16 @@ Fresh Waydroid now initializes through the official defaults; the user confirms
 the native icon appears and Android stays open. Basic routing/DNS passes.
 The third close/reopen failed while Android stayed running; a supported native
 single-instance setting passes three user reopens and icon persistence in a
-reversible runtime test. A conventional package build is prepared. Sleep/audio/reboot
-checks remain ([050](experiments/050-fresh-waydroid.md)).
+reversible runtime test. The conventional package build passed and is installed
+with a verified official rollback; root is read-only and the source bind removed.
+The installed fix survives a real system reboot without a source mount.
+Post-reboot user test failed: a launch worked after waiting, but the icon
+then disappeared although its file remained visible. A second candidate removes
+unnecessary desktop unlinking; its stronger regression passes, hardware validation
+is pending. Sleep/audio and wider lifecycle checks remain ([050](experiments/050-fresh-waydroid.md)).
+F-Droid fixed-peer downloads reproduce a slow server on both Ubuntu and Android;
+other Android peers are much faster. General browsing/search validation remains
+open; no network settings were changed ([052](experiments/052-waydroid-network.md)).
 The K380 paired and user-confirmed keyboard input works; actual idle/reconnect/
 sleep tests remain ([051](experiments/051-bluetooth-keyboard.md)).
 

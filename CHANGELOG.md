@@ -10,7 +10,12 @@
   Reproduced third-reopen failure with Android still healthy; a one-line native
   single-instance setting passes generator regression and is in a reversible
   hardware test; all three user reopens and icon checks pass. Added exact-source
-  patch, regression, rollback script and conventional package build.
+  patch, regression, rollback script and conventional package build. Build and
+  one-package installation now pass against a verified original signed package;
+  root is read-only and the temporary source bind removed. Installed source and
+  native entry survive a real reboot, but the user reproduced delayed reopening
+  and icon loss. A second candidate removes unnecessary launcher unlinking; its
+  stronger regression passes, build/hardware validation pending. Documented matched F-Droid server tests; no network setting changed.
 
 - aa16 boots with actual AppArmor enforcement, RFCOMM availability and working
   RTKit audio scheduling. Native USB supply events now report removal/reinsert,

@@ -1,6 +1,15 @@
 --- a/tools/services/user_manager.py
 +++ b/tools/services/user_manager.py
-@@ -31,6 +31,7 @@
+@@ -20,8 +20,6 @@
+     if os.path.isfile(desktop_file_path) and not os.access(desktop_file_path, os.W_OK):
+         logging.info(f"Desktop file '{desktop_file_path}' is not writeable, not updating it")
+     else:
+-        if os.path.isfile(desktop_file_path):
+-            os.remove(desktop_file_path)
+         with open(desktop_file_path, "w") as desktop_file:
+             desktop_file.write(f"""\
+ [Desktop Entry]
+@@ -31,6 +29,7 @@
  Categories=X-WayDroid-App;
  X-Purism-FormFactor=Workstation;Mobile;
  X-Lomiri-Supported-Orientations=portrait;

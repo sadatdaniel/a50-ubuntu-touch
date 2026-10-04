@@ -4,6 +4,14 @@ Updated 4 October 2026. Device: SM-A505F. Ubuntu Touch 26.04 only.
 
 ## Current result
 
+Latest aa17 follow-up passes awake cable reconnection and four actual deep
+cycles (87.409 seconds, zero resume failures), including automatic USB recovery,
+Wi-Fi association and user-confirmed screen/touch. AppArmor enforcement passes.
+These tests do not replace final-image cold-boot, battery and extended-use checks.
+Fresh official Waydroid initialization and a native launcher package correction
+are now installed; wider lifecycle testing remains (experiments 050–052).
+The paragraphs below retain earlier suspend evidence.
+
 The aa12 kernel and supported repowerd Wi-Fi hooks completed 35 automatic
 suspend/resume cycles with zero resume failures. Screen/touch recovered in user
 checks. Permanent startup, fresh-boot behavior, service-crash recovery and long
@@ -76,8 +84,9 @@ be rebuilt before sharing.
 7. Later, establish Waydroid reliability with repeated launch/stop cycles,
    compositor restarts, sleep/wake, networking, sound, updates and extended use.
    Video Stop is currently receiving a shared upstream correction and passed three user recording/playback tests with sound, but still requires
-   a conventionally rebuilt Android image and reboot validation. The fresh
-   installation has not initialized Waydroid yet.
+   a conventionally rebuilt Android image and reboot validation. Fresh Waydroid
+   is initialized from official channels and the conventional native launcher
+   correction is installed; reboot and wider stability checks remain.
 
 Recovery and OTA preparation can proceed while suspend is being fixed. Daily-use
 readiness and update readiness are separate validation targets.
