@@ -28,6 +28,14 @@ The old aa1/AppArmor-N observations below describe earlier boots only.
   tested activation helper/unit is now in the overlay through a normal repowerd
   wants symlink; clean-boot/container-restart validation remains. Earlier aa12's
   35 cycles are historical. See experiments 047 and 048.
+- USB reconnect investigation found the old -r/-f command line. A reversible
+  test without either flag passed manager startup and authorized ADB return;
+  physical reconnect was not confirmed before its timer restored old settings.
+  Exact source shows -f forces the initial state, not rejection of later events.
+  Samsung's USB supply has readable ONLINE but no USB notification call was
+  found in its battery driver. The manager's existing android_tracking option
+  can use the exposed android0 node; capture real cable events before selecting
+  it or a kernel correction. No permanent USB change. See experiment 049.
 - Midnight package-backup destination is immutable. A standard systemd writable
   path condition passed its runtime test and is in the overlay. The later
   logrotate missing-file error also passed its separate native missingok test,
