@@ -302,5 +302,8 @@ same native and Android session identities. It does not establish deep sleep:
 the recorder expired four seconds before cable removal and counters stayed
 9 to 9. That cohort is archived as auto-1-expired-preparation. The corrected
 short test allows ten minutes for preparation, records each phase, and is
-armed without restarting Waydroid; actual unplugged result is pending. See
+cancelled before unplug when the owner became unavailable; actual unplugged
+result is pending. Evidence is auto-1-deferred-preparation. Temporary units
+and kernel holds are removed, and the original session still reports
+boot_complete=1 with unchanged identities and zero automatic restarts. See
 048 for the observed timing and updated short/long caller timeouts.

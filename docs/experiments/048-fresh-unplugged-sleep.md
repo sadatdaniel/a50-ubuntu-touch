@@ -220,5 +220,8 @@ preparation deadline, disconnect timestamp and each phase, and uses a
 only after cable removal, display-off and normal Wi-Fi preparation. Short
 runs require TimeoutStartSec=900; 1800-second runs require 2700. The earlier
 360-second command above records the historical normal-startup test.
-Shell syntax and rejection of unsupported durations pass. A corrected short
-Waydroid cohort is armed; its hardware result remains pending.
+Shell syntax and rejection of unsupported durations pass. The corrected short
+Waydroid cohort was cancelled before unplug when the owner became unavailable;
+its hardware result remains pending. Evidence is auto-1-deferred-preparation.
+Temporary observer units and kernel holds are removed; normal activation is
+active/successful, root RO, AppArmor Y, audit clean and failed units zero.
