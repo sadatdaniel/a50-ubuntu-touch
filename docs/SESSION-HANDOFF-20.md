@@ -3,8 +3,8 @@
 Official QtMir ac3ee9 replaces the local DPR workaround. Conventional Lomiri
 a50state.3 build 38047817398 passes and its four packages are installed; full
 reboot retains upstream Recents PadOrCrop and the MR 331 reopening backport
-without temporary QML binds. Post-package user visual/reopening checks remain
-pending. The earlier runtime Recents user/screenshot test passed. One graphical
+without temporary QML binds. User confirms correct previews and three close/reopens each for
+Terminal and Settings after reboot; screenshot agrees, shell NRestarts=0. The earlier runtime Recents user/screenshot test passed. One graphical
 Restart with Settings/Terminal completed a real kernel reboot, but the original
 Gallery/OpenStore/Morph/YouTube crash combination must still be repeated.
 The exact existing autosuspend overlay helper/unit and real startup link are

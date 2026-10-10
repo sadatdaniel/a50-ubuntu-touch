@@ -1,6 +1,6 @@
 # 054 — Recents fixed by upstream rendering revert
 
-2026-10-10. Native runtime, conventional package installation and full reboot persistence pass; repeated post-reboot user checks remain pending.
+2026-10-10. Native runtime, conventional package installation and full reboot persistence and repeated post-reboot user checks pass.
 
 The installed Lomiri fcac00 source included MR 330, which changed
 SurfaceContainer.qml from MirSurfaceItem.PadOrCrop to Stretch. With the
@@ -54,9 +54,10 @@ Installed size increases by 12.3 kB. Package audit passes.
 After a real system reboot, all four packages retain the candidate version,
 SurfaceContainer.qml contains PadOrCrop and WindowStateSaver.qml retains
 isRestorable. No temporary QML bind remains. Root is read-only, AppArmor is Y,
-no system units fail and Lomiri has zero automatic restarts. Repeated app
-close/reopen and visual Recents confirmation after this package reboot remain
-pending. The earlier user-confirmed runtime visual result is separate evidence.
+no system units fail and Lomiri has zero automatic restarts. The user confirms three close/reopen cycles each for Terminal and Settings
+and correct Recents proportions after this package reboot. A private installed-
+package screenshot confirms the corrected proportions; Lomiri stays at zero
+automatic restarts. This adds package/reboot evidence to the earlier runtime test.
 
 One graphical Restart with Settings/Terminal open completed a real kernel
 reboot after official QtMir and the runtime Recents correction. The earlier

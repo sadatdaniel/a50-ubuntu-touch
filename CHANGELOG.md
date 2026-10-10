@@ -9,7 +9,8 @@
   screenshot/user-confirmed runtime test. Added reversible reproduction and a
   current-source native package build profile retaining the reopening backport.
   Native ARM64 build, exact four-package installation and full reboot
-  persistence pass; post-package user checks remain pending.
+  persistence pass. User confirms correct previews and three close/reopens
+  each for Terminal and Settings; screenshot and zero shell restarts agree.
 - One graphical Restart completes a real kernel reboot after the display
   corrections; repeat the original crashing app combination before closing it.
 - Installed the existing overlay autosuspend startup helper/unit; normal full

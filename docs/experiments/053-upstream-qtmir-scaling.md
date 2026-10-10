@@ -68,3 +68,14 @@ also requires restart/reboot validation. No vendor/recovery or account changes.
 This is a development transaction script. The final image needs package
 integration and first-boot/OTA checks; installing this on one phone does not
 complete that work.
+
+## Follow-up on the same day
+
+Experiment 054 resolves Recents through the exact already merged upstream
+Lomiri revert, packaged with the existing reopening backport. Native ARM64
+build/install/full reboot pass. The user confirms correct previews and three
+Terminal/Settings close/reopens each; a private screenshot agrees, with zero
+shell restarts. A later power-menu Restart with those apps completes a real
+kernel reboot, unlike the earlier SIGSEGV. The original four-app combination
+still needs repetition; this does not attribute the successful reboot to a
+specific change or establish that all Restart paths are fixed.

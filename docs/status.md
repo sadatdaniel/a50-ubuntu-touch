@@ -6,8 +6,9 @@ Official QtMir ac3ee9 packages replace the local Mir1 DPR workaround and
 survive a true reboot. The exact upstream Recents revert fixes proportions in
 a user/screenshot-confirmed runtime test. Native ARM64 build 38047817398 passes;
 all four conventional Lomiri packages are installed and survive a full reboot
-without QML binds, retaining the app reopening backport. Post-package visual
-and repeated reopening checks remain pending. Root is read-only, AppArmor is
+without QML binds, retaining the app reopening backport. The user confirms correct previews and three post-reboot close/reopens
+each for Terminal and Settings; a private screenshot agrees and shell
+automatic restart count remains zero. Root is read-only, AppArmor is
 enabled, audit is clean and no system units fail. One power-menu Restart now
 completed a real kernel reboot with Settings/Terminal; repeat the original
 Gallery/OpenStore/Morph/YouTube combination before closing the earlier SIGSEGV.
