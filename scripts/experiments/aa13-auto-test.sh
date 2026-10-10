@@ -10,6 +10,8 @@ case "${1:-}" in
     --aa17-startup) P=/userdata/a50-aa17-startup-test; U=a50-aa17-startup-stop ;;
     *) exit 2 ;;
 esac
+test_seconds=${2:-90}
+case "$test_seconds" in 90|1800) ;; *) exit 2 ;; esac
 B="$P/auto-1"
 test ! -e "$B"
 test "$(cat /proc/sys/kernel/random/boot_id)" = "$(cat "$P/expected-boot-id")"
@@ -60,7 +62,7 @@ done
 dmesg | grep 'SETSUSPENDMODE' | tail -10 > "$B/wifi-preparation"
 cat /sys/kernel/debug/wakeup_sources > "$B/disconnected.wakeup-sources"
 # Use the established calendar-timer workaround for systemd issue #29245.
-deadline=$(date -u -d '+90 seconds' '+%Y-%m-%d %H:%M:%S UTC')
+deadline=$(date -u -d "+$test_seconds seconds" '+%Y-%m-%d %H:%M:%S UTC')
 printf '%s\n' "$deadline" > "$B/deadline"
 systemd-run --unit="$U" --on-calendar="$deadline" --timer-property=AccuracySec=1s --timer-property=WakeSystem=yes /bin/sh "$P/aa13-auto-stop.sh" "${1:-}"
 systemctl is-active --quiet "$U.timer"
@@ -92,5 +94,11 @@ if [ "${1:-}" = --aa17-startup ] || ! grep -Eq '00000000[[:space:]]+00000001' "$
 fi
 date -Is > "$B/started"
 echo a50-auto-test-hold > /sys/power/wake_unlock
-sleep 60
-# EXIT re-acquires the hold; the independent timer also does so after 90 seconds.
+if [ "$test_seconds" = 90 ]; then
+    sleep 60
+else
+    # A long soak must not end after only 60 seconds of accumulated awake time.
+    # Ordinary sleeps do not arm a wake alarm; the independent calendar timer does.
+    while [ ! -f "$B/stopped" ]; do sleep 10; done
+fi
+# EXIT re-acquires the hold; the independent timer also bounds the requested interval.

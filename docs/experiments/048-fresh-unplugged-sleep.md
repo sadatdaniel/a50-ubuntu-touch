@@ -186,3 +186,22 @@ Optional HBM/performance-booster configuration warnings and a g_object_unref
 warning at repowerd exit are retained in private evidence; they did not fail
 the activation restart. This bounded check does not establish battery drain,
 long idle, screen-on inhibition or clean-image/OTA success.
+
+### Prepared longer background soak
+
+The same observer now accepts a second argument of 1800 for a bounded
+30-minute interval; the default 90-second protocol remains unchanged. Other
+intervals are rejected before hardware access. The existing independent
+calendar wake timer uses the requested deadline. In long mode the worker
+waits for its cleanup marker rather than returning after 60 accumulated
+awake seconds, which could otherwise end the soak prematurely. Ordinary
+waits do not create a new wake alarm. Syntax and invalid-duration rejection
+checks pass; long-mode hardware validation remains pending.
+
+Use --aa17-startup 1800 with TimeoutStartSec=2160. Retain the verified boot-ID
+and image guards, private bounded kernel capture, native USB configuration and
+normal installed activation. Archive each completed auto-1 directory before
+arming another cohort, preserving its before/after stats and process identities.
+The existing cleanup keeps the phone awake after the deadline for evidence
+collection; remove that temporary hold/inhibitor promptly after reconnecting.
+This is a background-lifecycle test, not a battery-drain benchmark.

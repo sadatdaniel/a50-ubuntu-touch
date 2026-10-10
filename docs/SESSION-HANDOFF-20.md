@@ -17,6 +17,19 @@ Installed activation also survives repowerd restart. Temporary collectors,
 inhibitors and holds are removed; final failed-unit count is zero. Screen-on,
 container-death, battery/soak and clean-image/OTA checks remain (048).
 
+Waydroid revalidation on a50state.4: user confirms three ordinary drawer
+close/reopens with the icon visible; native logs record all Android-ready
+events with zero shell restarts. Subsequent Android HTTPS returns 200 and
+crash buffer is empty. A short unplugged background-sleep cohort is armed
+under /userdata/a50-aa17-startup-test/auto-1, before stats=9. The previous
+normal-boot cohort is archived as auto-1-normal-boot. Before Waydroid user-unit
+PID=16925, InvocationID=252d73d96bd745a3a7ceba1a2ea4e33d, Android init=17064;
+collect without relaunching and compare identities. User result is pending.
+A 30-minute observer mode is prepared but not staged/armed; use argument
+1800 and TimeoutStartSec=2160 after short-test cleanup. Keyboard unavailable.
+See 050 for the nonfatal launcher-client abort/notification warning and the
+unchanged official packaging check.
+
 Official QtMir ac3ee9 replaces the local DPR workaround. Conventional Lomiri
 a50state.3 build 38047817398 passes and its four packages are installed; full
 reboot retains upstream Recents PadOrCrop and the MR 331 reopening backport

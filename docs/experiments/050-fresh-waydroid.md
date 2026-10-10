@@ -287,3 +287,12 @@ existing Recents tile. Result is pending; a successful drawer relaunch does
 not by itself prove background survival. The earlier normal-boot sleep logs
 are preserved as auto-1-normal-boot under the private test directory. A longer
 unplugged background soak remains required even if the short test passes.
+
+The established sleep observer's optional 1800-second mode is prepared for
+the reported longer background failure. It uses the same independent wake
+timer and keeps the normal 90-second test behavior. Stage it only after the
+current short test is collected and cleaned; keep Waydroid's existing window
+in Recents, switch to a native app, and leave USB disconnected for the soak.
+Compare the exact user-unit InvocationID/PID and Android init PID after wake,
+then test the existing window before any relaunch. Capture native/Android crash
+evidence before recovery if it fails. See 048 for bounds and cleanup.
