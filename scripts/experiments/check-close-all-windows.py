@@ -13,6 +13,7 @@ end = source.index('\nbool TopLevelWindowModel::rootFocus()', start)
 method = source[start:end]
 harness = r'''
 #include <QVector>
+#include <QObject>
 #include <QtGlobal>
 #include <cassert>
 #include <functional>
