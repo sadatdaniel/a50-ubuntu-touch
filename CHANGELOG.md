@@ -2,6 +2,11 @@
 
 ## 2026-10-10 — adopt existing upstream display corrections
 
+- Reproduced incomplete pidfd child waiting on aa17, affecting dispatcher exit
+  status. Existing upstream wait implementation produces a compile/pack-checked
+  aa18 candidate in the kernel build repository; unflashed and not a Waydroid
+  crash diagnosis. Published bounded real syscall probe and reproducible inputs.
+
 - Corrected background-sleep test preparation timing: retain the expired
   cohort as inconclusive for deep sleep, allow ten minutes to unplug, and
   record each phase. No production power setting changes. Longer soak remains

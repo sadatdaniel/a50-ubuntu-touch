@@ -211,6 +211,15 @@ Backport prepared in `docs/patches/0001-waitid-add-P_PIDFD-support.patch`.
 Its permanent home is a50-halium's `kernel/patches/`, per
 [`conventions.md`](../conventions.md) — it is staged here for reference only.
 
+### Follow-up, 10 October: child status is affected
+
+The historical display-blocker distinction above still stands. The current
+native dispatcher misreports child exit status after EINVAL, and a real
+syscall/poll/child-status probe reproduces the incomplete wait backport on aa17.
+The reference patch now has valid hunks and upstream provenance. An aa18
+candidate builds/packs but is unflashed; do not count it as a hardware fix or
+as the cause of the Waydroid report. See [056](056-pidfd-wait-backport.md).
+
 ## 7. What we should have done sooner
 
 1. Instrument rather than infer. Two sessions of D-state sweeps, `wchan`

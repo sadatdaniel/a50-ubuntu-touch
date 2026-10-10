@@ -1,5 +1,13 @@
 # Latest checkpoint: 10 October 2026
 
+Current background investigation: the existing Waydroid window resumes, but
+its first recorder expired before unplug and no deep cycle was recorded. The
+corrected retry was deferred by the owner and all observer holds/units removed.
+Current native OOM/Android crash/ANR samples are empty; this does not establish
+long-use stability. A separate incomplete pidfd wait backport is reproduced.
+The upstream aa18 candidate compiles/packs, but is unflashed; phone stays aa17.
+No kernel pin or production power/authentication settings changed. See [056](experiments/056-pidfd-wait-backport.md).
+
 Latest Restart follow-up: the original four-app combination still crashes
 with a50state.3 and official QtMir. The corrected native trace captures SIGBUS
 in TopLevelWindowModel::closeAllWindows; a shared stable-ID snapshot candidate
@@ -20,7 +28,7 @@ container-death, battery/soak and clean-image/OTA checks remain (048).
 Waydroid revalidation on a50state.4: user confirms three ordinary drawer
 close/reopens with the icon visible; native logs record all Android-ready
 events with zero shell restarts. Subsequent Android HTTPS returns 200 and
-crash buffer is empty. A short unplugged background-sleep cohort is armed
+crash buffer is empty. A short unplugged background-sleep cohort was prepared
 under /userdata/a50-aa17-startup-test/auto-1, before stats=9. The previous
 normal-boot cohort is archived as auto-1-normal-boot. Before Waydroid user-unit
 PID=16925, InvocationID=252d73d96bd745a3a7ceba1a2ea4e33d, Android init=17064;
