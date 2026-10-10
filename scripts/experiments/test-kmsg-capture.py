@@ -9,6 +9,17 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 assert module.FILTER.search('sm5713: routine polling')
 assert not module.FILTER.search('BUG: unable to handle kernel paging request')
+for event in ['PM: Timekeeping suspended for 42.0 seconds',
+              'Freezing of tasks aborted after 0.000 seconds',
+              'PM: Pending Wakeup Sources: sec-battery-vbus',
+              'pm_system_irq_wakeup: 268 triggered sm5713-irq',
+              'BUG: unable to handle kernel paging request',
+              'Out of memory: Killed process 100 (example)',
+              'watchdog expired: reset requested']:
+    assert module.EVENTS.search(event), event
+for routine in ['MISCDBG routine device polling', 'sm5713: routine polling',
+                'sec_bat status update', 's3c2410-wdt: wdt_ping']:
+    assert not module.EVENTS.search(routine), routine
 with tempfile.TemporaryDirectory() as directory:
     log = Path(directory) / 'kmsg.log'
     handler = RotatingFileHandler(log, maxBytes=256, backupCount=3, encoding='utf-8')

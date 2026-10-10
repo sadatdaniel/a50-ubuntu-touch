@@ -327,3 +327,14 @@ This demonstrates continued session/process survival, not a responsive-window
 or unplugged deep-sleep/long-soak pass. The suspected background crash has not
 been reproduced in this observation. Physical background testing and aa18
 hardware validation remain pending; no kernel change or restart was performed.
+
+## Passive overnight observation, 10 October
+
+The owner will leave USB disconnected overnight. The bounded temporary native
+observer in [057](057-overnight-observation.md) now records sleep/wake, native
+and Android crash/ANR events, battery and original process identities without
+waking or unfreezing Android. Stop/restart cleanup passed; root RO, AppArmor Y.
+Baseline is 10 successful suspend cycles / 1 earlier charging/cable wake abort.
+Existing pstore archives are backed up privately. Expiry 11 October 13:38 CEST;
+retrieve evidence and remove the observer in the morning. No overnight pass
+claimed yet; aa18 remains unflashed and production settings are unchanged.

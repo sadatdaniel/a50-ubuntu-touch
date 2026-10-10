@@ -1,5 +1,16 @@
 # Latest checkpoint: 10 October 2026
 
+Overnight observation armed, 10 October 23:39 CEST: a bounded private native
+recorder observes ordinary USB-disconnected sleep, PM wake reasons, actual
+suspend durations, battery, native/Android crashes and process identities.
+It adds no wake alarm, timer or inhibitor and is enabled to resume after reboot.
+Stop/restart cleanup passed without restarting Android. Root RO, AppArmor Y.
+Baseline counters are now 10/1: the existing charging/cable wake-event abort
+predates this cohort, followed by a successful 2.435-second deep cycle.
+Expiry 11 October 13:38 CEST; morning evidence and responsive-window checks
+are pending, then remove the diagnostic service. aa18 stays unflashed.
+Reproduction, private evidence locations and cleanup: [057](experiments/057-overnight-observation.md).
+
 Latest status check, 10 October 23:23 CEST: original Waydroid session/init
 survive about 5h42m, Android booted, actual user-shell active with zero restarts.
 No sampled native OOM/fatal process errors or Android crash/ANR. Root RO,
