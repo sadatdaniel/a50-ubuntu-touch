@@ -1,6 +1,6 @@
 # Updating and preserving A50 fixes
 
-Updated 4 October 2026. Ubuntu Touch 26.04 only; this port is still a
+Updated 10 October 2026. Ubuntu Touch 26.04 only; this port is still a
 development build. [OTA finalization](ota-finalization.md) and the
 [release backlog](release-validation-backlog.md) track the current evidence.
 
@@ -35,6 +35,15 @@ Every required fix therefore needs a build-time home and an update component
 that reinstalls it. Temporary USB maintenance SSH and diagnostic mounts are
 for development; they are not release prerequisites. Permission bypasses and
 unsigned recovery-updater overrides must not ship.
+
+Official QtMir ac3ee9 now replaces the local Mir1 DPR package. The Recents
+fix is an already merged upstream revert; the installed Lomiri a50state.3
+package combines current fe38aa source with the still-unmerged window-state
+backport. Both survive full system reboot. Do not keep the obsolete QtMir
+workaround when selecting a compatible upstream image, and do not drop the
+window-state backport merely because Recents is upstream. The autosuspend
+startup files already have a device-overlay home and now activate at normal
+boot on this phone. Image/OTA incorporation and clean-install checks remain.
 
 ## Reproducibility and regression checks
 

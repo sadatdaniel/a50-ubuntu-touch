@@ -1,4 +1,22 @@
-# Latest checkpoint: 4 October 2026, aa17
+# Latest checkpoint: 10 October 2026
+
+Official QtMir ac3ee9 replaces the local DPR workaround. Conventional Lomiri
+a50state.3 build 38047817398 passes and its four packages are installed; full
+reboot retains upstream Recents PadOrCrop and the MR 331 reopening backport
+without temporary QML binds. Post-package user visual/reopening checks remain
+pending. The earlier runtime Recents user/screenshot test passed. One graphical
+Restart with Settings/Terminal completed a real kernel reboot, but the original
+Gallery/OpenStore/Morph/YouTube crash combination must still be repeated.
+The exact existing autosuspend overlay helper/unit and real startup link are
+installed and activate normally at boot, with four SystemSuspend threads.
+Root read-only, AppArmor Y, audit clean, no failed units. New unplugged
+validation and container-restart recovery remain pending. See 048, 053, 054.
+Guarded install/rollback scripts reproduce package changes. Temporary USB-only
+maintenance remains development-only and disappears at reboot; no credentials
+belong in this public handoff. OTA is disabled; corrected complete camera GSI,
+image integration, recovery, signed updates and clean-install/soak remain.
+
+## Previous checkpoint: 4 October 2026, aa17
 
 Fresh Waydroid official initialization completed: Android 13 VANILLA / HALIUM_11,
 verified official archives, userdata storage, native generated launcher. User

@@ -105,3 +105,26 @@ association returned. Actual AppArmor enforcement passed afterward. See
 [the USB/kernel evidence](049-usb-native-cable-detection.md). Test timers,
 logger and holds were cleaned; native worker activation remains runtime until
 the already packaged startup unit is included in a clean rebuilt image.
+
+## Normal installed startup, 10 October
+
+Inspection found the running development image had no permanent activation
+helper/unit/wants link; its earlier runtime experiment had ended on reboot.
+The existing tested overlay files, with the hashes recorded above, are now
+installed through install-autosuspend-startup.sh. The guarded script requires
+USB online, AppArmor enabled, active repowerd, SDK 30 and absent target files.
+It installs the existing files and a real relative wants link, verifies the
+native unit and starts it. No new suspend logic or forced sleep is introduced.
+
+A full system reboot proves ordinary startup: the unit is active with
+Result=success and ExecMainStatus=0. The boot journal reports Android automatic
+suspend activated, and SystemSuspend has four threads including its worker.
+The link resolves to ../a50-enable-autosuspend.service. Root is read-only,
+AppArmor is Y and no system units fail. USB-connected counters are zero; this
+is startup proof, not an additional unplugged sleep pass. Repeat the bounded
+unplugged test, screen-on inhibition and container-restart checks. A rebuilt
+clean image and signed OTA must retain this same overlay.
+
+Native verification still warns about the old installed malformed GNSS link
+and upstream bluebinder's StartLimitIntervalSec section. Those separate known
+warnings are not hidden or established as suspend errors.

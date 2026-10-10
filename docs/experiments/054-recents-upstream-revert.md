@@ -1,6 +1,6 @@
 # 054 — Recents fixed by upstream rendering revert
 
-2026-10-10. Native runtime test passes; conventional package validation pending.
+2026-10-10. Native runtime, conventional package installation and full reboot persistence pass; repeated post-reboot user checks remain pending.
 
 The installed Lomiri fcac00 source included MR 330, which changed
 SurfaceContainer.qml from MirSurfaceItem.PadOrCrop to Stretch. With the
@@ -39,12 +39,35 @@ The actual WindowStateSaver regression must fail on the unpatched upstream
 source and pass after the existing backport. Native ARM64 CI uses ordinary
 Debian packaging and records dependencies/checksums.
 
-Required before completion: successful build, a reviewed exact matching package
-transaction, bind removal, full reboot, Recents and repeated app reopening
-checks. A clean image and an OTA carrying the required packages remain release
-requirements. This correction is already upstream; future compatible upstream
-images contain it. Device and unmerged shared fixes still require maintained
-image integration. OTA is not enabled on this development phone.
+The native ARM64 build [38047817398](https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/38047817398)
+passes, including the actual WindowStateSaver regression failing before and
+passing after the backport. Full upstream tests were not run (nocheck); this
+does not establish broader shell stability.
+
+The guarded install-lomiri-recents.sh verifies archive checksums, the starting
+package versions and the exact four-package APT transaction. It supports
+--rollback using retained a50state.2 archives. Normal packaging upgrades only
+lomiri, lomiri-common, lomiri-private and lomiri-greeter; no additions/removals
+or authentication changes. indicators-client is built but not installed.
+Installed size increases by 12.3 kB. Package audit passes.
+
+After a real system reboot, all four packages retain the candidate version,
+SurfaceContainer.qml contains PadOrCrop and WindowStateSaver.qml retains
+isRestorable. No temporary QML bind remains. Root is read-only, AppArmor is Y,
+no system units fail and Lomiri has zero automatic restarts. Repeated app
+close/reopen and visual Recents confirmation after this package reboot remain
+pending. The earlier user-confirmed runtime visual result is separate evidence.
+
+One graphical Restart with Settings/Terminal open completed a real kernel
+reboot after official QtMir and the runtime Recents correction. The earlier
+SIGSEGV happened with Gallery/OpenStore/Morph/YouTube open, before the official
+QtMir library was loaded. Repeat that original app combination before declaring
+the Restart defect resolved; no crash backtrace was produced by the successful
+reboot. This is correlation, not a proven attribution to either display change.
+
+A clean image and an OTA carrying the required packages remain release
+requirements. The Recents correction is already upstream; device and unmerged
+shared fixes still require maintained image integration. OTA is not enabled.
 
 Raw screenshots/session logs remain private. Vendor, recovery, authentication
 and user data were not modified by this rendering test.

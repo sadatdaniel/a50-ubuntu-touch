@@ -8,9 +8,13 @@
 - Exact upstream Lomiri Recents revert fixes stretched previews in a private
   screenshot/user-confirmed runtime test. Added reversible reproduction and a
   current-source native package build profile retaining the reopening backport.
-  Conventional installation/reboot validation is still pending.
-- Graphical Restart reproduces a shell SIGSEGV before any login1 reboot request;
-  further crash tracing is required. OTA remains disabled and release gates open.
+  Native ARM64 build, exact four-package installation and full reboot
+  persistence pass; post-package user checks remain pending.
+- One graphical Restart completes a real kernel reboot after the display
+  corrections; repeat the original crashing app combination before closing it.
+- Installed the existing overlay autosuspend startup helper/unit; normal full
+  reboot activates Android autosuspend. New unplugged validation remains.
+  OTA remains disabled and release gates open.
 
 ## 2026-10-04 — shared recording fix and fresh-image validation
 

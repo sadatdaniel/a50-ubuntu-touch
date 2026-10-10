@@ -3,14 +3,17 @@
 Current checkpoint: 10 October 2026. Development port, not a stable release.
 
 Official QtMir ac3ee9 packages replace the local Mir1 DPR workaround and
-survive a true reboot with read-only root, AppArmor enabled and a clean package
-audit. The user reconfirms normal apps/touch. Recents distortion persisted,
-then the exact upstream Lomiri 5fc43d7 revert fixes it in a user-confirmed
-runtime test with before/after private screenshots. Conventional current-source
-packaging retaining the window-state backport is being built; permanent and
-post-reboot Recents validation remain pending. Graphical Restart is reproduced
-as a SIGSEGV of Lomiri before any login1 Reboot call, not a proven reboot
-permission denial. Native crash tracing remains next. See
+survive a true reboot. The exact upstream Recents revert fixes proportions in
+a user/screenshot-confirmed runtime test. Native ARM64 build 38047817398 passes;
+all four conventional Lomiri packages are installed and survive a full reboot
+without QML binds, retaining the app reopening backport. Post-package visual
+and repeated reopening checks remain pending. Root is read-only, AppArmor is
+enabled, audit is clean and no system units fail. One power-menu Restart now
+completed a real kernel reboot with Settings/Terminal; repeat the original
+Gallery/OpenStore/Morph/YouTube combination before closing the earlier SIGSEGV.
+The existing tested autosuspend helper/unit are now permanently installed and
+activate normally after a full reboot; a new unplugged test remains pending.
+See [048](experiments/048-fresh-unplugged-sleep.md),
 [053](experiments/053-upstream-qtmir-scaling.md) and
 [054](experiments/054-recents-upstream-revert.md).
 
