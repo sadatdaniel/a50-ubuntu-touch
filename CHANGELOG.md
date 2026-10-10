@@ -14,7 +14,8 @@
 - One two-app graphical Restart completes a real reboot, but the original
   four-app combination still crashes. Native trace captures SIGBUS in the shared
   close-all function; prepared stable-ID snapshot patch and actual-function
-  ASan regression. Native package/hardware validation pending.
+  ASan regression. Native ARM64 regression/build/install/full reboot pass;
+  four-app power-menu hardware validation remains pending.
 - Installed the existing overlay autosuspend startup helper/unit; normal full
   reboot activates Android autosuspend. New unplugged validation remains.
   OTA remains disabled and release gates open.

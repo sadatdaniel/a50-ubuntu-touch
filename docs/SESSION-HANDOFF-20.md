@@ -3,8 +3,11 @@
 Latest Restart follow-up: the original four-app combination still crashes
 with a50state.3 and official QtMir. The corrected native trace captures SIGBUS
 in TopLevelWindowModel::closeAllWindows; a shared stable-ID snapshot candidate
-and actual-function ASan regression are prepared. Build/installation/hardware
-validation pending. See [055](experiments/055-restart-close-all-windows.md).
+and actual-function ASan regression pass in native build 38061616400.
+All four a50state.4 packages are installed and survive a true reboot with an
+exact installed-library/archive match. AppArmor Y, read-only root, clean audit,
+no failed units and automatic suspend startup pass. Four-app menu hardware
+validation remains pending. See [055](experiments/055-restart-close-all-windows.md).
 
 Official QtMir ac3ee9 replaces the local DPR workaround. Conventional Lomiri
 a50state.3 build 38047817398 passes and its four packages are installed; full
