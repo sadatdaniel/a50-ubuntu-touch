@@ -58,4 +58,4 @@ if [ "$version" = "$new" ]; then
     grep -q 'fillMode: MirSurfaceItem.PadOrCrop' /usr/share/lomiri/Stage/SurfaceContainer.qml
     grep -q 'function isRestorable(state)' /usr/share/lomiri/Stage/WindowStateSaver.qml
 fi
-echo 'Upstream Recents and window-state packages verified. Full reboot validation remains.' 
+echo 'Upstream Recents and window-state packages verified. Full reboot validation remains.'
