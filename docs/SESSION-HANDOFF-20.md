@@ -26,8 +26,9 @@ Restart with Settings/Terminal completed a real kernel reboot, but the original
 Gallery/OpenStore/Morph/YouTube crash combination must still be repeated.
 The exact existing autosuspend overlay helper/unit and real startup link are
 installed and activate normally at boot, with four SystemSuspend threads.
-Root read-only, AppArmor Y, audit clean, no failed units. New unplugged
-validation and container-restart recovery remain pending. See 048, 053, 054.
+Root read-only, AppArmor Y, audit clean, no failed units. Normal-startup
+unplugged validation now passes as recorded above; container-restart recovery
+and final-image checks remain pending. See 048, 053, 054.
 Guarded install/rollback scripts reproduce package changes. Temporary USB-only
 maintenance remains development-only and disappears at reboot; no credentials
 belong in this public handoff. OTA is disabled; corrected complete camera GSI,

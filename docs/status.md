@@ -30,7 +30,8 @@ enabled, audit is clean and no system units fail. One power-menu Restart now
 completed a real kernel reboot with Settings/Terminal; repeat the original
 Gallery/OpenStore/Morph/YouTube combination before closing the earlier SIGSEGV.
 The existing tested autosuspend helper/unit are now permanently installed and
-activate normally after a full reboot; a new unplugged test remains pending.
+activate normally after a full reboot; normal-startup unplugged validation
+now passes as recorded above. Final-image validation remains.
 See [048](experiments/048-fresh-unplugged-sleep.md),
 [053](experiments/053-upstream-qtmir-scaling.md) and
 [054](experiments/054-recents-upstream-revert.md).

@@ -251,3 +251,39 @@ shutdown, every shell restart, Android audio/peripheral behavior, sleep/wake,
 all application networking, or a clean release-image/OTA result. The conventional
 package must still be integrated into the final image or superseded by a
 compatible upstream release; no manual repair should be required for users.
+
+### Updated-shell lifecycle and background-sleep investigation, 10 October
+
+The user again confirms three ordinary drawer close/reopens with the icon
+visible, now on installed Lomiri a50state.4 and official QtMir ac3ee9. Native
+user-unit logs record the initial Android-ready plus all three user reopen
+Android-ready events, with normal stops and zero shell automatic restarts.
+The generated main desktop entry retains its inode. A subsequent native
+launch reaches Android boot completion; an Android HTTPS HEAD request to
+the official system-image service returns 200, and the sampled Android crash
+buffer is empty. Bluetooth idle testing is deferred because the keyboard is
+not currently available.
+
+The command-line lomiri-app-launch client prints Started then aborts with
+Lost our connection with the registry; the application independently starts
+and reaches Android-ready. This client diagnostic is retained for investigation
+and is not counted as a Waydroid window crash. One notification-close ownership
+warning is present in the first session. Neither is concealed or used to
+justify disabling normal launcher or notification security.
+
+Official UBports packaging HEAD remains the exact recorded
+7ebfea8f880a2d7c9c641070fe3cb273fa6c268d. The upstream Waydroid HEAD checked is
+[c78a305a38a9ee6ce052ce524648a8156c2e225b](https://github.com/waydroid/waydroid/tree/c78a305a38a9ee6ce052ce524648a8156c2e225b);
+the upstream user-manager path history has no later change than January 26.
+No newer UBports packaged replacement for the tested launcher adaptation was
+identified, and no source/package update was applied during this validation.
+
+The owner reports a separate suspected crash after extended background use
+or sleep. The existing bounded normal-startup sleep observer is now armed
+with Waydroid running, preserving its user-unit PID/InvocationID and Android
+init PID before unplugging. The user is asked to switch to Settings without
+closing Waydroid, sleep unplugged for three minutes, and return through the
+existing Recents tile. Result is pending; a successful drawer relaunch does
+not by itself prove background survival. The earlier normal-boot sleep logs
+are preserved as auto-1-normal-boot under the private test directory. A longer
+unplugged background soak remains required even if the short test passes.

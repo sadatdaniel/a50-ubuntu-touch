@@ -11,6 +11,8 @@ unit=a50-enable-autosuspend.service
 stage=/run/a50-autosuspend-test
 source=${2:?Published script directory or --installed}
 [ ! -e /run/systemd/system/$unit ]
+printf 'a50-startup-check 120000000000\n' > /sys/power/wake_lock
+trap 'printf "a50-startup-check\n" > /sys/power/wake_unlock' EXIT
 if [ "$source" = --installed ]; then
     # Check the normal packaged unit without creating a runtime override.
     [ "$(systemctl show "$unit" -p FragmentPath --value)" = /etc/systemd/system/$unit ]
@@ -25,8 +27,6 @@ else
     systemctl enable --runtime "$unit"
     systemctl start "$unit"
 fi
-printf 'a50-startup-check 120000000000\n' > /sys/power/wake_lock
-trap 'printf "a50-startup-check\n" > /sys/power/wake_unlock' EXIT
 first=$(systemctl show -p InvocationID --value "$unit")
 [ -n "$first" ]
 systemctl restart repowerd.service
