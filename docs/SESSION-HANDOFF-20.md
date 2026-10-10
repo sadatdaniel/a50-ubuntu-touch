@@ -1,5 +1,11 @@
 # Latest checkpoint: 10 October 2026
 
+Latest Restart follow-up: the original four-app combination still crashes
+with a50state.3 and official QtMir. The corrected native trace captures SIGBUS
+in TopLevelWindowModel::closeAllWindows; a shared stable-ID snapshot candidate
+and actual-function ASan regression are prepared. Build/installation/hardware
+validation pending. See [055](experiments/055-restart-close-all-windows.md).
+
 Official QtMir ac3ee9 replaces the local DPR workaround. Conventional Lomiri
 a50state.3 build 38047817398 passes and its four packages are installed; full
 reboot retains upstream Recents PadOrCrop and the MR 331 reopening backport

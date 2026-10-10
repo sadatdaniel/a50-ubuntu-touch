@@ -11,8 +11,10 @@
   Native ARM64 build, exact four-package installation and full reboot
   persistence pass. User confirms correct previews and three close/reopens
   each for Terminal and Settings; screenshot and zero shell restarts agree.
-- One graphical Restart completes a real kernel reboot after the display
-  corrections; repeat the original crashing app combination before closing it.
+- One two-app graphical Restart completes a real reboot, but the original
+  four-app combination still crashes. Native trace captures SIGBUS in the shared
+  close-all function; prepared stable-ID snapshot patch and actual-function
+  ASan regression. Native package/hardware validation pending.
 - Installed the existing overlay autosuspend startup helper/unit; normal full
   reboot activates Android autosuspend. New unplugged validation remains.
   OTA remains disabled and release gates open.

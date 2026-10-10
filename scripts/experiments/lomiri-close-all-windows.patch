@@ -1,0 +1,29 @@
+--- a/plugins/WindowManager/TopLevelWindowModel.cpp
++++ b/plugins/WindowManager/TopLevelWindowModel.cpp
+@@ -958,10 +958,23 @@
+ 
+ void TopLevelWindowModel::closeAllWindows()
+ {
++    // Closing a window can synchronously remove it and other app windows.
++    // Snapshot stable IDs and look each one up again before accessing it.
++    QVector<int> windowIds;
++    for (const auto &entry : qAsConst(m_windowModel)) {
++        windowIds.append(entry.window->id());
++    }
++
++    // Defer completion until the close loop has finished, including when all
++    // windows disappear synchronously. Later async removals still complete it.
++    m_closingAllApps = false;
++    for (int id : windowIds) {
++        int index = indexForId(id);
++        if (index >= 0) {
++            m_windowModel[index].window->close();
++        }
++    }
+     m_closingAllApps = true;
+-    for (auto win : m_windowModel) {
+-        win.window->close();
+-    }
+ 
+     // This is done after the for loop in the unlikely event that
+     // an app starts in between this
