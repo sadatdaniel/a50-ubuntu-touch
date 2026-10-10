@@ -7,6 +7,7 @@ U=a50-oct04-auto1-stop
 case "${1:-}" in
     "") ;;
     --aa17) P=/userdata/a50-aa17-test; U=a50-aa17-auto-stop ;;
+    --aa17-startup) P=/userdata/a50-aa17-startup-test; U=a50-aa17-startup-stop ;;
     *) exit 2 ;;
 esac
 B="$P/auto-1"
@@ -14,7 +15,7 @@ test ! -e "$B"
 test "$(cat /proc/sys/kernel/random/boot_id)" = "$(cat "$P/expected-boot-id")"
 test "$(cat /sys/module/apparmor/parameters/enabled)" = Y
 grep -q '\[none\]' /sys/power/pm_test
-if [ "${1:-}" = --aa17 ]; then
+if [ -n "${1:-}" ]; then
     test "$(head -c 55984128 /dev/disk/by-partlabel/boot | sha256sum | cut -d ' ' -f1)" = a413d2bc4a605489225a0b5d8e512965af83eea39b7abb6097dbc2f7420775c8
 else
     test "$(head -c 55851008 /dev/disk/by-partlabel/boot | sha256sum | cut -d ' ' -f1)" = 8ae7ab85c08c13b0a7f454882dda3c52162a004a718de2be657d3cd75218fca6
@@ -66,11 +67,20 @@ systemctl is-active --quiet "$U.timer"
 systemctl show "$U.timer" -p WakeSystem -p NextElapseUSecRealtime -p AccuracyUSec > "$B/timer"
 grep -q '^WakeSystem=yes$' "$B/timer"
 # Android 11 AIDL method 1 is enableAutosuspend(); method 3 would force sleep.
-timeout 8 lxc-attach -n android -- /system/bin/service call suspend_control 1 > "$B/activation"
-if ! grep -Eq '00000000[[:space:]]+00000001' "$B/activation"; then
+if [ "${1:-}" = --aa17-startup ]; then
+    # Observe normal boot activation; do not enable the worker from this test.
+    systemctl is-active --quiet a50-enable-autosuspend.service
+    test "$(systemctl show a50-enable-autosuspend.service -p Result --value)" = success
+    systemctl show a50-enable-autosuspend.service -p ActiveState -p Result > "$B/activation"
+else
+    timeout 8 lxc-attach -n android -- /system/bin/service call suspend_control 1 > "$B/activation"
+fi
+if [ "${1:-}" = --aa17-startup ] || ! grep -Eq '00000000[[:space:]]+00000001' "$B/activation"; then
     # Android 11 returns false when already started. Prove its worker exists
     # and is waiting on the held kernel wake lock; never accept false blindly.
-    grep -Eq '00000000[[:space:]]+00000000' "$B/activation"
+    if [ "${1:-}" != --aa17-startup ]; then
+        grep -Eq '00000000[[:space:]]+00000000' "$B/activation"
+    fi
     init_pid=$(lxc-info -n android -pH)
     android_ns=$(readlink "/proc/$init_pid/ns/pid")
     : > "$B/existing-worker"

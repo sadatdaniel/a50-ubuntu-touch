@@ -128,3 +128,25 @@ clean image and signed OTA must retain this same overlay.
 Native verification still warns about the old installed malformed GNSS link
 and upstream bluebinder's StartLimitIntervalSec section. Those separate known
 warnings are not hidden or established as suspend errors.
+
+### Observation of installed activation
+
+The existing bounded aa13-auto-test.sh and cleanup now accept --aa17-startup.
+This isolates evidence under /userdata/a50-aa17-startup-test, retaining earlier
+aa17 records. It uses the same verified aa17 boot image guard, normal Wi-Fi
+preparation, private bounded kernel collector and independent calendar wake
+timer. Unlike --aa17, it does not call enableAutosuspend: it requires the
+installed activation unit to be active/successful and proves the matching
+Android-namespace worker waits in pm_get_wakeup_count while the test hold is
+held. Thus a pass establishes sleep from normal boot activation. Shell syntax
+and the existing five startup-link/audio checks pass. Hardware test is armed
+after the two successful menu reboots; results remain pending.
+
+After staging the three public scripts and expected-boot-id under that path,
+start capture-kmsg.py in a50-kmsg-capture and invoke the existing worker with
+systemd-run --no-block --unit=a50-fresh-startup-test --property=Type=oneshot
+--property=TimeoutStartSec=360 /bin/sh SCRIPT --aa17-startup. Verify before.stats
+and active capture before unplugging. Cleanup uses a50-aa17-startup-stop and
+the same existing temporary awake hold/inhibitor; remove those after evidence
+and connection health are collected. No forced sleep or permanent power
+configuration change is introduced by this test mode.

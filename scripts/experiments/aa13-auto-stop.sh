@@ -5,6 +5,7 @@ B=/userdata/a50-session30-aa13/auto-1
 case "${1:-}" in
     "") ;;
     --aa17) B=/userdata/a50-aa17-test/auto-1 ;;
+    --aa17-startup) B=/userdata/a50-aa17-startup-test/auto-1 ;;
     *) exit 2 ;;
 esac
 test "$(cat /proc/sys/kernel/random/boot_id)" = "$(cat "$B/boot-id")"
