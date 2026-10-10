@@ -71,7 +71,10 @@ if [ "${2-}" = --restart-safe ]; then
         echo 'E: close-all regression did not reproduce' >&2
         exit 1
     fi
-    grep -q 'AddressSanitizer: heap-use-after-free' "$BUILD_DIR/close-all-baseline.txt"
+    grep -q 'AddressSanitizer: heap-use-after-free' "$BUILD_DIR/close-all-baseline.txt" || {
+        cat "$BUILD_DIR/close-all-baseline.txt"
+        exit 1
+    }
     git apply --check "$HERE/scripts/experiments/lomiri-close-all-windows.patch"
     git apply "$HERE/scripts/experiments/lomiri-close-all-windows.patch"
     python3 "$HERE/scripts/experiments/check-close-all-windows.py" "$model"

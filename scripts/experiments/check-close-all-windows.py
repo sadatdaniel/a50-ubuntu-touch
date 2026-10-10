@@ -46,7 +46,7 @@ struct TopLevelWindowModel {
         if (m_closingAllApps && m_windowModel.isEmpty()) closedAllWindows();
     }
     void add(int id, std::function<void(Window*)> action) {
-        m_windowModel.append({new Window{id, action}});
+        m_windowModel.append(ModelEntry{new Window{id, action}});
     }
     ~TopLevelWindowModel() {
         for (auto entry : m_windowModel) delete entry.window;
