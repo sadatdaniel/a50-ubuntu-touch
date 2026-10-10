@@ -1,6 +1,26 @@
 # Status
 
-Current checkpoint: 4 October 2026. Development port, not a stable release.
+Current checkpoint: 10 October 2026. Development port, not a stable release.
+
+Official QtMir ac3ee9 packages replace the local Mir1 DPR workaround and
+survive a true reboot with read-only root, AppArmor enabled and a clean package
+audit. The user reconfirms normal apps/touch. Recents distortion persisted,
+then the exact upstream Lomiri 5fc43d7 revert fixes it in a user-confirmed
+runtime test with before/after private screenshots. Conventional current-source
+packaging retaining the window-state backport is being built; permanent and
+post-reboot Recents validation remain pending. Graphical Restart is reproduced
+as a SIGSEGV of Lomiri before any login1 Reboot call, not a proven reboot
+permission denial. Native crash tracing remains next. See
+[053](experiments/053-upstream-qtmir-scaling.md) and
+[054](experiments/054-recents-upstream-revert.md).
+
+OTA is not enabled. Final package/image integration, complete corrected camera
+GSI, unified recovery, signed update tests and clean-install/soak checks remain
+release blockers. Existing device and unmerged shared fixes must travel in the
+image build; a temporary runtime bind or GitHub script does not provide OTA
+persistence. Fingerprint and final handoff files remain deferred.
+
+Previous checkpoint: 4 October 2026.
 aa17 now passes three awake native USB reconnects and a real four-cycle
 deep-suspend/resume test (87.409 seconds, zero failures), recovering authorized
 USB without Developer Mode toggles. Screen/touch and Wi-Fi association return.

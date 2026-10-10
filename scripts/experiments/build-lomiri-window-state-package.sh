@@ -5,6 +5,14 @@ HERE=$(cd "$(dirname "$0")/../.." && pwd)
 BUILD_DIR=$(realpath "${1:?usage: $0 <empty build directory>}")
 SOURCE_SHA=fcac00b977a96f050ebcde4fdbd78e77c2e9b26a
 VERSION='0.6.2+0~20261001183057.508+ubports26.04.1~1.gbpfcac00+a50state.2'
+case "${2-}" in
+    '') ;;
+    --upstream-recents)
+        SOURCE_SHA=fe38aa78f3b1c69319ba914c3d48f78543b8e186
+        VERSION='0.6.2+0~20261009095335.519+ubports26.04.1~1.gbpfe38aa+a50state.3'
+        ;;
+    *) echo 'Usage: build-lomiri-window-state-package.sh <empty directory> [--upstream-recents]' >&2; exit 2 ;;
+esac
 [ "$(dpkg --print-architecture)" = arm64 ]
 [ "$(. /etc/os-release; printf '%s' "$VERSION_ID")" = 26.04 ]
 [ -z "$(ls -A "$BUILD_DIR")" ] || { echo 'E: build directory must be empty' >&2; exit 1; }
@@ -29,6 +37,16 @@ Package: src:lomiri-ui-toolkit:any
 Pin: version 1.3.5908+0~20260930165252.351+ubports26.04.1~1.gbpc41976
 Pin-Priority: 1001
 PINS
+if [ "${2-}" = --upstream-recents ]; then
+    # Use the official Mir1 scaling fix already installed on the test phone.
+    cat >> "$BUILD_DIR/runtime.preferences" <<'PINS'
+
+Package: src:qtmir:any
+Pin: version 0.7.2+0~20261008000645.83+ubports26.04.1~1.gbpac3ee9
+Pin-Priority: 1001
+PINS
+    grep -q 'fillMode: MirSurfaceItem.PadOrCrop' qml/Stage/SurfaceContainer.qml
+fi
 sudo install -m 0644 "$BUILD_DIR/runtime.preferences" /etc/apt/preferences.d/a50-lomiri-build
 sudo apt-get -y --no-install-recommends build-dep -Pnoinsttest .
 sudo apt-get -y --no-install-recommends install nodejs
@@ -56,6 +74,9 @@ printf 'Lomiri source: %s\nVersion: %s\nWindowStateSaver regression: passed\nFul
 dpkg-query -W > "$HERE/lomiri-test/build-dependencies.txt"
 (cd "$HERE/lomiri-test"; sha256sum ./*.deb > SHA256SUMS)
 printf 'Upstream correction: 598d550be9d8175e645ee5f0585421b7c9c412ca\nMR 331 remains unmerged; its later revision is not used.\n' >> "$HERE/lomiri-test/build.txt"
+if [ "${2-}" = --upstream-recents ]; then
+    printf 'Recents: upstream 5fc43d75272c62d1317a4225e9e77087691a97e1 is included; native runtime test passed, packaged validation pending.\n' >> "$HERE/lomiri-test/build.txt"
+fi
 cp "$BUILD_DIR/runtime.preferences" "$HERE/lomiri-test/"
 for package in "$HERE/lomiri-test"/*.deb; do
     dpkg-deb -f "$package" Package Version Architecture Depends

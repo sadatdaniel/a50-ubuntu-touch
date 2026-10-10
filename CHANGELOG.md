@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-10 — adopt existing upstream display corrections
+
+- Replaced the local QtMir DPR package with official Mir1 scaling guards;
+  exact three-package transaction and full read-only reboot pass. Published
+  guarded installation/rollback and source-linked evidence.
+- Exact upstream Lomiri Recents revert fixes stretched previews in a private
+  screenshot/user-confirmed runtime test. Added reversible reproduction and a
+  current-source native package build profile retaining the reopening backport.
+  Conventional installation/reboot validation is still pending.
+- Graphical Restart reproduces a shell SIGSEGV before any login1 reboot request;
+  further crash tracing is required. OTA remains disabled and release gates open.
+
 ## 2026-10-04 — shared recording fix and fresh-image validation
 
 - Initialized fresh Waydroid using official defaults and verified Android images;
