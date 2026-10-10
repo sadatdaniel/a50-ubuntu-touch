@@ -1,5 +1,12 @@
 # Status
 
+Latest status check, 10 October 23:23 CEST: original Waydroid session/init
+survive about 5h42m, Android booted, actual user-shell active with zero restarts.
+No sampled native OOM/fatal process errors or Android crash/ANR. Root RO,
+AppArmor Y, audit clean, failed units zero. Sleep stats unchanged 9/0; this is
+continued process survival, not another sleep pass. aa18 remains unflashed.
+Private logs stay off GitHub. Details in [050](experiments/050-fresh-waydroid.md).
+
 Current background investigation: the existing Waydroid window resumes, but
 its first recorder expired before unplug and no deep cycle was recorded. The
 corrected retry was deferred by the owner and all observer holds/units removed.

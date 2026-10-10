@@ -307,3 +307,23 @@ result is pending. Evidence is auto-1-deferred-preparation. Temporary units
 and kernel holds are removed, and the original session still reports
 boot_complete=1 with unchanged identities and zero automatic restarts. See
 048 for the observed timing and updated short/long caller timeouts.
+### Connected-session checkpoint, 10 October, 23:23 CEST
+
+Waydroid's original native PID/InvocationID and Android init remain unchanged
+from 17:41, approximately five hours and forty-two minutes. Its user-unit and
+container are active with zero automatic restarts and boot_complete=1. The
+actual user-session lomiri-full-greeter unit is active with zero restarts since
+17:18. The same-named system-unit query is inactive and is not the shell's state.
+No kernel OOM/panic/oops matches in this boot, no sampled Android crash entries,
+and no Android ANR since session boot. The bounded native error query after
+18:10 finds no core dump, segfault, fatal-signal or failed-process entries.
+
+Kernel boot is unchanged on aa17. Root remains read-only, AppArmor Y, package
+audit empty and system failed-unit count zero. About 1.6 GiB memory is available.
+Suspend counters remain 9 successes / 0 failures, without additional cycles;
+no temporary kernel wake hold remains and normal suspend activation is active.
+Load average remains around 16 and was not diagnosed as a crash by these checks.
+This demonstrates continued session/process survival, not a responsive-window
+or unplugged deep-sleep/long-soak pass. The suspected background crash has not
+been reproduced in this observation. Physical background testing and aa18
+hardware validation remain pending; no kernel change or restart was performed.
