@@ -24,9 +24,9 @@ crash buffer is empty. A short unplugged background-sleep cohort is armed
 under /userdata/a50-aa17-startup-test/auto-1, before stats=9. The previous
 normal-boot cohort is archived as auto-1-normal-boot. Before Waydroid user-unit
 PID=16925, InvocationID=252d73d96bd745a3a7ceba1a2ea4e33d, Android init=17064;
-collect without relaunching and compare identities. User result is pending.
+collect without relaunching and compare identities. First user report confirms existing-window recovery, but its recorder expired four seconds before unplug and stats stayed 9 to 9. That is not a deep-sleep pass. Evidence is archived as auto-1-expired-preparation. The corrected short cohort is armed with ten-minute preparation and explicit phase records; its physical test/result is pending.
 A 30-minute observer mode is prepared but not staged/armed; use argument
-1800 and TimeoutStartSec=2160 after short-test cleanup. Keyboard unavailable.
+1800 and TimeoutStartSec=2700 after short-test cleanup. Keyboard unavailable.
 See 050 for the nonfatal launcher-client abort/notification warning and the
 unchanged official packaging check.
 

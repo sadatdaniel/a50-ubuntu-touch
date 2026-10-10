@@ -198,10 +198,27 @@ awake seconds, which could otherwise end the soak prematurely. Ordinary
 waits do not create a new wake alarm. Syntax and invalid-duration rejection
 checks pass; long-mode hardware validation remains pending.
 
-Use --aa17-startup 1800 with TimeoutStartSec=2160. Retain the verified boot-ID
+Use --aa17-startup 1800 with TimeoutStartSec=2700. Retain the verified boot-ID
 and image guards, private bounded kernel capture, native USB configuration and
 normal installed activation. Archive each completed auto-1 directory before
 arming another cohort, preserving its before/after stats and process identities.
 The existing cleanup keeps the phone awake after the deadline for evidence
 collection; remove that temporary hold/inhibitor promptly after reconnecting.
 This is a background-lifecycle test, not a battery-drain benchmark.
+
+### Physical preparation timing correction, 10 October
+
+The first Waydroid background cohort expired while waiting for unplug at
+17:46:16 CEST. Native USB disconnect arrived at 17:46:20, four seconds later.
+The existing window resumed normally and its native/Android identities stayed
+unchanged, but suspend counters remained 9 to 9. This is not a deep-sleep pass.
+Evidence is retained privately as auto-1-expired-preparation.
+
+The observer now allows 600 seconds for physical preparation, records the
+preparation deadline, disconnect timestamp and each phase, and uses a
+900-second preparation hold. The independent sleep deadline is still armed
+only after cable removal, display-off and normal Wi-Fi preparation. Short
+runs require TimeoutStartSec=900; 1800-second runs require 2700. The earlier
+360-second command above records the historical normal-startup test.
+Shell syntax and rejection of unsupported durations pass. A corrected short
+Waydroid cohort is armed; its hardware result remains pending.

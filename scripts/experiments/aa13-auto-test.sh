@@ -27,21 +27,29 @@ systemctl is-active --quiet a50-kmsg-capture
 test -f "$P/aa13-auto-stop.sh"
 mkdir "$B"
 cat /proc/sys/kernel/random/boot_id > "$B/boot-id"
-echo "a50-auto-test-hold 600000000000" > /sys/power/wake_lock
+echo "a50-auto-test-hold 900000000000" > /sys/power/wake_lock
 trap 'sh "$P/aa13-auto-stop.sh" "${1:-}"' EXIT HUP INT TERM
 cat /sys/kernel/debug/suspend_stats > "$B/before.stats"
 cat /sys/kernel/debug/wakeup_sources > "$B/before.wakeup-sources"
 dmesg > "$B/before.dmesg"
-# Wait for the user to unplug USB before activation; abort after three minutes.
+phase() {
+    printf '%s\n' "$1" > "$B/phase"
+    printf 'A50 sleep test: %s at %s\n' "$1" "$(date -Is)"
+}
+# Allow ten minutes for physical preparation; sleep timing starts after unplug.
+date -u -d '+600 seconds' '+%Y-%m-%d %H:%M:%S UTC' > "$B/preparation-deadline"
+phase waiting-for-usb-removal
 if systemctl is-active --quiet a50-test-awake.service; then
     systemctl stop a50-test-awake.service
 fi
 waited=0
 while [ "$(cat /sys/class/power_supply/usb/online)" != 0 ]; do
-    test "$waited" -lt 180 || exit 1
+    test "$waited" -lt 600 || { echo "USB preparation deadline expired"; exit 1; }
     sleep 1
     waited=$((waited + 1))
 done
+date -Is > "$B/usb-disconnected"
+phase waiting-for-display-off
 # Cable removal can wake the display; allow the normal lock-screen timeout.
 waited=0
 while [ "$(cat /sys/class/backlight/panel/brightness)" != 0 ]; do
@@ -50,6 +58,7 @@ while [ "$(cat /sys/class/backlight/panel/brightness)" != 0 ]; do
     sleep 1
     waited=$((waited + 1))
 done
+phase waiting-for-wifi-preparation
 # The packaged helper has no experimental mode marker. Require the latest
 # driver command to request sleep preparation; actual recovery is tested below.
 waited=0
@@ -92,6 +101,7 @@ if [ "${1:-}" = --aa17-startup ] || ! grep -Eq '00000000[[:space:]]+00000001' "$
     done
     test -s "$B/existing-worker"
 fi
+phase sleep-observation-started
 date -Is > "$B/started"
 echo a50-auto-test-hold > /sys/power/wake_unlock
 if [ "$test_seconds" = 90 ]; then

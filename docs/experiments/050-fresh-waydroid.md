@@ -296,3 +296,11 @@ in Recents, switch to a native app, and leave USB disconnected for the soak.
 Compare the exact user-unit InvocationID/PID and Android init PID after wake,
 then test the existing window before any relaunch. Capture native/Android crash
 evidence before recovery if it fails. See 048 for bounds and cleanup.
+
+The first cohort's user report confirms the existing window resumes, with the
+same native and Android session identities. It does not establish deep sleep:
+the recorder expired four seconds before cable removal and counters stayed
+9 to 9. That cohort is archived as auto-1-expired-preparation. The corrected
+short test allows ten minutes for preparation, records each phase, and is
+armed without restarting Waydroid; actual unplugged result is pending. See
+048 for the observed timing and updated short/long caller timeouts.

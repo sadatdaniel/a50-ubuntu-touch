@@ -2,6 +2,11 @@
 
 ## 2026-10-10 — adopt existing upstream display corrections
 
+- Corrected background-sleep test preparation timing: retain the expired
+  cohort as inconclusive for deep sleep, allow ten minutes to unplug, and
+  record each phase. No production power setting changes. Longer soak remains
+  pending; successful window recovery alone is not a suspend pass.
+
 - Replaced the local QtMir DPR package with official Mir1 scaling guards;
   exact three-package transaction and full read-only reboot pass. Published
   guarded installation/rollback and source-linked evidence.
