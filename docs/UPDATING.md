@@ -41,8 +41,8 @@ fix is an already merged upstream revert; the installed Lomiri a50state.3
 package combines current fe38aa source with the still-unmerged window-state
 backport. Both survive full system reboot. The original four-app Restart still
 crashes; candidate a50state.4 adds the shared stable-ID close-loop correction.
-Its native regression/build/install/full reboot pass, menu hardware testing
-remains pending (055). This new shared patch needs image integration and
+Its native regression/build/install/full reboot pass, and two original
+four-app menu tests complete real kernel reboots (055). This new shared patch needs image integration and
 upstream review, as does the unmerged reopening backport. Do not keep the obsolete QtMir
 workaround when selecting a compatible upstream image, and do not drop the
 window-state backport merely because Recents is upstream. The autosuspend

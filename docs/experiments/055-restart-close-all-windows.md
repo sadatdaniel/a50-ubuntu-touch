@@ -2,7 +2,8 @@
 
 10 October 2026. Reproduced on the installed a50state.3 / official QtMir ac3ee9
 packages. Shared regression, native package build, installation and full
-reboot persistence pass. Power-menu hardware reproduction remains pending.
+reboot persistence pass. Two original four-app power-menu tests now complete
+real kernel reboots, including a repeat without the debugger.
 
 ## Evidence
 
@@ -100,3 +101,23 @@ Archive checksums:
 | lomiri-common | af6f93c5bd856f6ee1e1cba6b59b56ea45bd3559aafc1cb1b2ea37503c0a5987 |
 | lomiri-greeter | 23e47025554878f65cf83030818e443c00ba6919008b704e3b32400989fd7e3b |
 | indicators-client (not installed) | 86ac43c1f145c428a560ece0361769e08ca8747e5ac7f120d6d12589994c7056 |
+
+## Repeated four-app hardware validation
+
+The user opened Gallery, OpenStore, Morph and YouTube and selected Restart
+from the normal power menu twice. Both show the Samsung logo and change the
+kernel boot ID: ff216042-8c36-4f78-8a03-a5b8e894af54 to
+2ecc4dd3-1c39-418d-be77-e791478633f8, then to
+ffb91172-1f4e-4bba-9135-e374b0a8f959. The second test has no debugger attached.
+The first candidate trace ends with normal shutdown SIGTERM, without the
+previous SIGBUS. The second prior-boot journal records systemd-logind's normal
+reboot request, with no shell crash/automatic-restart entry. Shutdown-time
+USB/polkit start jobs conflict with the queued shutdown transaction; these
+messages do not prevent either reboot and are not concealed as a clean journal.
+
+After each reboot the installed window-manager hash still matches the verified
+archive, root is read-only, AppArmor is Y, audit is clean, no system units fail,
+Lomiri has zero automatic restarts and automatic suspend startup succeeds.
+This closes the reproduced four-app menu failure for this tested package.
+Broader shutdown/logout coverage, clean-image incorporation, signed OTA and
+soak checks remain; these two passes do not establish a stable ROM.

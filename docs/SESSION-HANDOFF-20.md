@@ -6,8 +6,9 @@ in TopLevelWindowModel::closeAllWindows; a shared stable-ID snapshot candidate
 and actual-function ASan regression pass in native build 38061616400.
 All four a50state.4 packages are installed and survive a true reboot with an
 exact installed-library/archive match. AppArmor Y, read-only root, clean audit,
-no failed units and automatic suspend startup pass. Four-app menu hardware
-validation remains pending. See [055](experiments/055-restart-close-all-windows.md).
+no failed units and automatic suspend startup pass. The original four-app
+menu Restart now passes twice with changed kernel boot IDs and Samsung logos;
+the second test runs without the debugger. Both return with zero shell restarts. See [055](experiments/055-restart-close-all-windows.md).
 
 Official QtMir ac3ee9 replaces the local DPR workaround. Conventional Lomiri
 a50state.3 build 38047817398 passes and its four packages are installed; full
