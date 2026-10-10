@@ -1,8 +1,14 @@
 # Galaxy A50: suspend and updates
 
-Updated 4 October 2026. Device: SM-A505F. Ubuntu Touch 26.04 only.
+Updated 10 October 2026. Device: SM-A505F. Ubuntu Touch 26.04 only.
 
 ## Current result
+
+Normal installed automatic suspend startup now passes after full boot: nine
+deep cycles (76.719 seconds), zero failures, automatic authorized USB recovery,
+user-confirmed screen/touch and Wi-Fi HTTPS recovery. The installed activation
+unit also restarts with repowerd. No temporary test hold remains. Clean-image,
+container-death, screen-on and battery/soak checks remain; see experiment 048.
 
 Latest aa17 follow-up passes awake cable reconnection and four actual deep
 cycles (87.409 seconds, zero resume failures), including automatic USB recovery,

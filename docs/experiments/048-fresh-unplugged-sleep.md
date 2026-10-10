@@ -140,7 +140,7 @@ installed activation unit to be active/successful and proves the matching
 Android-namespace worker waits in pm_get_wakeup_count while the test hold is
 held. Thus a pass establishes sleep from normal boot activation. Shell syntax
 and the existing five startup-link/audio checks pass. Hardware test is armed
-after the two successful menu reboots; results remain pending.
+after the two successful menu reboots; the result is recorded below.
 
 After staging the three public scripts and expected-boot-id under that path,
 start capture-kmsg.py in a50-kmsg-capture and invoke the existing worker with
@@ -150,3 +150,39 @@ and active capture before unplugging. Cleanup uses a50-aa17-startup-stop and
 the same existing temporary awake hold/inhibitor; remove those after evidence
 and connection health are collected. No forced sleep or permanent power
 configuration change is introduced by this test mode.
+
+### Normal-startup unplugged result, 10 October
+
+PASS on the unchanged aa17 boot after the two real menu reboots. The test
+observed the installed unit active/successful and its Android-namespace worker
+in pm_get_wakeup_count; it did not issue enableAutosuspend. Counters increase
+from 0 to 9 successful deep cycles, with failures and every resume-failure
+counter remaining zero. Kernel Timekeeping reports 76.719 seconds asleep in
+those nine cycles. The independent calendar deadline wakes cleanup at
+17:23:48 CEST (15:23:48 UTC), with final kernel resume at 15:23:49 UTC.
+
+The user confirms screen and touch work. Kernel boot ID is unchanged,
+authorized USB returns automatically without a Developer Mode toggle, Wi-Fi
+association/default route recover, and an HTTPS request to the official image
+service returns 200. The documentation server returned HTTP 403 after a
+successful TLS exchange; curl is not installed. Those first probe outcomes
+are not interpreted as failed network recovery. Root remains read-only,
+AppArmor Y, package audit clean and Lomiri has zero automatic restarts.
+
+The existing lifecycle checker now accepts --installed to observe the normal
+unit without a runtime replacement. It bounds its wait for the dependent
+oneshot, since a Type=dbus restart can finish first. Installed activation
+restarts successfully with a changed InvocationID when repowerd restarts,
+reporting already active; the existing Android worker remains present.
+The hardware run of that public checker passes. SystemSuspend/container death
+recovery is a separate, still unvalidated case.
+
+The test timers, private kernel collector, repowerd-cli inhibitor and kernel
+test holds are removed. Stopping the old temporary inhibitor after repowerd
+replacement returns ServiceUnknown for its obsolete unique D-Bus owner and
+exit 255; the evidence was inspected before resetting only that observer's
+failed state. Final system failed-unit count is zero and no test hold remains.
+Optional HBM/performance-booster configuration warnings and a g_object_unref
+warning at repowerd exit are retained in private evidence; they did not fail
+the activation restart. This bounded check does not establish battery drain,
+long idle, screen-on inhibition or clean-image/OTA success.

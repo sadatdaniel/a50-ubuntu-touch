@@ -18,7 +18,9 @@
   two original four-app power-menu tests now complete real kernel reboots,
   including a repeat without the debugger. Post-boot security/startup checks pass.
 - Installed the existing overlay autosuspend startup helper/unit; normal full
-  reboot activates Android autosuspend. New unplugged validation remains.
+  reboot activates Android autosuspend. Observation-only unplugged test passes
+  nine deep cycles, zero failures and automatic USB/Wi-Fi recovery. Installed
+  activation survives power-daemon restart; temporary test services/holds removed.
   OTA remains disabled and release gates open.
 
 ## 2026-10-04 — shared recording fix and fresh-image validation

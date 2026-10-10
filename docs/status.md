@@ -12,6 +12,13 @@ the second test runs without the debugger. Both return with zero shell restarts.
 
 Current checkpoint: 10 October 2026. Development port, not a stable release.
 
+Normal installed suspend startup now passes the bounded unplugged test:
+nine deep cycles, 76.719 seconds asleep, zero failures, automatic authorized
+USB recovery, user-confirmed screen/touch and actual Wi-Fi HTTPS recovery.
+Installed activation also survives repowerd restart. Temporary collectors,
+inhibitors and holds are removed; final failed-unit count is zero. Screen-on,
+container-death, battery/soak and clean-image/OTA checks remain (048).
+
 Official QtMir ac3ee9 packages replace the local Mir1 DPR workaround and
 survive a true reboot. The exact upstream Recents revert fixes proportions in
 a user/screenshot-confirmed runtime test. Native ARM64 build 38047817398 passes;

@@ -10,6 +10,13 @@ no failed units and automatic suspend startup pass. The original four-app
 menu Restart now passes twice with changed kernel boot IDs and Samsung logos;
 the second test runs without the debugger. Both return with zero shell restarts. See [055](experiments/055-restart-close-all-windows.md).
 
+Normal installed suspend startup now passes the bounded unplugged test:
+nine deep cycles, 76.719 seconds asleep, zero failures, automatic authorized
+USB recovery, user-confirmed screen/touch and actual Wi-Fi HTTPS recovery.
+Installed activation also survives repowerd restart. Temporary collectors,
+inhibitors and holds are removed; final failed-unit count is zero. Screen-on,
+container-death, battery/soak and clean-image/OTA checks remain (048).
+
 Official QtMir ac3ee9 replaces the local DPR workaround. Conventional Lomiri
 a50state.3 build 38047817398 passes and its four packages are installed; full
 reboot retains upstream Recents PadOrCrop and the MR 331 reopening backport
