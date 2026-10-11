@@ -33,6 +33,11 @@ ROOTFS="$OUT/rootfs.img"
 [ -f "$BOOT" ]   || { echo "E: $BOOT not found - run build-device-tarball.sh" >&2; exit 1; }
 [ -f "$ROOTFS" ] || { echo "E: $ROOTFS not found - run build-rootfs-image.sh" >&2; exit 1; }
 
+# Do not publish a partial image or reuse provenance from a different build.
+[ -r "$OUT/rootfs-inputs.sha256" ] || { echo 'E: integrated build stamp missing; rebuild the rootfs' >&2; exit 1; }
+( cd "$OUT" && sha256sum -c rootfs-inputs.sha256 )
+cmp "$OUT/validated-packages.txt" "$HERE/scripts/release/validated-packages.lock"
+
 STAGE="$OUT/.zip"
 rm -rf "$STAGE"
 mkdir -p "$STAGE/install"
@@ -60,16 +65,14 @@ fi
     echo "boot_bytes=$(stat -c%s "$BOOT")"
     # Which Android system is inside the rootfs. Unpinned this was unknowable
     # after the fact; gsi.lock pins it and build-rootfs-image.sh verifies it.
-    if [ -r "$HERE/gsi.lock" ]; then
-        sed -n 's/^\(GSI_[A-Z0-9_]*\)=\(.*\)$/\1=\2/p' "$HERE/gsi.lock" \
-            | tr 'A-Z' 'a-z'
-    fi
+    sed 's/^[^=]*/\L&/' "$OUT/gsi-source.txt"
     # Which Ubuntu rootfs is inside the image, written by build-rootfs-image.sh.
     # The channel index moves, so this is the only record of the Ubuntu half.
     if [ -r "$OUT/rootfs-source.txt" ]; then
-        tr 'A-Z' 'a-z' < "$OUT/rootfs-source.txt"
+        sed 's/^[^=]*/\L&/' "$OUT/rootfs-source.txt"
     fi
-    [ -n "$MANIFEST" ] && [ -f "$MANIFEST" ] && sed 's/^/kernel_/' "$MANIFEST"
+    echo "package_lock_sha256=$(sha256sum "$OUT/validated-packages.txt" | cut -d' ' -f1)"
+    if [ -n "$MANIFEST" ] && [ -f "$MANIFEST" ]; then sed 's/^/kernel_/' "$MANIFEST"; fi
 } > "$STAGE/install/manifest.txt"
 
 # Hashes of the UNCOMPRESSED artifacts: what the installer verifies is what
@@ -80,16 +83,18 @@ fi
     # commented out - `sha256sum -c` skips lines beginning with #, and the
     # installer's own lookup matches on exact filenames. It is recorded here
     # because this is where someone goes looking for a hash.
-    if [ -r "$HERE/gsi.lock" ]; then
-        gl() { grep -E "^$1=" "$HERE/gsi.lock" | head -1 | cut -d= -f2-; }
+    if [ -r "$OUT/gsi-source.txt" ]; then
+        gl() { grep -E "^$1=" "$OUT/gsi-source.txt" | head -1 | cut -d= -f2-; }
         echo "#"
-        echo "# input, not installed: Halium GSI build $(gl GSI_BUILD) ($(gl GSI_DATE))"
+        echo "# input, not installed: Halium GSI build $(gl GSI_BUILD)"
         echo "# $(gl GSI_SHA256)  halium_halium_arm64.tar.xz"
         echo "# $(gl GSI_ANDROID_ROOTFS_SHA256)  var/lib/lxc/android/android-rootfs.img"
         echo "#   the second one is checkable on the running device:"
         echo "#   sha256sum /var/lib/lxc/android/android-rootfs.img"
     fi
 } > "$STAGE/install/SHA256SUMS"
+
+cp "$OUT/validated-packages.txt" "$STAGE/install/validated-packages.lock"
 
 SUFFIX=""
 [ "$VARIANT" = release ] || SUFFIX="-$VARIANT"
@@ -100,7 +105,7 @@ rm -f "$OUT/$ZIPNAME"
 (
   cd "$STAGE"
   zip -q -r -9 "$OUT/$ZIPNAME" META-INF install/a50-install.sh \
-                               install/manifest.txt install/SHA256SUMS install/boot.img
+                               install/manifest.txt install/SHA256SUMS install/validated-packages.lock install/boot.img
   zip -q -0    "$OUT/$ZIPNAME" install/rootfs.img.gz
 )
 rm -rf "$STAGE"

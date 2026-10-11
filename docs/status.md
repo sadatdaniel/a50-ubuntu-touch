@@ -1,5 +1,18 @@
 # Status
 
+Image integration audit, 11 October: the image assembler now requires a
+verified 18-package cohort and installs it with native APT in the offline
+rootfs before applying device settings. A completed image stamp binds boot,
+rootfs and actual input provenance; packaging rejects incomplete/changed
+inputs. Real archive and tiny ZIP regressions pass; the phone's installed
+cohort and native APT dry run match with zero changes. Root RO, AppArmor Y,
+failed units zero. Actual fresh-rootfs installation, complete corrected GSI,
+clean boot and signed OTA remain untested; aa18 stays unflashed. Small tests
+use WSL because Docker's metadata filesystem is read-only. Safe duplicate
+archive cleanup recovers about 1.2 GiB; Docker restart/cleanup is deferred
+pending the owner's choice regarding other running jobs. See
+[059](experiments/059-image-package-integration.md).
+
 Isolated real OOM test, 11 October 08:09 CEST: disposable phablet worker under
 verified 64 MiB RAM+swap limits is killed by the kernel, oom_kill 0 to 1,
 exit 137; a subsequent allocation succeeds. Boot/Lomiri/Waydroid identities

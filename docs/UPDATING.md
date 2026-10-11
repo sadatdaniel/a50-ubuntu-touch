@@ -1,6 +1,6 @@
 # Updating and preserving A50 fixes
 
-Updated 10 October 2026. Ubuntu Touch 26.04 only; this port is still a
+Updated 11 October 2026. Ubuntu Touch 26.04 only; this port is still a
 development build. [OTA finalization](ota-finalization.md) and the
 [release backlog](release-validation-backlog.md) track the current evidence.
 
@@ -37,10 +37,9 @@ for development; they are not release prerequisites. Permission bypasses and
 unsigned recovery-updater overrides must not ship.
 
 Official QtMir ac3ee9 now replaces the local Mir1 DPR package. The Recents
-fix is an already merged upstream revert; the installed Lomiri a50state.3
-package combines current fe38aa source with the still-unmerged window-state
-backport. Both survive full system reboot. The original four-app Restart still
-crashes; candidate a50state.4 adds the shared stable-ID close-loop correction.
+fix is an already merged upstream revert. Installed Lomiri a50state.4
+combines current fe38aa source with the still-unmerged window-state backport
+and shared stable-ID close-loop correction. It survives full system reboot.
 Its native regression/build/install/full reboot pass, and two original
 four-app menu tests complete real kernel reboots (055). This new shared patch needs image integration and
 upstream review, as does the unmerged reopening backport. Do not keep the obsolete QtMir
@@ -54,15 +53,19 @@ boot on this phone. Image/OTA incorporation and clean-install checks remain.
 The scripts and pinned fix sources are reproducible development inputs, not
 proof that the current release-image builder includes every tested correction.
 Native compatibility package builds exist, including the Waydroid .2 launcher
-candidate; explicit rootfs build-time package integration and first-boot/OTA
-checks remain. A runtime test, an installed package and a clean-image result
+candidate. The assembler now requires the exact validated package bundle and
+installs it by native offline APT. Archive, installed-cohort, native APT dry-run
+and tiny ZIP rejection/provenance checks pass (059). Actual installation into
+a fresh rootfs, image build, first-boot and OTA checks remain. A runtime test, an installed package and a clean-image result
 must be recorded as separate milestones. The archived ZIP predates recent fixes.
 
 For Waydroid, .1 passed the first three runtime reopens but failed the next
 post-reboot user test. Candidate .2 preserves the main desktop file during
 regeneration, passed its stronger regression/build/install and survives reboot.
 All three post-reboot user drawer close/reopens and icon persistence pass.
-Wider sleep/audio/network and extended-use validation remains open. See
+The original existing window also resumes normally after the unplugged
+overnight observation with unchanged process identities and no captured
+Android crash/ANR (057). Wider audio/network and extended-use validation remains open. See
 [the complete record](experiments/050-fresh-waydroid.md). This is not evidence
 that every upstream update requires redoing every fix; it is an incomplete
 fix exposed by an additional required test.
@@ -77,8 +80,8 @@ passed three temporary camera recording/playback tests, and its complete pinned
 image ran out of runner disk space in [run 37172560900](https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/37172560900).
 It must pass filesystem/interface checks and boot/reboot tests before replacing
 the baseline. The rootfs builder still consumes the Jenkins pin, and the ZIP
-manifest still reads that pin; candidate input/provenance integration is required
-before packaging the corrected image. Installing replacement libraries only
+manifest now records the actual selected input; complete candidate GSI input
+selection and verification are still required before packaging the corrected image. Installing replacement libraries only
 on the test phone does not complete this work. The aa15 scheduling correction and Bluetooth protocol availability pass on
 aa16/aa17. K380 pairing/typing is user-confirmed; idle/reconnect/sleep checks remain.
 

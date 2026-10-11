@@ -1,5 +1,10 @@
 # Cutting a release
 
+11 October 2026: these are development candidate instructions. The archived
+ZIP does not contain every recent fix, and a stable release is still blocked
+on the corrected GSI, actual offline native package installation, clean boot,
+recovery and signed OTA tests. Read [059](experiments/059-image-package-integration.md).
+
 A release of this port is **one file**: a recovery-flashable zip that installs
 a boot image and a rootfs and nothing else. This file is how it is built, what
 is verified, and where the build deliberately departs from UBports' own
@@ -40,6 +45,7 @@ ubuntu-touch-a50-26.04-1.x-YYYY-MM-DD.zip
     ├── boot.img          kernel + Halium initramfs
     ├── rootfs.img.gz     Ubuntu Touch 26.04 + Halium 11 GSI + this port
     ├── manifest.txt      what this build is made of
+    ├── validated-packages.lock  the tested native package inputs
     └── SHA256SUMS        of the UNCOMPRESSED artifacts
 ```
 
@@ -49,6 +55,9 @@ that is what the installer reads back and compares.
 ## Prerequisites
 
 * Docker, or any Linux host where you can be root and use a loop device.
+  Native ARM64 execution or configured binfmt is required for package installation.
+* The exact 18-package bundle from [059](experiments/059-image-package-integration.md),
+  prepared at `dl/validated-packages`; archive/metadata validation must pass.
 * A boot image built by [a50-halium](https://github.com/sadatdaniel/a50-halium)
   — `build/build-kernel.sh --profile full --firmware DIR`, then
   `build/make-boot-image.sh --port ubports`. Or take one straight from that
@@ -65,14 +74,14 @@ that is what the installer reads back and compares.
 sudo ./scripts/release/build-device-tarball.sh --boot /path/to/boot.img --out out
 
 # 2. the rootfs image: UT rootfs + Halium GSI + the device tarball, in one ext4
-sudo ./scripts/release/build-rootfs-image.sh --device-tarball out/device_a50.tar.xz --out out
+sudo ./scripts/release/build-rootfs-image.sh --device-tarball out/device_a50.tar.xz --package-bundle dl/validated-packages --out out
 
 # 3. the flashable zip
 ./scripts/release/make-installer-zip.sh --out out --version "$(date -u +%F)" \
     --manifest /path/to/a50-halium/out/build-manifest.txt
 
 # then the debug build: steps 2 and 3 again, with --devel / --variant devel
-sudo ./scripts/release/build-rootfs-image.sh --device-tarball out/device_a50.tar.xz --out out --devel
+sudo ./scripts/release/build-rootfs-image.sh --device-tarball out/device_a50.tar.xz --package-bundle dl/validated-packages --out out --devel
 ./scripts/release/make-installer-zip.sh --out out --version "$(date -u +%F)" \
     --variant devel --manifest /path/to/a50-halium/out/build-manifest.txt
 ```
@@ -81,17 +90,17 @@ Step 2 overwrites `out/rootfs.img`, so build and zip one variant fully before
 starting the other. Each image is 6 GB and each zip is about 1.3 GB, so budget
 roughly 16 GB of scratch for both.
 
-In a container, all three at once:
+In a container on an ARM64-capable builder, all three at once:
 
 ```sh
 docker run --rm --privileged \
     -v "$PWD:/repo" -v a50-build:/w -v /path/to/artifacts:/s \
     ubuntu:22.04 bash -c '
         apt-get update -qq && apt-get install -y -qq --no-install-recommends \
-            curl ca-certificates xz-utils e2fsprogs git zip unzip pigz
+            curl ca-certificates xz-utils e2fsprogs git zip unzip pigz python3
         cd /repo
         ./scripts/release/build-device-tarball.sh --boot /s/boot.img --out /w/out
-        ./scripts/release/build-rootfs-image.sh --device-tarball /w/out/device_a50.tar.xz --out /w/out
+        ./scripts/release/build-rootfs-image.sh --device-tarball /w/out/device_a50.tar.xz --package-bundle /repo/dl/validated-packages --out /w/out
         ./scripts/release/make-installer-zip.sh --out /w/out --version "$(date -u +%F)"
     '
 ```
@@ -123,8 +132,10 @@ forced changes:
    build outright. The halium version is the semantically correct read of the
    same intent.
 
-Both deviations are in the script's header comment as well, so nobody has to
-find this file to understand them.
+Native APT installation of the validated package cohort is an additional
+build step (059), following the official rootfs-builder convention. Device
+settings are applied afterward. Build success stamps and actual GSI input
+records prevent the ZIP from silently packaging a partial or mislabeled image.
 
 A third difference is not a deviation but a limitation: **the kernel is not
 built by the adaptation tools.** `./build.sh` (upstream's path) does build one,

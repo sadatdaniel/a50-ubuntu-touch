@@ -9,9 +9,11 @@ Foundation or by Samsung. Built the way UBports community ports are built - a
 - and packaged as a single recovery-flashable zip, because this device has no
 fastboot.
 
-> **Read [What works](#what-works) before installing.** The camera does not work
-> in Ubuntu Touch and the fingerprint reader does not enrol. Everything else
-> that makes a phone a phone does.
+> **Development port, not a stable release.** Read the current
+> [validation status](docs/status.md) and [image integration gates](docs/experiments/059-image-package-integration.md)
+> before installing. Archived ZIPs predate recent fixes. The current test phone
+> takes photos; the video Stop correction still needs a complete Android image.
+> OTA and fingerprint enrolment are not ready.
 
 ---
 
@@ -319,15 +321,20 @@ volume.
 
 ### 2. The flashable zip
 
+Prepare `dl/validated-packages` using the exact native package cohort in
+[059](docs/experiments/059-image-package-integration.md). Package installation
+requires ARM64 execution, natively or through configured binfmt. Actual fresh
+image installation/clean boot remain pending; these are candidate build steps.
+
 ```sh
 cd a50-ubuntu-touch
 sudo ./scripts/release/build-device-tarball.sh --boot ../a50-halium/out/boot.img
-sudo ./scripts/release/build-rootfs-image.sh  --device-tarball out/device_a50.tar.xz
+sudo ./scripts/release/build-rootfs-image.sh  --device-tarball out/device_a50.tar.xz --package-bundle dl/validated-packages
      ./scripts/release/make-installer-zip.sh  --version "$(date -u +%F)"
 
 # ...or the debug build: same thing, plus sshd, a root password, USB
 # networking and unlocked ADB
-sudo ./scripts/release/build-rootfs-image.sh  --device-tarball out/device_a50.tar.xz --devel
+sudo ./scripts/release/build-rootfs-image.sh  --device-tarball out/device_a50.tar.xz --package-bundle dl/validated-packages --devel
      ./scripts/release/make-installer-zip.sh  --version "$(date -u +%F)" --variant devel
 ```
 

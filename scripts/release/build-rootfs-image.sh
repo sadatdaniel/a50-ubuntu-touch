@@ -16,21 +16,22 @@
 #      base is 11. Selecting on $deviceinfo_halium_version instead is the
 #      semantically correct read of the same intent.
 #
-# Everything else - the ext4 image, the unpack order, the android-rootfs.img
-# rename, the version tarball - is upstream's, and deliberately so.
+# The ext4/layout/rename follow upstream. Validated native packages are
+# installed in the offline rootfs with APT before device settings (059).
 #
 # Needs root and a loop device: run it inside the build container.
 #
 #   ./scripts/release/build-rootfs-image.sh --device-tarball out/device_a50.tar.xz \
-#       [--size 4G] [--out out] [--cache dl]
+#       --package-bundle DIR [--size 4G] [--out out] [--cache dl]
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")/../.." && pwd)"
-DEVICE_TARBALL=""; OUT="$HERE/out"; CACHE="$HERE/dl"; SIZE=""
+DEVICE_TARBALL=""; PACKAGE_BUNDLE=""; OUT="$HERE/out"; CACHE="$HERE/dl"; SIZE=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
         --device-tarball) DEVICE_TARBALL="$2"; shift 2 ;;
+        --package-bundle) PACKAGE_BUNDLE="$2"; shift 2 ;;
         --out)   OUT="$2"; shift 2 ;;
         --cache) CACHE="$2"; shift 2 ;;
         --size)  SIZE="$2"; shift 2 ;;
@@ -45,6 +46,12 @@ done
 [ -n "$DEVICE_TARBALL" ] && [ -f "$DEVICE_TARBALL" ] || {
     echo "E: --device-tarball out/device_a50.tar.xz is required" >&2; exit 2; }
 [ "$(id -u)" -eq 0 ] || { echo "E: needs root (loop mount)" >&2; exit 1; }
+
+# Reject incomplete package inputs before downloading tarballs or creating an image.
+[ -n "$PACKAGE_BUNDLE" ] || { echo 'E: --package-bundle DIR is required; see docs/experiments/059-image-package-integration.md' >&2; exit 2; }
+python3 "$HERE/scripts/release/verify-package-bundle.py" --bundle "$PACKAGE_BUNDLE"
+# A failed rebuild must not leave a prior success stamp usable by the ZIP builder.
+rm -f "$OUT/rootfs-inputs.sha256" "$OUT/validated-packages.txt" "$OUT/gsi-source.txt"
 
 # shellcheck disable=SC1091
 source "$HERE/deviceinfo"
@@ -176,7 +183,7 @@ mkfs.ext4 -q -F -L ubuntu-touch \
 mount -o loop "$IMG" "$STAGE/system"
 MNT="$STAGE/system"
 
-for t in "$ROOTFS_TAR" "$GSI_TAR" "$DEVICE_TARBALL" "$CACHE/version.tar.xz"; do
+for t in "$ROOTFS_TAR" "$GSI_TAR"; do
     echo "I: unpacking $(basename "$t")"
     # system-image OTA layout: a top-level system/ holding the rootfs root,
     # plus, for a device tarball, partitions/.
@@ -184,10 +191,6 @@ for t in "$ROOTFS_TAR" "$GSI_TAR" "$DEVICE_TARBALL" "$CACHE/version.tar.xz"; do
     df -h --output=avail "$MNT" | tail -1
 done
 
-if [ -d "$STAGE/partitions" ]; then
-    cp -a "$STAGE/partitions/." "$OUT/"
-    rm -rf "$STAGE/partitions"
-fi
 
 # UBports CI still names the Halium GSI system.img; lxc-android-config looks
 # for android-rootfs.img. Upstream's system-image-from-ota.sh does the same.
@@ -195,6 +198,29 @@ if [ -e "$MNT/var/lib/lxc/android/system.img" ]; then
     mv "$MNT/var/lib/lxc/android/system.img" "$MNT/var/lib/lxc/android/android-rootfs.img"
     echo "I: renamed system.img -> android-rootfs.img"
 fi
+
+# Install native, versioned fixes after extraction; dependency/maintainer-script
+# failures abort the image build. No runtime repair or loose replacement libraries.
+bash "$HERE/scripts/release/install-validated-packages.sh" "$MNT" "$PACKAGE_BUNDLE"
+
+# Apply device settings after native installation so package scripts cannot
+# overwrite device configuration. Preserve the conventional system/ layout.
+for t in "$DEVICE_TARBALL" "$CACHE/version.tar.xz"; do
+    tar --numeric-owner -xJf "$t" -C "$STAGE"
+done
+if [ -d "$STAGE/partitions" ]; then
+    cp -a "$STAGE/partitions/." "$OUT/"
+    rm -rf "$STAGE/partitions"
+fi
+
+# Provenance describes the actual selected input, including an explicit candidate.
+{
+    echo "GSI_JOB=$GSI_JOB"
+    echo "GSI_BUILD=$GSI_BUILD"
+    echo "GSI_URL=$GSI_URL"
+    echo "GSI_SHA256=$GSI_GOT"
+    echo "GSI_ANDROID_ROOTFS_SHA256=$(sha256sum "$MNT/var/lib/lxc/android/android-rootfs.img" | cut -d' ' -f1)"
+} > "$OUT/gsi-source.txt"
 
 # Release images use the normal read-only root; only debug builds opt in.
 
@@ -226,6 +252,14 @@ df -h "$MNT" | tail -1
 cleanup
 rm -rf "$STAGE"
 trap - EXIT
+
+# Written only after package installation, image finalization and unmount succeed.
+cp "$HERE/scripts/release/validated-packages.lock" "$OUT/validated-packages.txt"
+(
+    cd "$OUT"
+    sha256sum rootfs.img boot.img validated-packages.txt rootfs-source.txt gsi-source.txt
+) > "$OUT/rootfs-inputs.sha256.tmp"
+mv "$OUT/rootfs-inputs.sha256.tmp" "$OUT/rootfs-inputs.sha256"
 
 echo "I: $IMG"
 ls -l "$IMG"
