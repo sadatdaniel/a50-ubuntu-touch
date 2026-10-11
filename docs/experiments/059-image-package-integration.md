@@ -123,16 +123,16 @@ and an older device kernel profile. Do not use it as proof that tested aa17
 fixes are included. Device tarball mode/symlinks must continue to come from
 `git archive`, not a Windows working tree.
 
-The complete corrected camera GSI still needs the external builder (250 GiB
-free prerequisite). The local PC ran out of space during this audit, so no
-large image build was attempted. Docker reported a read-only metadata
-filesystem/I/O error; small regressions used the existing WSL Linux environment.
-An old host installer ZIP was removed only after confirming its identical
-SHA256 copy on the phone; source caches, recovery images and volumes were
-preserved. Stopped-container cleanup requires Docker recovery. Do not restart
-Docker without accounting for the two unrelated running jobs.
+The complete corrected camera GSI needs a conventional Linux builder with about
+250 GiB free. After cleanup and VHD compaction this Windows PC has about 44.3 GiB
+free, so no full GSI build was attempted. Docker is healthy and the owner has
+not approved paid cloud provisioning. An old host installer ZIP was removed
+only after confirming its identical SHA256 copy on the phone. Subsequent owner-
+authorized cleanup removed only obsolete A50 Docker caches; the dated follow-ups
+below record retained inputs, restored Docker and current space. One unrelated
+container job resumed. Do not disturb it.
 
-aa18 remains unflashed while the owner is away. Full image installation,
+aa18 remains unflashed. Full image installation,
 clean installation and [official recovery/OTA testing](https://docs.ubports.com/en/latest/porting/finalize/UBports_recovery.html)
 remain release blockers. No stable-release or automatic-update claim follows
 from this audit.

@@ -1,5 +1,7 @@
 # Status
 
+Start new work with [session handoff 21](SESSION-HANDOFF-21.md). Older checkpoint entries below preserve history; the first dated 11 October entry is current.
+
 Image integration audit, 11 October: the image assembler now requires a
 verified 18-package cohort and installs it with native APT in the offline
 rootfs before applying device settings. A completed image stamp binds boot,
@@ -82,7 +84,7 @@ no failed units and automatic suspend startup pass. The original four-app
 menu Restart now passes twice with changed kernel boot IDs and Samsung logos;
 the second test runs without the debugger. Both return with zero shell restarts. See [055](experiments/055-restart-close-all-windows.md).
 
-Current checkpoint: 10 October 2026. Development port, not a stable release.
+Historical checkpoint: 10 October 2026. Development port, not a stable release.
 
 Normal installed suspend startup now passes the bounded unplugged test:
 nine deep cycles, 76.719 seconds asleep, zero failures, automatic authorized
@@ -156,7 +158,7 @@ describe earlier installations/builds.
 ---
 
 
-Current checkpoint (3 October 2026): the clean 26.04 test image now reaches
+Historical checkpoint (3 October 2026): the clean 26.04 test image now reaches
 the setup wizard, and the user confirmed touch works. The aa13 USB configfs
 fix, supported ubuntu.img layout, native LXC hooks and partition-probe typo
 correction resolved the early startup failures. Matching Samsung/upstream
@@ -186,7 +188,7 @@ See [release validation](release-validation-backlog.md), [USB diagnosis](experim
 [ION access](experiments/036-clean-boot-ion-permissions.md). Earlier bring-up
 evidence below is historical; this is still a development port.
 
-**Current checkpoint: 2026-10-02.** Development port, not a stable release.
+**Historical checkpoint: 2026-10-02.** Development port, not a stable release.
 
 - aa12 plus supported repowerd Wi-Fi preparation completed 35 automatic suspend
   cycles, with zero resume failures. Screen/touch recovery was user-confirmed.

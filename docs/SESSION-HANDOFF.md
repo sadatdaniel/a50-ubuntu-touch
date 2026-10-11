@@ -1,12 +1,10 @@
 # Session handoff — Samsung A50 / Ubuntu Touch
 
-> **SUPERSEDED — this is handoff 01, kept for history.** The current handoff is
-> [`SESSION-HANDOFF-02.md`](SESSION-HANDOFF-02.md). Read that first. Two things
-> below are now known to be wrong: the AppArmor kernel in §0 **does not boot**,
-> and §7.1 is wrong that AppArmor is required to fix GPS — it is not.
+> **HISTORICAL — handoff 01, kept for history.** Start new work with
+> [`SESSION-HANDOFF-21.md`](SESSION-HANDOFF-21.md), then read the live status and
+> validation backlog. Do not follow the device state or next steps below.
 
-**Written 2026-09-05.** Everything a fresh session needs to pick this up.
-Read this first, then `docs/status.md`, then the experiment you are touching.
+**Written 2026-09-05.** This file is preserved as the original historical record.
 
 ---
 

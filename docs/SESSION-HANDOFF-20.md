@@ -1,4 +1,6 @@
-# Latest checkpoint: 11 October 2026
+# Historical session log 20 — superseded by session handoff 21
+
+> Start new work with [SESSION-HANDOFF-21.md](SESSION-HANDOFF-21.md). The notes below retain experiment history and older checkpoints; treat old labels and pending steps as historical.
 
 Image integration audit, 11 October: the image assembler now requires a
 verified 18-package cohort and installs it with native APT in the offline
