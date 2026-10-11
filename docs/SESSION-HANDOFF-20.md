@@ -19,12 +19,12 @@ are retained; unrelated project data is untouched. Docker volume usage fell from
 56.1 GB to 9.584 GB. Native trim returned zero newly trimmed bytes, and Docker
 skipped automatic compaction; Windows cancelled the administrator prompt before
 standard DiskPart compaction could run. Docker is running again and its current
-source/cache check passes. A requested retry launched an elevated PowerShell
-helper without a result; a direct native DiskPart retry was then cancelled at
-Windows administrator confirmation before launch. Docker restarted and the
-retained cache check passed again. Some space returned during shutdown: the VHD
-is now about 64.1 GiB, with about 3.4 GiB free on C:. Successful manual compaction
-remains pending; no local full image build is possible. See
+source/cache check passes. After approval, native DiskPart compacted the detached
+Docker data VHD successfully (exit 0). Its file size fell from 68,777,148,416 to
+24,795,676,672 bytes, returning about 41 GiB to C:; C: now has about 44.3 GiB free.
+Docker restarted normally, the unrelated job resumed, and the retained A50 kernel
+source cache passed a fresh read check. Manual compaction is complete; the full
+Android image build still needs substantially more space. See
 [059](experiments/059-image-package-integration.md).
 
 Isolated real OOM test, 11 October 08:09 CEST: disposable phablet worker under

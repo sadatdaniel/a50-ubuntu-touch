@@ -195,9 +195,9 @@ before the helper ran. No successful manual compaction is claimed.
 Docker restarted normally and the unrelated job resumed under its existing
 restart policy. A fresh disposable, network-disabled, read-only container
 successfully read the retained kernel cache and exercised Docker metadata.
-The VHD remains 70,573,359,104 bytes (about 65.7 GiB), with roughly 1.7 GiB free
-on C: at the final check. Returning the deleted space to Windows remains
-pending administrator confirmation. Private inventory, scoped DiskPart helper
+At the end of this cleanup but before the later compaction retry, the VHD was
+70,573,359,104 bytes (about 65.7 GiB), with roughly 1.7 GiB free on C:. Private
+inventory, scoped DiskPart instructions
 and cleanup/recovery evidence remain under `work/private/docker-recovery-20261011`.
 Do not run disk compaction while Docker/WSL has the VHD attached; the helper
 requires Docker to be fully stopped. No phone changes occurred.
@@ -221,3 +221,14 @@ successfully read the preserved current kernel source. Manual compaction still
 requires Windows administrator confirmation and a detached disk; native
 DiskPart can consume the prepared `compact-docker.txt` without running a
 PowerShell script. No further data removal or phone change was performed.
+
+## Successful native compaction, 11 October
+
+The owner explicitly approved another attempt. Docker stopped cleanly, WSL shut
+down, and native DiskPart was launched directly against the exact detached
+Docker data VHD. DiskPart exited 0. VHD file size fell from 68,777,148,416 to
+24,795,676,672 bytes (about 41 GiB returned); C: free space rose to
+47,606,820,864 bytes (about 44.3 GiB). Docker restarted normally and the
+unrelated oci-a1-retry job resumed under its existing policy. A fresh disposable
+read-only, network-disabled container verified the retained A50 kernel cache.
+No phone changes occurred.
