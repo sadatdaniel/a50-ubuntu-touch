@@ -11,9 +11,17 @@ clean boot and signed OTA remain untested; aa18 stays unflashed. Small tests
 used WSL while Docker's metadata filesystem was read-only. Safe duplicate
 archive cleanup recovered about 1.2 GiB. The owner subsequently approved the
 restart; standard WSL attachment/journal recovery restored Docker. Four stopped
-A50 containers are removed, protected volumes retained, and native metadata
-writes/kernel cache reads pass. Windows has about 1.5 GiB free; no local full
-image build is possible. See
+A50 containers were removed and native metadata writes/kernel cache reads passed.
+The owner then authorized obsolete-cache removal: 23 more stopped A50 containers,
+11 earlier kernel/rootfs volumes and two obsolete A50 image references are removed.
+Current kernel sources, aa17/aa18 images, recovery images and the package cohort
+are retained; unrelated project data is untouched. Docker volume usage fell from
+56.1 GB to 9.584 GB. Native trim returned zero newly trimmed bytes, and Docker
+skipped automatic compaction; Windows cancelled the administrator prompt before
+standard DiskPart compaction could run. Docker is running again and its current
+source/cache check passes. The VHD remains about 65.7 GiB; C: has about 1.7 GiB
+free. Physical disk compaction remains pending; no local full image build is
+possible. See
 [059](experiments/059-image-package-integration.md).
 
 Isolated real OOM test, 11 October 08:09 CEST: disposable phablet worker under

@@ -160,3 +160,44 @@ Private logs, undo evidence and removed-container records are in the task's
 and must not be applied blindly. Disk-device letters can change; identify the
 exact VHD and UUID for any future operation. Windows still has only about
 1.5 GiB free, so this does not enable the full Android image build locally.
+
+## Owner-authorized cache cleanup follow-up, 11 October
+
+The owner requested removal of obsolete port sources/caches and actual reduction
+of Docker's Windows disk usage. Scope was checked through container status,
+volume consumers, mount mappings and image ownership; no global prune was used.
+All 23 remaining A50 containers were verified exited and removed without force.
+The nine obsolete kernel volumes (`a50-ksrc`, `a50-ksrc-aa4`, `a50-ksrc-aa5`,
+`a50-ksrc-aa6`, `a50-ksrc-aa7-isolation`, `a50-ksrc-aa8-watchdog`,
+`a50-ksrc-aa9-usb-sleep`, `a50-ksrc-aa10-usb-core`, `a50-ksrc-aa11-wifi-sleep`)
+and two obsolete assembled-image volumes (`a50-release-aa12-rootfs`,
+`a50-release-readonly-376`) were explicitly removed with `docker volume rm`.
+The old `a50-journal-reader` image and dangling A50 image `a87a3805a010` were
+removed. Host bind-mounted files were not deleted.
+
+The current `a50-ksrc-aa12-wifi-early` cache and `a50-halium-build` image remain,
+along with both host Git repositories, firmware inputs, aa17 fallback, aa18
+candidate, recovery images and the verified 18-package archive cohort. The two
+boot image hashes still match their recorded values. Historical experiment
+volumes no longer exist: recreate their sources through the recorded checkout
+and build instructions if needed, rather than expecting a cached baseline.
+Unrelated project volumes/images/build caches and job data were not removed.
+
+Docker's reported logical volume usage fell from 56.1 GB to 9.584 GB; stopped
+container writable layers fell from about 845 MB to zero. The data filesystem
+reports about 19.4 GiB used. These are not measurements of reclaimed Windows
+space. UUID/mount-checked native `fstrim` returned zero newly trimmed bytes.
+Docker stopped cleanly but logged that it skipped built-in compaction. The
+[standard Windows DiskPart compaction](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/compact-vdisk)
+was prepared for the exact detached Docker VHD; Windows cancelled elevation
+before the helper ran. No successful manual compaction is claimed.
+
+Docker restarted normally and the unrelated job resumed under its existing
+restart policy. A fresh disposable, network-disabled, read-only container
+successfully read the retained kernel cache and exercised Docker metadata.
+The VHD remains 70,573,359,104 bytes (about 65.7 GiB), with roughly 1.7 GiB free
+on C: at the final check. Returning the deleted space to Windows remains
+pending administrator confirmation. Private inventory, scoped DiskPart helper
+and cleanup/recovery evidence remain under `work/private/docker-recovery-20261011`.
+Do not run disk compaction while Docker/WSL has the VHD attached; the helper
+requires Docker to be fully stopped. No phone changes occurred.
