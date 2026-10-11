@@ -1,5 +1,12 @@
 # Latest checkpoint: 11 October 2026
 
+Isolated real OOM test, 11 October 08:09 CEST: disposable phablet worker under
+verified 64 MiB RAM+swap limits is killed by the kernel, oom_kill 0 to 1,
+exit 137; a subsequent allocation succeeds. Boot/Lomiri/Waydroid identities
+unchanged, temporary test cleaned up, failed units zero, root RO, AppArmor Y.
+This proves bounded kernel OOM isolation/recovery, not whole-phone pressure
+handling or Android low-memory UX. See [058](experiments/058-isolated-oom-recovery.md).
+
 Overnight result, 11 October 07:41 CEST: same boot and original Lomiri/Waydroid
 processes, no captured kernel crash/OOM or Android crash/ANR. Counters 10/1 to
 190/19: 180 successful suspend cycles, 7h47m16s in successful cycles across an
