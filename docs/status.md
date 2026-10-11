@@ -2,6 +2,8 @@
 
 Start new work with [session handoff 21](SESSION-HANDOFF-21.md). Older checkpoint entries below preserve history; the first dated 11 October entry is current.
 
+Upstream/input review, 11 October afternoon: phone on aa17 (build #6; aa18 is #7), same boot as the soak, root RO, AppArmor Y, failed units zero. Halium PR 84 is still open and unchanged; our hybris-patches pin is the halium-11.0 head. Jenkins kept only the last ~30 GSI artifacts: pinned 1542 is now 404 upstream, so the gitignored local copy (hash verified) is the only source. Build 1578 adds six frameworks/av security fixes; PR 84 still applies unchanged. Sixteen of the 18 cohort archives are now preserved and hash-verified on the host; the Lomiri CI artifact would have expired 13 October. The tar and Waydroid archives are only in root-only phone evidence. A fresh-rootfs APT simulation shows the cohort downgrades QtMir (.84 to .83) and Settings (.490 to .487); 184 non-cohort packages are newer than on the phone. Gated fresh-rootfs test is ready but pending. See [060](experiments/060-upstream-input-retention.md).
+
 Image integration audit, 11 October: the image assembler now requires a
 verified 18-package cohort and installs it with native APT in the offline
 rootfs before applying device settings. A completed image stamp binds boot,

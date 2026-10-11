@@ -96,6 +96,23 @@ test, two signed local updates retaining userdata, maintained channel/signing,
 installer configuration, clean install and post-update regression. Never use
 the private signature bypass.
 
+## Afternoon update, 11 October
+
+Read [060](experiments/060-upstream-input-retention.md) before continuing:
+
+- Phone verified on aa17 (`#6`) over USB ADB; Wi-Fi SSH was unreachable.
+- Pinned GSI 1542 is no longer downloadable from Jenkins, which keeps about 30
+  builds. `dl/halium_halium_arm64-1542.tar.xz` is the only copy. Any
+  corrected GSI should re-pin to a current build (1578 has six frameworks/av
+  security fixes) with the PR 84 guard. Archive release inputs durably.
+- 16 of the 18 cohort archives are preserved in gitignored
+  `dl/cohort-20261011/`. tar and Waydroid need the owner's sudo:
+  `adb shell -t sudo sh /home/phablet/a50-cohort-export.sh` (copy-only),
+  then build the flat bundle and run
+  `scripts/release/test-fresh-rootfs-cohort.sh`.
+- The fresh rootfs is newer than the cohort for QtMir and Settings
+  (intentional downgrades), and 184 other packages differ from the phone.
+
 ## Next actions
 
 1. Check both repos' current revisions and preserve untracked `out-aa*` files.
