@@ -338,3 +338,17 @@ Baseline is 10 successful suspend cycles / 1 earlier charging/cable wake abort.
 Existing pstore archives are backed up privately. Expiry 11 October 13:38 CEST;
 retrieve evidence and remove the observer in the morning. No overnight pass
 claimed yet; aa18 remains unflashed and production settings are unchanged.
+
+## Overnight result, 11 October
+
+Same boot and original launcher/init identities survive the unplugged night.
+180 additional successful suspend cycles account for 7h47m16s; battery is 97%
+from a 100% baseline. No captured Android crash/ANR or kernel panic/OOM; the
+only selected Android kill is explicit cleanup of a long-empty printspooler.
+18 suspend attempts abort for pending native wake/alarm events and retry;
+resume failure categories are zero. USB returns without a Developer Mode toggle.
+The recorder is removed and final health is root RO, AppArmor Y, failed units
+zero. See [057](057-overnight-observation.md) for clock/counter reconciliation,
+private evidence, warnings and observer shutdown regression. Existing-window
+responsiveness is now owner-confirmed through its original Recents tile; this is not a full release
+stability claim and aa18 is still unflashed.

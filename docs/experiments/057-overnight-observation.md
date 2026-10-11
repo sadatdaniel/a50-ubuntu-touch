@@ -133,3 +133,68 @@ of cleanup. Review kernel entry/exit pairs and durations, counter deltas,
 wake reasons, boot changes, launcher/init identity changes, native/Android
 crash/ANR/OOM records and battery changes. Missing evidence is not a pass;
 process survival alone is not proof the Android window is responsive.
+
+## Morning result, 11 October 2026
+
+Evidence collected at 07:41 CEST before any Waydroid relaunch or diagnostic
+shell command. The verified private archive SHA256 is
+9c7236cd0c4a65f16aeb9210c6e8b4a654155cb47e74be735eb0db7a2b29f404;
+post-cleanup evidence SHA256 is
+aa934e85405793726023b0fa034e99be45654bc4300f9204f69ede5caf16203f.
+Host private evidence: this task's work/private/overnight-20261011. Raw archives
+and Android/native logs are not published.
+
+The full recorded window is 8h01m52s; physical USB removal is logged at
+23:50:46 CEST and reinsertion at 07:40:06. Counters change from 10/1 to 190/19:
+180 additional successful suspend cycles and 18 wake-event aborts. Deduplicated
+kernel entry/exit records agree with these 198 attempts. Successful cycles
+account for 28036.028 seconds, approximately 7h47m16s, or 96.55% of the full
+recorded window, including its initial USB-connected preparation. Longest
+successful cycle is 599.658 seconds. CLOCK_BOOTTIME minus CLOCK_MONOTONIC
+increases by 28047.696 seconds; the extra 11.563 seconds of kernel timekeeping
+reported in aborted attempts must not be counted as successful deep cycles.
+Timekeeping messages alone therefore overcount successful suspend attempts.
+
+All 18 aborts have matching wake-event evidence: 14 hip4_wake_lock (Wi-Fi),
+one muic_wake at cable removal, one umts_ipc0 (modem), and two alarmtimer
+EBUSY returns. The latter two correctly defer suspend for an imminent native
+alarm; no observer alarm exists. Later normal attempts succeed; all resume
+failure categories remain zero. Successful wake traces include 134 Wi-Fi,
+45 PMIC/RTC and one other event. Network and timer wake activity remains a
+power-characterization topic, not proof of a screen-on event or hardware crash.
+Sparse brightness samples are zero during the observed night; they cannot rule
+out every brief display activation.
+
+Battery changes from 100% to 97%, temperature 22.9 to 22.8 C. Morning sampling
+occurs just after USB charging resumes; this is an observed percentage change,
+not a calibrated energy measurement. The kernel boot ID, Lomiri PID 5596 and
+Waydroid launcher/init PIDs 16925/17064 retain their original identities.
+Shell and observer NRestarts remain zero. The three pstore archive hashes are
+unchanged. There is no captured kernel panic/Oops/OOM or Android crash/ANR.
+Android's only selected process-death event is normal reclamation of an empty
+printspooler process, explicitly logged as empty for 22171 seconds. Android is
+RUNNING after reconnection. The owner confirms the existing Recents window responds normally after
+wake/unlock, without relaunching from the drawer. The functional background-sleep check passes.
+
+Native errors include a USB charging-mode transition failure at unplug, two
+existing pam_fscrypt group-permission warnings at unlock, and the known
+midnight dpkg-db-backup failure on read-only /var/backups. Authorized USB access
+returns on the first reconnection, without a Developer Mode toggle. These
+warnings are retained for follow-up rather than described as Waydroid crashes.
+The existing check-readonly-backup.sh passes again: ConditionResult=no,
+Result=success. Its guard is already in the image overlay; this restored live
+drop-in is under /run and must not be described as permanent image integration.
+
+The observer and its startup link are removed, evidence retained, root RO and
+AppArmor Y. Removal exposed a diagnostic-only shutdown bug: systemd deliberately
+terminates reader children, and EOF was incorrectly treated as a fault even
+after the parent's stop signal. The collector now raises that error only while
+still running. The Linux process integration regression fails on the original
+code, passes on the corrected code, preserves failure on unexpected reader
+exit, and verifies child cleanup. The removed unit's failure metadata is saved
+privately then reset; final failed-unit count is zero. This did not interrupt
+overnight collection or cause a phone/Android restart. aa18 remains unflashed.
+
+This establishes repeated ordinary suspend/resume and overnight process
+survival on the installed aa17 system. It does not complete clean-image/OTA,
+Bluetooth idle, camera-image integration or all Waydroid functional testing.

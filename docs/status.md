@@ -1,5 +1,17 @@
 # Status
 
+Overnight result, 11 October 07:41 CEST: same boot and original Lomiri/Waydroid
+processes, no captured kernel crash/OOM or Android crash/ANR. Counters 10/1 to
+190/19: 180 successful suspend cycles, 7h47m16s in successful cycles across an
+8h02m recorded window; battery 100% to 97%. All 18 aborted attempts coincide
+with pending Wi-Fi/modem/cable/alarm events; later attempts succeed and resume
+failure counters are zero. Owner confirms the existing Waydroid Recents window
+resumes and responds normally. Private archives verified, recorder/boot link
+removed, root RO, AppArmor Y. Known read-only backup guard restored under /run;
+image overlay already carries it. Recorder shutdown EOF bug corrected and
+regression checked; final failed units zero. aa18 remains unflashed.
+Details: [057](experiments/057-overnight-observation.md).
+
 Overnight observation armed, 10 October 23:39 CEST: a bounded private native
 recorder observes ordinary USB-disconnected sleep, PM wake reasons, actual
 suspend durations, battery, native/Android crashes and process identities.

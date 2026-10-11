@@ -144,7 +144,7 @@ def main(directory):
                     proc = children.pop(name)
                     proc.wait(timeout=5)
                     emit(logs["snapshots"], {"utc": utc(), "reader_exit": name, "rc": proc.returncode})
-                    if name != "android":
+                    if name != "android" and running:
                         raise RuntimeError(name + " reader stopped")
                     continue
                 lines = (buffers[name] + chunk).split(b"\n")
