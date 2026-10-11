@@ -8,9 +8,12 @@ inputs. Real archive and tiny ZIP regressions pass; the phone's installed
 cohort and native APT dry run match with zero changes. Root RO, AppArmor Y,
 failed units zero. Actual fresh-rootfs installation, complete corrected GSI,
 clean boot and signed OTA remain untested; aa18 stays unflashed. Small tests
-use WSL because Docker's metadata filesystem is read-only. Safe duplicate
-archive cleanup recovers about 1.2 GiB; Docker restart/cleanup is deferred
-pending the owner's choice regarding other running jobs. See
+used WSL while Docker's metadata filesystem was read-only. Safe duplicate
+archive cleanup recovered about 1.2 GiB. The owner subsequently approved the
+restart; standard WSL attachment/journal recovery restored Docker. Four stopped
+A50 containers are removed, protected volumes retained, and native metadata
+writes/kernel cache reads pass. Windows has about 1.5 GiB free; no local full
+image build is possible. See
 [059](experiments/059-image-package-integration.md).
 
 Isolated real OOM test, 11 October 08:09 CEST: disposable phablet worker under

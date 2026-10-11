@@ -136,3 +136,27 @@ aa18 remains unflashed while the owner is away. Full image installation,
 clean installation and [official recovery/OTA testing](https://docs.ubports.com/en/latest/porting/finalize/UBports_recovery.html)
 remain release blockers. No stable-release or automatic-update claim follows
 from this audit.
+
+## Docker recovery follow-up, 11 October
+
+The owner approved the restart and interruption of the other running jobs.
+Native restart/stop failed because WSL could not access the existing Docker
+data disk. The standard [Microsoft WSL disk recovery procedure](https://learn.microsoft.com/en-us/windows/wsl/disk-space)
+restored its attachment. A UUID-checked, unmounted disk check skipped pending
+journal recovery and initially aborted. The installed e2fsck journal-only
+mode then replayed committed changes with an undo file and exit 0. A fresh
+read-only check completed all five passes with exit 0; summary free-block/inode
+counter warnings remained, without the earlier directory corruption messages.
+
+Docker now starts normally, creates/removes new container metadata and reads
+the protected kernel source cache. Four verified stopped A50 containers were
+removed without deleting volumes. All three associated kernel/release volumes
+remain present; other cached inputs and recovery images were retained. One
+unrelated job resumed under its existing restart policy. No factory reset,
+disk formatting, phone reboot or firmware/package changes were performed.
+
+Private logs, undo evidence and removed-container records are in the task's
+`work/private/docker-recovery-20261011`. The undo predates resumed Docker writes
+and must not be applied blindly. Disk-device letters can change; identify the
+exact VHD and UUID for any future operation. Windows still has only about
+1.5 GiB free, so this does not enable the full Android image build locally.
