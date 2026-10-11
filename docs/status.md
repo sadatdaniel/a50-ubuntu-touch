@@ -19,9 +19,12 @@ are retained; unrelated project data is untouched. Docker volume usage fell from
 56.1 GB to 9.584 GB. Native trim returned zero newly trimmed bytes, and Docker
 skipped automatic compaction; Windows cancelled the administrator prompt before
 standard DiskPart compaction could run. Docker is running again and its current
-source/cache check passes. The VHD remains about 65.7 GiB; C: has about 1.7 GiB
-free. Physical disk compaction remains pending; no local full image build is
-possible. See
+source/cache check passes. A requested retry launched an elevated PowerShell
+helper without a result; a direct native DiskPart retry was then cancelled at
+Windows administrator confirmation before launch. Docker restarted and the
+retained cache check passed again. Some space returned during shutdown: the VHD
+is now about 64.1 GiB, with about 3.4 GiB free on C:. Successful manual compaction
+remains pending; no local full image build is possible. See
 [059](experiments/059-image-package-integration.md).
 
 Isolated real OOM test, 11 October 08:09 CEST: disposable phablet worker under

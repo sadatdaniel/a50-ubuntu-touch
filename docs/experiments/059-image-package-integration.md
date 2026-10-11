@@ -201,3 +201,23 @@ pending administrator confirmation. Private inventory, scoped DiskPart helper
 and cleanup/recovery evidence remain under `work/private/docker-recovery-20261011`.
 Do not run disk compaction while Docker/WSL has the VHD attached; the helper
 requires Docker to be fully stopped. No phone changes occurred.
+
+## Compaction retry, 11 October
+
+The owner requested a retry. Docker stopped cleanly and WSL was shut down.
+The elevated PowerShell `-File` helper exited without creating a result log;
+the default Windows script policy appears to have prevented its execution,
+but that cause was not independently captured. No script-policy change was
+made. A second attempt launched native DiskPart directly with the exact scoped
+input file; Windows returned "The operation was canceled by the user" at
+administrator confirmation, before DiskPart launched. No successful manual
+compaction is claimed. Do not assume the private PowerShell helper ran.
+
+Some space returned automatically during shutdown: the data VHD decreased
+from 70,573,359,104 to 68,777,148,416 bytes (about 1.67 GiB). After Docker was
+restored, C: had 3,650,916,352 bytes free (about 3.4 GiB). The remaining job
+resumed under its existing restart policy and a fresh read-only container
+successfully read the preserved current kernel source. Manual compaction still
+requires Windows administrator confirmation and a detached disk; native
+DiskPart can consume the prepared `compact-docker.txt` without running a
+PowerShell script. No further data removal or phone change was performed.
