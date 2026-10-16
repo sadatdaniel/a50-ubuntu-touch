@@ -53,8 +53,10 @@ bash scripts/release/make-installer-zip.sh --out "$PWD/out" --version CANDIDATE
 The bundle is verified before large downloads or image creation. APT runs
 against the offline 26.04/arm64 root, with service startup temporarily blocked
 through the native policy-rc.d convention. Existing policy is restored on
-failure or success. Installation uses `--no-download`, `--no-remove` and
-`--no-install-recommends`. The simulated plan may touch only cohort packages;
+failure or success. Installation disables all APT sources and uses
+`--no-remove` and `--no-install-recommends`. (`--no-download` was used
+originally, but it also blocks APT copying local archives, so the real install
+failed; see [060](060-upstream-input-retention.md).) The simulated plan may touch only cohort packages;
 missing or incompatible base dependencies abort the build. Resolve those by
 reviewing signed repository inputs, rather than fetching unrecorded packages
 or substituting raw library files.

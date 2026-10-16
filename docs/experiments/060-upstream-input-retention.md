@@ -78,7 +78,37 @@ changes. Input rootfs: today's daily
 `rootfs-809e340e…` (index checksum `a213879c…`, 687,801,256 bytes, built by
 rootfs-builder-debos `e117d0f4`, the commit cited in 059).
 
-Result: pending the two root-only archives.
+### Gated result, 16 October: PASS after an installer fix
+
+The owner ran the copy-only export with sudo. Both archives match the lock.
+All 18 archives were assembled into a flat bundle and verified.
+
+**First run failed.** The simulated plan passed, but the real install aborted:
+`E: Internal Error, Pathname to install is not absolute 'tar_…deb'`. A
+single-package retry (tar alone, then the other 17) failed the same way for
+any local archive (APT 3.2.0 in the rootfs). Cause: `--no-download` also
+disables APT's acquisition of local `.deb` files, so they never get a cache
+path. `repair-compatibility-packages.sh` already documented this pitfall.
+The phone APT check and the 16-package check above were simulations only,
+so the image builder's real install step had never succeeded.
+
+**Fix** (`install-validated-packages.sh`): drop `--no-download` and disable
+every source with `Dir::Etc::SourceList=/dev/null` and
+`Dir::Etc::SourceParts=/dev/null`. Only the hash-checked local archives are
+then installable; the plan gate is unchanged. `apt-get clean` removes the
+copied archives from the image cache afterwards.
+
+**Rerun:** `test-fresh-rootfs-cohort.sh` exits 0 on rootfs `809e340e…`.
+Exactly 13 packages changed, all in the cohort: libexiv2-27-compat, the 4
+Lomiri, 3 QtMir, 3 Settings, tar and waydroid. Every maintainer script ran,
+`apt check` passed, dpkg audit is empty, the post-install verifier matches
+all 18, and the embedded lock is identical. A harness bug, where `diff` exit
+1 aborted under pipefail, was fixed before the final run. Evidence is in
+gitignored `dl/fresh-rootfs-test-20261016c/`.
+
+This proves the cohort installs into a fresh official rootfs through the
+builder's own step. It does not prove a bootable image. A full image (GSI,
+device tarball, overlays), a clean flash and first-boot checks remain.
 
 ### Preliminary simulation with the 16 held archives
 
@@ -118,4 +148,6 @@ its hash per candidate, as the builder already does.
 
 Nothing on the phone changed apart from the phablet-owned helper
 `/home/phablet/a50-cohort-export.sh` and its copy-only output directory.
-Remove both with `rm -r`. Host additions are confined to gitignored `dl/`.
+Both can be removed once release inputs are archived durably. To roll back
+the installer fix, revert it, but the old flags cannot complete a real
+install. Host additions are confined to gitignored `dl/`.

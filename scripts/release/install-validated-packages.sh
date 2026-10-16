@@ -38,9 +38,12 @@ while IFS=$'\t' read -r name version arch digest origin; do
 done < "$HERE/validated-packages.lock"
 apt_local() {
     chroot "$ROOT" /usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C \
-        apt-get -o Dpkg::Use-Pty=0 --no-remove --no-download \
+        apt-get -o Dpkg::Use-Pty=0 -o Dir::Etc::SourceList=/dev/null \
+        -o Dir::Etc::SourceParts=/dev/null --no-remove \
         --no-install-recommends --allow-downgrades "$@"
 }
+# No sources: only the hash-checked local archives are fetchable. --no-download
+# would also block APT copying those local archives, and the real install fails.
 apt_local --simulate install "$@" > "$STAGE/plan.log" 2>&1 || { cat "$STAGE/plan.log"; exit 1; }
 cat "$STAGE/plan.log"
 # Existing dependencies must satisfy the cohort. Missing dependencies need a
@@ -50,6 +53,7 @@ sort -u "$STAGE/expected-plan" > "$STAGE/allowed-plan"
 test -z "$(comm -23 "$STAGE/actual-plan" "$STAGE/allowed-plan")"
 apt_local --yes install "$@"
 apt_local check
+apt_local clean
 test -z "$(chroot "$ROOT" dpkg --audit)"
 python3 "$HERE/verify-package-bundle.py" --root "$ROOT"
 mkdir -p "$ROOT/usr/share/a50-release"

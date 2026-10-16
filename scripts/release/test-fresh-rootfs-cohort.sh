@@ -30,7 +30,7 @@ docker run --rm --network none \
 diff <(grep -v '^#' "$HERE/scripts/release/validated-packages.lock") <(grep -v '^#' "$EVIDENCE/embedded.lock")
 # Only cohort packages may change; everything else in the fresh rootfs stays put.
 cut -f1 "$HERE/scripts/release/validated-packages.lock" | grep -v '^#' | sort > "$EVIDENCE/cohort.names"
-changed=$(diff <(sort "$EVIDENCE/packages-before.tsv") <(sort "$EVIDENCE/packages-after.tsv") | awk '/^[<>]/{print $2}' | cut -d: -f1 | sort -u)
+changed=$({ diff <(sort "$EVIDENCE/packages-before.tsv") <(sort "$EVIDENCE/packages-after.tsv") || true; } | awk '/^[<>]/{print $2}' | cut -d: -f1 | sort -u)
 outside=$(comm -23 <(printf '%s\n' "$changed" | grep .) "$EVIDENCE/cohort.names" || true)
 [ -z "$outside" ] || { echo "E: non-cohort packages changed: $outside" >&2; exit 1; }
 printf '%s\n' "$changed" > "$EVIDENCE/changed.names"

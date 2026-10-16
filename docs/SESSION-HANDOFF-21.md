@@ -105,11 +105,18 @@ Read [060](experiments/060-upstream-input-retention.md) before continuing:
   builds. `dl/halium_halium_arm64-1542.tar.xz` is the only copy. Any
   corrected GSI should re-pin to a current build (1578 has six frameworks/av
   security fixes) with the PR 84 guard. Archive release inputs durably.
-- 16 of the 18 cohort archives are preserved in gitignored
-  `dl/cohort-20261011/`. tar and Waydroid need the owner's sudo:
-  `adb shell -t sudo sh /home/phablet/a50-cohort-export.sh` (copy-only),
-  then build the flat bundle and run
-  `scripts/release/test-fresh-rootfs-cohort.sh`.
+- All 18 cohort archives are preserved in gitignored
+  `dl/cohort-20261011/` (flat bundle in `bundle/`). On 16 October the gated
+  fresh-rootfs test **passed**, after fixing a real blocker: `--no-download`
+  made the image installer's real APT install fail for every local archive.
+  The installer now disables sources instead.
+- 16 October log check, same aa17 boot for 6 days: no Linux or Android
+  service restarts, core dumps or OOM kills. **Regression:** Waydroid's
+  `android.hardware.camera.provider@2.4-service` restarts every 5 s. The 013
+  stop helper runs only once per container-service start, so each new
+  Waydroid session brings the loop back. Proposed supported fix: an empty
+  override of that `.rc` under `/var/lib/waydroid/overlay/vendor/etc/init/`.
+  Awaiting owner approval and a sudo-assisted test.
 - The fresh rootfs is newer than the cohort for QtMir and Settings
   (intentional downgrades), and 184 other packages differ from the phone.
 
