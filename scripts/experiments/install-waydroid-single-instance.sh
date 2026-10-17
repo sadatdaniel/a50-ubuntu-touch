@@ -3,18 +3,19 @@
 set -eu
 [ "$(id -u)" = 0 ] || exit 1
 base='1.6.3-0ubports1~20260917185450.14~7ebfea8+ubports26.04.1'
-new="$base+a50singleinstance.2"
+old="$base+a50singleinstance.2"
+new="$old+fdclose.1"
 cd /userdata/a50-waydroid-package-test
 case "${1:-}" in
-    '') file=/userdata/a50-waydroid-package-test/candidate.deb; expected=$base; version=$new
+    '') file=/userdata/a50-waydroid-package-test/fdclose.deb; expected=$old; version=$new
+        hash=2817960d837e7ebca32009736a66fe7bece0fcdedc268676aa39a98aa73ea737 ;;
+    --rollback) file=/userdata/a50-waydroid-package-test/candidate.deb; expected=$new; version=$old
         hash=6d5444c20afea2409c8e00aa073df4ceee2630df75af3303fbaf1ad6eaad8cb5 ;;
-    --rollback) file="/userdata/a50-waydroid-package-test/waydroid_${base}_all.deb"; expected=$new; version=$base
-        hash=c62fe6dd5cb90cf67392481e13f5e7c1170a1fd822dee6463c4c363cac17226e ;;
     *) exit 2 ;;
 esac
 case "$(dpkg-query -W -f='${Version}' waydroid)" in
     "$expected") ;;
-    "$base+a50singleinstance.1") [ "$version" = "$new" ] ;;
+
     *) exit 1 ;;
 esac
 [ "$(dpkg-deb -f "$file" Package)" = waydroid ]
@@ -50,4 +51,7 @@ as_user env PYTHONPATH=/usr/lib/waydroid python3 - <<'PY'
 from tools.services.user_manager import makeWaydroidDesktopFile
 makeWaydroidDesktopFile('/home/phablet/.local/share/applications', False)
 PY
+# The container daemon must reload the package code.
+systemctl restart waydroid-container.service
+systemctl is-active waydroid-container.service
 echo 'Waydroid package installed and verified; Android data retained.'
