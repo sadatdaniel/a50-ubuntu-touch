@@ -102,7 +102,9 @@ Read [060](experiments/060-upstream-input-retention.md) before continuing:
 
 - Phone verified on aa17 (`#6`) over USB ADB; Wi-Fi SSH was unreachable.
 - Pinned GSI 1542 is no longer downloadable from Jenkins, which keeps about 30
-  builds. `dl/halium_halium_arm64-1542.tar.xz` is the only copy. Any
+  builds. It is archived in GitHub release `inputs-20261017` with the
+  2026-10-11 rootfs, the 18 cohort archives, Waydroid `fdclose.1` and
+  SHA256SUMS. Restore `dl/` from there on a fresh checkout. Any
   corrected GSI should re-pin to a current build (1578 has six frameworks/av
   security fixes) with the PR 84 guard. Archive release inputs durably.
 - All 18 cohort archives are preserved in gitignored
@@ -116,7 +118,9 @@ Read [060](experiments/060-upstream-input-retention.md) before continuing:
   stop helper runs only once per container-service start, so each new
   Waydroid session brings the loop back. Fixed by a system-overlay `.rc` via
   tmpfiles ([061](experiments/061-waydroid-camera-overlay.md)); zero starts verified.
-  Waydroid container daemon fd leak (1021/1024) is open.
+  Waydroid daemon fd leak (upstream #2357) is fixed by a byte-reproducible
+  `+fdclose.1` package installed on the phone ([062](experiments/062-waydroid-fd-leak.md));
+  move the lock to it after a multi-day soak.
 - The fresh rootfs is newer than the cohort for QtMir and Settings
   (intentional downgrades), and 184 other packages differ from the phone.
 
