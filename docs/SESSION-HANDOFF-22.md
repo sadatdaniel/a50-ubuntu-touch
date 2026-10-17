@@ -62,7 +62,7 @@ on the phone:
    (`scripts/experiments/gsi1584-*`, 44 projects newer than 1542, incl. the
    frameworks/av security fixes); `recording-library-test.yml` input
    `gsi_sources` selects it, and PR 84 blob guards still apply. Library-only CI
-   run 39032463776 checks that it builds. The remote full build then runs that
+   run 39032463776 **passed**: PR 84 builds against the 1584 sources. The remote full build then runs that
    workflow with `full_image=true` on a ≥250 GiB runner and feeds
    `build-rootfs-image.sh --gsi-tar … --gsi-sha256 …`.
    The owner may post `dl/pr84-comment.md` upstream.
