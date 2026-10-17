@@ -1,0 +1,60 @@
+--- a/tools/helpers/run_core.py
++++ b/tools/helpers/run_core.py
+@@ -162,32 +162,34 @@
+ 
+     # While process exists wait for output (with timeout)
+     output_buffer = []
+-    sel = selectors.DefaultSelector()
+-    sel.register(process.stdout, selectors.EVENT_READ)
+-    timeout = args.timeout if output_timeout else None
+-    while process.poll() is None:
+-        wait_start = time.perf_counter() if output_timeout else None
+-        sel.select(timeout)
++    # Close the epoll selector and stdout pipe on every exit; otherwise a
++    # reference cycle keeps both open until GC (waydroid/waydroid#2357).
++    with selectors.DefaultSelector() as sel, process.stdout:
++        sel.register(process.stdout, selectors.EVENT_READ)
++        timeout = args.timeout if output_timeout else None
++        while process.poll() is None:
++            wait_start = time.perf_counter() if output_timeout else None
++            sel.select(timeout)
+ 
+-        # On timeout raise error (we need to measure time on our own, because
+-        # select() may exit early even if there is no data to read and the
+-        # timeout was not reached.)
+-        if output_timeout:
+-            wait_end = time.perf_counter()
+-            if wait_end - wait_start >= args.timeout:
+-                logging.info("Process did not write any output for " +
+-                             str(args.timeout) + " seconds. Killing it.")
+-                logging.info("NOTE: The timeout can be increased with"
+-                             " 'waydroid -t'.")
+-                kill_command(args, process.pid, sudo)
+-                continue
++            # On timeout raise error (we need to measure time on our own, because
++            # select() may exit early even if there is no data to read and the
++            # timeout was not reached.)
++            if output_timeout:
++                wait_end = time.perf_counter()
++                if wait_end - wait_start >= args.timeout:
++                    logging.info("Process did not write any output for " +
++                                 str(args.timeout) + " seconds. Killing it.")
++                    logging.info("NOTE: The timeout can be increased with"
++                                 " 'waydroid -t'.")
++                    kill_command(args, process.pid, sudo)
++                    continue
+ 
+-        # Read all currently available output
+-        pipe_read(args, process, output_to_stdout, output_return,
+-                  output_buffer)
++            # Read all currently available output
++            pipe_read(args, process, output_to_stdout, output_return,
++                      output_buffer)
+ 
+-    # There may still be output after the process quit
+-    pipe_read(args, process, output_to_stdout, output_return, output_buffer)
++        # There may still be output after the process quit
++        pipe_read(args, process, output_to_stdout, output_return, output_buffer)
+ 
+     # Return the return code and output (the output gets built as list of
+     # output chunks and combined at the end, this is faster than extending the

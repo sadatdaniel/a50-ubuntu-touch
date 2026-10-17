@@ -5,7 +5,9 @@ HERE=$(cd "$(dirname "$0")/../.." && pwd)
 BUILD_DIR=$(realpath "${1:?usage: $0 <empty build directory>}")
 SOURCE_SHA=5b7e2e71be3f6bfaaaab3b461251dacaf1ce4991
 PACKAGING_SHA=7ebfea8f880a2d7c9c641070fe3cb273fa6c268d
-VERSION='1.6.3-0ubports1~20260917185450.14~7ebfea8+ubports26.04.1+a50singleinstance.2'
+VERSION='1.6.3-0ubports1~20260917185450.14~7ebfea8+ubports26.04.1+a50singleinstance.2+fdclose.1'
+# Fixed changelog date: dpkg derives SOURCE_DATE_EPOCH from it, so rebuilds are byte-identical.
+CHANGELOG_DATE='Sat, 17 Oct 2026 00:00:00 +0000'
 [ "$(. /etc/os-release; printf '%s' "$VERSION_ID")" = 26.04 ]
 [ -z "$(ls -A "$BUILD_DIR")" ] || { echo 'E: build directory must be empty' >&2; exit 1; }
 fetch() {
@@ -32,8 +34,21 @@ printf '%s\n' 0013-lomiri-single-instance-launcher.patch >> debian/patches/serie
 dpkg-source --before-build .
 echo 'a888527e10171aecb7645bc9d8e9608a11310a7491fe0a1760e0909a1480ca65  tools/services/user_manager.py' | sha256sum -c -
 python3 "$HERE/scripts/experiments/check-waydroid-single-instance.py" tools/services/user_manager.py
+# Close foreground_pipe's selector and pipe (waydroid/waydroid#2357).
+echo '763088cee01f392a824f1d24974ec444c770f88b8e4a68e19acb4ab04abf1bb0  tools/helpers/run_core.py' | sha256sum -c -
+if python3 "$HERE/scripts/experiments/test-waydroid-foreground-pipe-fds.py" tools/helpers/run_core.py; then
+    echo 'E: original unexpectedly passes the fd test; recheck source.' >&2
+    exit 1
+fi
+cp "$HERE/scripts/experiments/waydroid-foreground-pipe-close.patch" debian/patches/0014-foreground-pipe-close-fds.patch
+printf '%s\n' 0014-foreground-pipe-close-fds.patch >> debian/patches/series
+dpkg-source --before-build .
+echo 'f008879abfd29d766b782ce6fbf1b238efc904e4e39bf40b0d3ef712ab912662  tools/helpers/run_core.py' | sha256sum -c -
+python3 "$HERE/scripts/experiments/test-waydroid-foreground-pipe-fds.py" tools/helpers/run_core.py
 DEBFULLNAME='A50 port build' DEBEMAIL='noreply@example.invalid' \
-    dch --force-bad-version --newversion "$VERSION" --distribution UNRELEASED 'Use native Lomiri single-instance identity for the shared Waydroid UI session.'
+    dch --force-bad-version --newversion "$VERSION" --distribution UNRELEASED 'Use native Lomiri single-instance identity for the shared Waydroid UI session; close foreground_pipe descriptors.'
+sed -i "0,/^ -- /s/^\( -- .*>  \).*/\1$CHANGELOG_DATE/" debian/changelog
+head -8 debian/changelog
 dpkg-buildpackage --build=binary --no-sign -j4
 mkdir -p "$HERE/waydroid-test"
 cp "$BUILD_DIR"/waydroid_*_all.deb "$HERE/waydroid-test/"
