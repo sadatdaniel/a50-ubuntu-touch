@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pin a repo-resolved manifest to the public GSI 1542 source record."""
+"""Pin a repo-resolved manifest to a recorded public GSI source record."""
 import json
 from pathlib import Path
 import re
@@ -52,4 +52,4 @@ if __name__ == '__main__':
         pins = json.loads(Path(sys.argv[2]).read_text())
         pin_manifest(tree.getroot(), pins)
         tree.write(sys.argv[3], encoding='utf-8', xml_declaration=True)
-        print(f'Pinned {len(pins)} projects to GSI 1542 revisions')
+        print(f"Pinned {len(pins)} projects to the recorded GSI revisions")

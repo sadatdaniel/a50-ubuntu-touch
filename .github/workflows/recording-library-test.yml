@@ -10,6 +10,10 @@ on:
         description: JSON runner labels for a provisioned Linux x64 full-image builder
         type: string
         default: '["self-hosted", "linux", "x64", "a50-halium-build"]'
+      gsi_sources:
+        description: Recorded Jenkins GSI source revisions to pin (used-repos.txt converted to JSON)
+        type: string
+        default: scripts/experiments/gsi1584-source-revisions.json
 permissions:
   contents: read
 jobs:
@@ -42,7 +46,7 @@ jobs:
           mkdir -p .repo/local_manifests
           printf '%s\n' '<manifest><project path="device/halium/halium_arm64" name="Halium/android_device_halium_halium_arm64" revision="halium-11.0"/><project path="vendor/vndk" name="phhusson/vendor_vndk" revision="master"/></manifest>' > .repo/local_manifests/a50-generic.xml
           repo manifest -o "$GITHUB_WORKSPACE/recording-test/resolved-manifest.xml"
-          python3 "$GITHUB_WORKSPACE/scripts/experiments/pin-gsi-manifest.py" "$GITHUB_WORKSPACE/recording-test/resolved-manifest.xml" "$GITHUB_WORKSPACE/scripts/experiments/gsi1542-source-revisions.json" .repo/manifests/a50-locked.xml
+          python3 "$GITHUB_WORKSPACE/scripts/experiments/pin-gsi-manifest.py" "$GITHUB_WORKSPACE/recording-test/resolved-manifest.xml" "$GITHUB_WORKSPACE/${{ inputs.gsi_sources }}" .repo/manifests/a50-locked.xml
           rm .repo/local_manifests/a50-generic.xml
           repo init -m a50-locked.xml
           cp .repo/manifests/a50-locked.xml "$GITHUB_WORKSPACE/recording-test/locked-manifest.xml"
