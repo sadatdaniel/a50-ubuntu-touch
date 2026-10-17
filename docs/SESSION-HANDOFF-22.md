@@ -73,6 +73,21 @@ on the phone:
    updates retaining userdata, channel/hosting with UBports, installer config
    in `ubports/installer-configs` (Heimdall/Samsung transport). OTA is
    disabled today.
+   **Kernel blocker for the conventional build:** `build.sh` clones the moving
+   `halium-generic-adaptation-build-tools` (head `7dd99e0d` on 17 Oct) and builds
+   `deviceinfo_kernel_source` branch `ubuntu-touch-26.04` (last change
+   1 Sep), not aa17. aa17 is FreshROMs at `kernel/source.lock` plus the
+   a50-halium patch series, built with `--profile full --firmware DIR`. That
+   needs 8 proprietary Samsung blobs built in (ABOX needs them before any
+   filesystem exists), which public CI cannot have. Owner decision: either
+   redistribute the blobs in a kernel branch/tag so `build.sh`/CI reproduce
+   aa17, or build only on the private remote server (extract them from the
+   phone with a50-halium `build/extract-vendor-firmware.sh`). Then pin the
+   tools commit in `build.sh`, set `deviceinfo_kernel_source_branch` to an aa17
+   tag, and enable `deviceinfo_use_unified_recovery="true"`,
+   `deviceinfo_has_recovery_partition="true"` and
+   `deviceinfo_unified_recovery_ui_density="xxhdpi"`. Recovery flashing needs
+   the owner present, with the TWRP backup verified first.
 4. Clean install from the built candidate, then the backlog checks
    ([release-validation-backlog](release-validation-backlog.md)).
 5. Debt: four package scripts still use unpinned `dch` dates; legacy
