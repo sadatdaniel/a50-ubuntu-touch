@@ -18,8 +18,8 @@ last. `agent.md`/`first_contact.md` wait until the checklist is resolved.
 | What | Where |
 |---|---|
 | Port repo | `sadatdaniel/a50-ubuntu-touch` `main` |
-| Kernel repo | `sadatdaniel/a50-halium` `main` (`8fda1ea`) |
-| Build inputs: GSI 1542, rootfs 2026-10-11, 18 locked packages, Waydroid fdclose.1 | release [`inputs-20261017`](https://github.com/sadatdaniel/a50-ubuntu-touch/releases/tag/inputs-20261017) |
+| Kernel repo | `sadatdaniel/a50-halium` `main` (`9bb7c87`; aa18 source `8fda1ea`) |
+| Build inputs: GSI 1542 and 1584, rootfs 2026-10-11, 18 locked packages, Waydroid fdclose.1 | release [`inputs-20261017`](https://github.com/sadatdaniel/a50-ubuntu-touch/releases/tag/inputs-20261017) |
 | Every kernel build aa1–aa18 (aa17 = phone, aa18 unflashed) | a50-halium release [`kernel-builds-20261017`](https://github.com/sadatdaniel/a50-halium/releases/tag/kernel-builds-20261017) |
 | Restore `dl/` on a fresh checkout | `bash scripts/release/fetch-release-inputs.sh` (tested from a clean container) |
 
@@ -58,9 +58,13 @@ on the phone:
    update `validated-packages.lock`, the fresh-rootfs test and the release.
 2. **Camera/video GSI** (Halium PR 84, open upstream): either upstream merges
    it and `gsi.lock` moves to a Jenkins build, or the remote server builds it.
-   Re-pin sources to a current Jenkins build (1578 adds six frameworks/av
-   security fixes; record its `used-repos.txt` before it expires), keep the PR 84
-   blob guard, then build with `build-rootfs-image.sh --gsi-tar … --gsi-sha256 …`.
+   Sources are re-pinned to Jenkins build 1584
+   (`scripts/experiments/gsi1584-*`, 44 projects newer than 1542, incl. the
+   frameworks/av security fixes); `recording-library-test.yml` input
+   `gsi_sources` selects it, and PR 84 blob guards still apply. Library-only CI
+   run 39032463776 checks that it builds. The remote full build then runs that
+   workflow with `full_image=true` on a ≥250 GiB runner and feeds
+   `build-rootfs-image.sh --gsi-tar … --gsi-sha256 …`.
    The owner may post `dl/pr84-comment.md` upstream.
 3. **Conventional layout and OTA** (UBports finalize docs, see
    [ota-finalization](ota-finalization.md)): unified recovery
