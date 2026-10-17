@@ -1,6 +1,14 @@
 # Galaxy A50: suspend and updates
 
-Updated 10 October 2026. Device: SM-A505F. Ubuntu Touch 26.04 only.
+Updated 17 October 2026. Device: SM-A505F. Ubuntu Touch 26.04 only.
+
+**Current state:** OTA is disabled. The phone still runs the userdata-image
+layout on aa17, with no unified recovery flashed. The official sequence (checked
+17 October against the [finalize](https://docs.ubports.com/en/latest/porting/finalize/index.html)
+and [recovery/local OTA](https://docs.ubports.com/en/latest/porting/finalize/UBports_recovery.html)
+pages) is unchanged, and the [installer page](https://docs.ubports.com/en/latest/porting/finalize/UBports_installer.html)
+is still "not yet documented". The image inputs are now reproducible and
+archived (experiment 060, handoff 22). The suspend history below is retained.
 
 ## Current result
 

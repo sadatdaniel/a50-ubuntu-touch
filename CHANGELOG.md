@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-17 — reproducible inputs, image install fix, Waydroid fixes
+
+- Image builder's real APT install failed for every local archive
+  (`--no-download`); now disables sources instead. The fresh-rootfs gate passes
+  with all 18 locked packages (experiment 060).
+- Build inputs and every kernel build archived as GitHub releases;
+  `fetch-release-inputs.sh` restores `dl/` on a fresh checkout.
+- Waydroid camera provider loop stopped by a system-overlay `.rc` (061);
+  container daemon fd leak (waydroid#2357) fixed by a byte-reproducible package (062).
+- See [handoff 22](docs/SESSION-HANDOFF-22.md).
+
 ## 2026-10-10 — adopt existing upstream display corrections
 
 - Reproduced incomplete pidfd child waiting on aa17, affecting dispatcher exit
@@ -90,7 +101,7 @@
   package-backup destination. Validated missingok only for two optional syslog
   rotation rules; no log-rotation timer is disabled.
 
-See [current handoff](docs/SESSION-HANDOFF-20.md),
+See [handoff 20, history](docs/SESSION-HANDOFF-20.md),
 [recording experiment](docs/experiments/044-recording-audioflinger-backport.md)
 and [fresh-image health](docs/experiments/047-fresh-suspend-startup-and-readonly-health.md).
 

@@ -321,7 +321,8 @@ volume.
 
 ### 2. The flashable zip
 
-Prepare `dl/validated-packages` using the exact native package cohort in
+Run `bash scripts/release/fetch-release-inputs.sh` to restore `dl/` (GSI, rootfs and
+`dl/validated-packages`) from the archived release, verified against the cohort in
 [059](docs/experiments/059-image-package-integration.md). Package installation
 requires ARM64 execution, natively or through configured binfmt. Actual fresh
 image installation/clean boot remain pending; these are candidate build steps.

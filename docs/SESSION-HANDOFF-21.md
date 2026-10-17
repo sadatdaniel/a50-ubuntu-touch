@@ -1,6 +1,6 @@
-# Current session handoff 21 — 11 October 2026
+# Session handoff 21 — 11 October 2026 (superseded)
 
-Start new work here. `SESSION-HANDOFF-20.md` and earlier handoffs preserve
+**Superseded by [handoff 22](SESSION-HANDOFF-22.md); history only.** `SESSION-HANDOFF-20.md` and earlier handoffs preserve
 chronology, but contain old device states and pending instructions. Treat them
 as history only; use this page, `docs/status.md`, and
 `docs/release-validation-backlog.md` for current work. Verify live state before

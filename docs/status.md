@@ -1,6 +1,6 @@
 # Status
 
-Start new work with [session handoff 21](SESSION-HANDOFF-21.md). Older checkpoint entries below preserve history; the first dated 11 October entry is current.
+Start new work with [session handoff 22](SESSION-HANDOFF-22.md). Entries below are history, newest first; links to older handoffs inside them are historical.
 
 Fresh-rootfs cohort gate, 16 October: PASS. After the owner's copy-only sudo export, all 18 locked archives install via native APT into official rootfs 809e340e with exactly 13 cohort changes, apt check clean and empty audit. The first run exposed that the image installer's `--no-download` blocks local archives, so its real install had never worked; it now disables sources instead. Same-day log check on the 6-day aa17 boot: no service restarts, core dumps or OOM, but Waydroid's camera provider has regressed into a 5-second restart loop (013 helper runs only once per container start). See [060](experiments/060-upstream-input-retention.md).
 

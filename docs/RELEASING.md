@@ -57,7 +57,8 @@ that is what the installer reads back and compares.
 * Docker, or any Linux host where you can be root and use a loop device.
   Native ARM64 execution or configured binfmt is required for package installation.
 * The exact 18-package bundle from [059](experiments/059-image-package-integration.md),
-  prepared at `dl/validated-packages`; archive/metadata validation must pass.
+  restored to `dl/validated-packages` by `scripts/release/fetch-release-inputs.sh`;
+  archive/metadata validation must pass.
 * A boot image built by [a50-halium](https://github.com/sadatdaniel/a50-halium)
   — `build/build-kernel.sh --profile full --firmware DIR`, then
   `build/make-boot-image.sh --port ubports`. Or take one straight from that
