@@ -114,9 +114,9 @@ Read [060](experiments/060-upstream-input-retention.md) before continuing:
   service restarts, core dumps or OOM kills. **Regression:** Waydroid's
   `android.hardware.camera.provider@2.4-service` restarts every 5 s. The 013
   stop helper runs only once per container-service start, so each new
-  Waydroid session brings the loop back. Proposed supported fix: an empty
-  override of that `.rc` under `/var/lib/waydroid/overlay/vendor/etc/init/`.
-  Awaiting owner approval and a sudo-assisted test.
+  Waydroid session brings the loop back. Fixed by a system-overlay `.rc` via
+  tmpfiles ([061](experiments/061-waydroid-camera-overlay.md)); zero starts verified.
+  Waydroid container daemon fd leak (1021/1024) is open.
 - The fresh rootfs is newer than the cohort for QtMir and Settings
   (intentional downgrades), and 184 other packages differ from the phone.
 

@@ -51,7 +51,7 @@ else.
 | `usr/lib/systemd/user/waydroid-session.service` | Starting the Waydroid session as root, or through `su phablet -c`, leaves the bus address as root's. A **user** unit inherits the right environment. [013](../docs/experiments/013-waydroid.md) |
 | `usr/local/bin/a50-waydroid-launch.sh` | Supplies `DBUS_SESSION_BUS_ADDRESS` and friends, and **stays alive** — `waydroid app launch` exits in about a second and Lomiri then tears the app down. |
 | `usr/local/bin/a50-waydroid-fix-desktop.sh` | Waydroid rewrites its `.desktop` entries on **every session start**, so this sweeps until three clean passes. |
-| `etc/systemd/system/waydroid-container.service.d/50-a50-nocamera.conf` + `a50-waydroid-nocamera.sh` | Waydroid's camera provider crash-looped every ~6 s. |
+| `usr/lib/tmpfiles.d/a50-waydroid-nocamera.conf` | Waydroid's camera provider crash-loops every 5 s. An empty `.rc` in Waydroid's own overlay removes it on every Android boot; this replaced a one-shot stop helper that missed later sessions. [061](../docs/experiments/061-waydroid-camera-overlay.md) |
 | `usr/local/bin/a50-container-prepare.sh` + `a50-container-prepare.service` | Generates the container overrides that are derived from vendor and GSI files, and wires the mount hooks in. Runs before the container starts. |
 | `var/lib/lxc/android/a50-mount-hooks.sh` | The bind mounts themselves: watchdogd, the USB gadget rc, emservice/cass, the GSI's disabled audio HALs, the 64-bit audio wrapper, and `mixer_paths.xml`. |
 | `var/lib/lxc/android/usb.rc.empty`, `rc.empty` | The empty rc files those binds point at. |
