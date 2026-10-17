@@ -38,6 +38,12 @@ while [ $# -gt 0 ]; do
         --no-compat) NO_COMPAT=1; shift ;;
         --channel)   CHANNEL="$2"; shift 2 ;;
         --gsi-build) GSI_BUILD="$2"; shift 2 ;;
+        # A locally built GSI (e.g. with Halium PR 84) instead of a Jenkins artifact.
+        --gsi-tar)   GSI_TAR="$2"; shift 2 ;;
+        --gsi-sha256) GSI_SHA256="$2"; shift 2 ;;
+        # Pin the rootfs instead of resolving the moving daily index.
+        --rootfs-url) ROOTFS_URL="$2"; shift 2 ;;
+        --rootfs-sha256) ROOTFS_SHA256="$2"; shift 2 ;;
         --devel) DEVEL=1; shift ;;
         *) echo "E: unknown argument: $1" >&2; exit 2 ;;
     esac
@@ -91,6 +97,9 @@ if [ -z "$ROOTFS_URL" ]; then
 fi
 ROOTFS_TAR="$CACHE/$(basename "$ROOTFS_URL")"
 [ -f "$ROOTFS_TAR" ] || curl -fL --retry 3 -o "$ROOTFS_TAR" "$ROOTFS_URL"
+if [ -n "${ROOTFS_SHA256:-}" ]; then
+    echo "$ROOTFS_SHA256  $ROOTFS_TAR" | sha256sum -c - || { echo "E: rootfs does not match --rootfs-sha256" >&2; exit 1; }
+fi
 
 # Record which Ubuntu rootfs this build actually used. The channel index moves:
 # two builds of the same commit a week apart resolve to different rootfs
@@ -115,7 +124,7 @@ gsi_get() { grep -E "^$1=" "$GSI_LOCK" | head -1 | cut -d= -f2-; }
 
 GSI_JOB="$(gsi_get GSI_JOB)"
 GSI_BUILD="${GSI_BUILD:-$(gsi_get GSI_BUILD)}"
-GSI_SHA256="$(gsi_get GSI_SHA256)"
+GSI_SHA256="${GSI_SHA256:-$(gsi_get GSI_SHA256)}"
 [ -n "$GSI_JOB" ] && [ -n "$GSI_BUILD" ] || { echo "E: gsi.lock is incomplete" >&2; exit 1; }
 
 if [ "$GSI_BUILD" = latest ]; then
@@ -127,7 +136,11 @@ if [ "$GSI_BUILD" = latest ]; then
 fi
 
 GSI_URL="$GSI_JOB/$GSI_BUILD/artifact/halium_halium_arm64.tar.xz"
-GSI_TAR="$CACHE/halium_halium_arm64-${GSI_BUILD}.tar.xz"
+if [ -n "${GSI_TAR:-}" ]; then
+    [ -f "$GSI_TAR" ] && [ -n "$GSI_SHA256" ] || { echo "E: --gsi-tar needs an existing file and --gsi-sha256" >&2; exit 2; }
+    GSI_BUILD=local; GSI_URL="file://$(realpath "$GSI_TAR")"
+fi
+GSI_TAR="${GSI_TAR:-$CACHE/halium_halium_arm64-${GSI_BUILD}.tar.xz}"
 [ -f "$GSI_TAR" ] || curl -fL --retry 3 -o "$GSI_TAR" "$GSI_URL"
 
 GSI_GOT="$(sha256sum "$GSI_TAR" | cut -d' ' -f1)"
@@ -139,7 +152,7 @@ if [ -n "$GSI_SHA256" ]; then
         echo "E:   got      $GSI_GOT" >&2
         echo "E: Jenkins rebuilds this artifact; a numbered build should not" >&2
         echo "E: change, so either the pin is wrong or the download is." >&2
-        rm -f "$GSI_TAR"
+        [ "$GSI_BUILD" = local ] || rm -f "$GSI_TAR"  # never delete a supplied GSI
         exit 1
     fi
     echo "I: GSI build $GSI_BUILD verified against gsi.lock ($(echo "$GSI_GOT" | cut -c1-16)…)"
