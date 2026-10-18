@@ -29,7 +29,7 @@ on it.
 
 ## Phone state (17 October)
 
-aa17 (`/proc/version` `#6`; aa18 is `#7`), boot of 10 October 17:17. Root
+Runtime-firmware candidate 2 (`#1`, boot 18 October), aa17 fallback staged in `/userdata/a50-kernel-test`. aa17 is `#6`, aa18 `#7`. Root
 RO, AppArmor Y, zero failed units. Access over USB ADB as phablet; root needs
 the owner's sudo password, so arm a script under `/home/phablet` and ask the
 owner to run `adb shell -t sudo sh /home/phablet/<script>.sh`. Running now
@@ -73,7 +73,16 @@ on the phone:
    updates retaining userdata, channel/hosting with UBports, installer config
    in `ubports/installer-configs` (Heimdall/Samsung transport). OTA is
    disabled today.
-   **Kernel blocker for the conventional build:** `build.sh` clones the moving
+   **Firmware blocker mostly resolved (18 Oct):** a50-halium
+   `build-kernel.sh --runtime-firmware` builds aa17 with *no* Samsung blobs.
+   ABOX and TFA9872 retry loading from `/vendor/firmware`
+   ([runtime-firmware](https://github.com/sadatdaniel/a50-halium/blob/main/docs/runtime-firmware.md)).
+   Public CI builds it reproducibly. On the phone (`boot-aa17rf2.img`
+   `7d5855ef…`, currently installed) speaker audio and 15 deep sleeps pass.
+   Calls, Bluetooth audio, cold-boot repeats and an overnight soak remain; then it
+   can replace aa17 and unblock the conventional `build.sh` path below.
+   Rollback: `/userdata/a50-kernel-test/flash-boot-image.sh` with the aa17 image.
+   Earlier note: `build.sh` clones the moving
    `halium-generic-adaptation-build-tools` (head `7dd99e0d` on 17 Oct) and builds
    `deviceinfo_kernel_source` branch `ubuntu-touch-26.04` (last change
    1 Sep), not aa17. aa17 is FreshROMs at `kernel/source.lock` plus the
