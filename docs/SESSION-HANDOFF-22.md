@@ -98,6 +98,15 @@ on the phone:
    `ubuntu-touch-26.04` (`57ba2d49`…`d25a56a6`);
    (d) point `deviceinfo_kernel_source_branch` at the result.
    Every flash needs the owner present, with aa17 or rf2 fallback staged.
+   **Progress 18 Oct:** (a) passed (`halium-a50-ut`: bare make = tested
+   config). `halium-a50-ut-llvm` + `deviceinfo` (clang `android12L-gsi`
+   r416183b, `llvm_compile=true`) now build with the pinned conventional
+   `build.sh` in `conventional-build.yml` (run 39166485573). Two fixes were
+   needed: LLVM=1 instead of GCC 4.9 GNU as, and weak `mem*` aliases for clang's
+   integrated assembler. Its kernel config is aa17's minus blobs and Polly.
+   Single-variable boot test staged: conventional kernel + aa17 ramdisk
+   `boot-aa17conv.img` `7476403a…` (archived); current boot is rf2 `7d5855ef…`.
+   The tools' own ramdisk is the next variable.
    Earlier note: `build.sh` clones the moving
    `halium-generic-adaptation-build-tools` (head `7dd99e0d` on 17 Oct) and builds
    `deviceinfo_kernel_source` branch `ubuntu-touch-26.04` (last change
