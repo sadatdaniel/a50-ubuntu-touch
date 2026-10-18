@@ -1,0 +1,37 @@
+name: Conventional UBports device build
+
+# Mirrors UBports' community-port CI (halium-generic-adaptation-build-tools
+# gsi-port-ci.yml): Ubuntu 22.04, its package list, then the build.sh wrapper,
+# which pins the tools. Builds kernel, boot and recovery from deviceinfo.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ubuntu:22.04
+    timeout-minutes: 180
+    steps:
+      - name: Install the UBports CI package list
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends \
+            bc bison build-essential ca-certificates cpio curl \
+            fakeroot flex git kmod libelf-dev libssl-dev libtinfo5 lz4 python2 python3 sudo unzip wget \
+            xz-utils pahole libbpf-dev
+          ln -sf python2 /usr/bin/python
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Build with the pinned adaptation tools
+        run: ./build.sh
+      - name: Report outputs
+        run: |
+          ls -la out/
+          (cd out && sha256sum * 2>/dev/null) | tee out/SHA256SUMS.txt
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: conventional-build
+          path: out/
+          retention-days: 30

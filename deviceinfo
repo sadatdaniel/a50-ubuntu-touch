@@ -88,7 +88,13 @@ deviceinfo_ubuntu_touch_release="26.04-1.x"
 #     bab51ce8e. The tools clone the BRANCH, so they build the tip, not the
 #     pinned commit. Re-check before trusting a tools-built kernel to match.
 deviceinfo_kernel_source="https://github.com/sadatdaniel/android_kernel_samsung_exynos9610_mint"
-deviceinfo_kernel_source_branch="ubuntu-touch-26.04"
+# [V] 2026-10-18: halium-a50-ut-llvm = the hardware-tested runtime-firmware
+#     source (branch halium-a50-aa17rf2, rebuilt byte-identically by CI), plus
+#     vendored KernelSU, the ANDROID_MAJOR_VERSION Kconfig fix, savedefconfig as
+#     halium_a50_defconfig (a bare make reproduces the tested .config exactly)
+#     and the old branch's LLVM=1 build fixes, minus Proton-only LLVM_POLLY.
+#     See a50-halium docs/runtime-firmware.md and handoff 22.
+deviceinfo_kernel_source_branch="halium-a50-ut-llvm"
 
 # [V] halium_a50_defconfig replaces exynos9610-a50_core_defconfig: the core
 #     defconfig alone produces an incomplete config (the real recipe is core +
@@ -118,7 +124,12 @@ deviceinfo_kernel_cmdline="androidboot.selinux=permissive loop.max_part=7"
 #     tools' default for Halium 11; recorded explicitly so the difference is
 #     visible rather than implicit.
 deviceinfo_kernel_clang_compile="true"
-deviceinfo_kernel_clang_branch="android11-gsi"
+# 2026-10-18: android11-gsi/r383902 (clang 11) built the kernel that hung in
+#     experiment 004. Use the tools' supported android12L-gsi/r416183b
+#     (clang 12), the nearest to the tested Proton clang 13. Both lines are
+#     required, or the tools fall back to the Halium 11 default.
+deviceinfo_kernel_clang_branch="android12L-gsi"
+deviceinfo_kernel_clang_revision="r416183b"
 # [X] MEASURED WRONG, 2026-09-09. This said llvm_compile was "required" and "the
 #     closest match to how the Proton Clang build was invoked". Both halves are
 #     false, and the second is what made the first look true.
