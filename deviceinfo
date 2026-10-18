@@ -150,7 +150,12 @@ deviceinfo_kernel_clang_revision="r416183b"
 #     have to be reachable under the CROSS_COMPILE prefix - which means this
 #     port needs a build wrapper (gsi-port-ci.yml's
 #     ADAPTATION_TOOLS_USE_BUILD_WRAPPER=1), not a deviceinfo flag.
-deviceinfo_kernel_llvm_compile="false"
+# [V] 2026-10-18: superseded for branch halium-a50-ut-llvm, which carries the
+#     later commits "Makefile: make LLVM=1 builds actually usable" and the
+#     vdso32/host-lld fixes. Without LLVM=1 the tools use GCC 4.9's GNU as,
+#     which rejects the tree's -march=armv8-a+crypto+crc+sha2+aes
+#     (conventional-build run 39165242393).
+deviceinfo_kernel_llvm_compile="true"
 
 # [V] `build.sh -v recovery` emits arch/arm64/boot/Image, uncompressed, with
 #     the DTB already inside it - the known-good boot images carry no separate
