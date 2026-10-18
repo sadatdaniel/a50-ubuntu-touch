@@ -82,6 +82,22 @@ on the phone:
    Calls, Bluetooth audio, cold-boot repeats and an overnight soak remain; then it
    can replace aa17 and unblock the conventional `build.sh` path below.
    Rollback: `/userdata/a50-kernel-test/flash-boot-image.sh` with the aa17 image.
+   **Conventional kernel, next steps (18 Oct):** the exact tested source is
+   now branch `halium-a50-aa17rf2` (`4f37ef39`) of the kernel fork, produced by
+   the fork's `halium-a50-tools` workflow. It rebuilt the tested Image
+   byte-identically; `arch/arm64/configs/halium_a50_defconfig` there is the full
+   build `.config`. `build.sh` now pins the tools at `7dd99e0d`. The tools
+   only accept Google prebuilt clang, and experiment 004 saw a tools-built
+   (clang-r383902 ThinLTO) kernel hang at the Samsung logo, never bisected.
+   Follow docs/kernel.md, one variable per boot test:
+   (a) bare `make halium_a50_defconfig` with Proton clang; diff `.config` (needs
+   the old branch's ANDROID_MAJOR_VERSION Kconfig commit `d159cfba` and
+   `console=tty0` `bab51ce8`);
+   (b) boot that kernel;
+   (c) only then the tools' clang, picking the LLVM=1 build fixes from old
+   `ubuntu-touch-26.04` (`57ba2d49`…`d25a56a6`);
+   (d) point `deviceinfo_kernel_source_branch` at the result.
+   Every flash needs the owner present, with aa17 or rf2 fallback staged.
    Earlier note: `build.sh` clones the moving
    `halium-generic-adaptation-build-tools` (head `7dd99e0d` on 17 Oct) and builds
    `deviceinfo_kernel_source` branch `ubuntu-touch-26.04` (last change
