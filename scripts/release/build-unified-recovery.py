@@ -26,6 +26,8 @@ def main():
     p.add_argument('--kernel', type=Path, required=True)
     p.add_argument('--kernel-sha256', required=True)
     p.add_argument('--base-ramdisk', type=Path, required=True)
+    # The unified recovery ramdisk comes from a moving Jenkins job; pin each one used.
+    p.add_argument('--base-sha256', default=BASE_SHA)
     p.add_argument('--overlay', type=Path, required=True)
     p.add_argument('--out', type=Path, required=True)
     a = p.parse_args()
@@ -33,7 +35,7 @@ def main():
         raise ValueError('refusing to overwrite an existing image')
     donor = checked(a.donor, DONOR_SHA)
     kernel = checked(a.kernel, a.kernel_sha256)
-    archive = gzip.decompress(checked(a.base_ramdisk, BASE_SHA))
+    archive = gzip.decompress(checked(a.base_ramdisk, a.base_sha256))
     if donor[:8] != b'ANDROID!':
         raise ValueError('not an Android boot image')
     ks, ka, rs, ra, ss, sa, ta, page, version, osv = struct.unpack_from('<10I', donor, 8)
@@ -99,7 +101,7 @@ def main():
     if written != image or written[new_do:new_do+ds] != dtbo:
         raise ValueError('output verification failed')
     manifest = (f'status=OFFLINE_UNTESTED_RECOVERY_CANDIDATE\n'
-                f'donor_sha256={DONOR_SHA}\nbase_ramdisk_sha256={BASE_SHA}\n'
+                f'donor_sha256={DONOR_SHA}\nbase_ramdisk_sha256={a.base_sha256}\n'
                 f'kernel_sha256={a.kernel_sha256}\nramdisk_compression=xz-crc32\n'
                 f'ramdisk_bytes={len(ramdisk)}\nrecovery_dtbo_bytes={ds}\n'
                 f'partition_bytes={LIMIT}\nimage_bytes={len(image)}\n'
