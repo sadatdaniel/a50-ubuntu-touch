@@ -53,6 +53,10 @@ jobs:
           grep -E '^deviceinfo_kernel_(source_branch|defconfig|clang_branch|clang_revision)=' deviceinfo
       - name: Build with the pinned adaptation tools
         run: ./build.sh
+      - name: Keep early-boot compile commands (toolchain bisect)
+        run: |
+          cd workdir/downloads/KERNEL_OBJ
+          find . -name '.main.o.cmd' -path '*/init/*' -o -name '.setup.o.cmd' -path '*/arm64/kernel/*' -o -name '.head.o.cmd' -path '*/arm64/kernel/*' -o -name '.mmu.o.cmd' -path '*/arm64/mm/*' -o -name '.printk.o.cmd' -path '*/printk/*' | tar -czf "$GITHUB_WORKSPACE/out/kernel-cmds.tar.gz" -T -
       - name: Report outputs
         run: |
           ls -la out/
