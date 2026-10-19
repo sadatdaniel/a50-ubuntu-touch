@@ -14,6 +14,10 @@ on:
         description: Test override for deviceinfo_kernel_defconfig (empty = deviceinfo)
         type: string
         default: ''
+      clang:
+        description: Test override 'BRANCH REVISION' for the tools' Google clang (empty = deviceinfo)
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -34,14 +38,19 @@ jobs:
           ln -sf python2 /usr/bin/python
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - name: Apply test overrides (CI copy only)
-        if: inputs.kernel_branch != '' || inputs.kernel_defconfig != ''
+        if: inputs.kernel_branch != '' || inputs.kernel_defconfig != '' || inputs.clang != ''
         env:
           KB: ${{ inputs.kernel_branch }}
           KD: ${{ inputs.kernel_defconfig }}
+          CL: ${{ inputs.clang }}
         run: |
           [ -z "$KB" ] || sed -i "s|^deviceinfo_kernel_source_branch=.*|deviceinfo_kernel_source_branch=\"$KB\"|" deviceinfo
           [ -z "$KD" ] || sed -i "s|^deviceinfo_kernel_defconfig=.*|deviceinfo_kernel_defconfig=\"$KD\"|" deviceinfo
-          grep -E '^deviceinfo_kernel_(source_branch|defconfig)=' deviceinfo
+          if [ -n "$CL" ]; then
+            set -- $CL
+            sed -i "s|^deviceinfo_kernel_clang_branch=.*|deviceinfo_kernel_clang_branch=\"$1\"|; s|^deviceinfo_kernel_clang_revision=.*|deviceinfo_kernel_clang_revision=\"$2\"|" deviceinfo
+          fi
+          grep -E '^deviceinfo_kernel_(source_branch|defconfig|clang_branch|clang_revision)=' deviceinfo
       - name: Build with the pinned adaptation tools
         run: ./build.sh
       - name: Report outputs
