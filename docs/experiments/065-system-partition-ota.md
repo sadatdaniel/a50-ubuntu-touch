@@ -65,9 +65,18 @@ confirms camera record/Stop/playback, apps and Wi-Fi. Two OTA installs on the
 system-partition layout have now succeeded with retained userdata (unsigned,
 local test method).
 
+## Third OTA, 19 October: clean boot
 
-- `console-setup.service` fails: `setupcon` tries to write
-  `/etc/console-setup/cached_UTF-8_del.kmap.gz` on the RO root although cached
-  files exist and are newer than their config. It only affects the text
-  console. Check upstream before changing anything.
-- Signed channel (real signatures) for distribution.
+Rootfs `266d1fb8…` (lock with Waydroid `+fdclose.1`; console-setup cache
+marked one second newer than its config in `finalize-rootfs.sh`), device
+tarball `9bbce934…` (expanded corners 40px), GSI 1585. `Done upgrading...`;
+only recovery was flashed (test → normal). **Zero failed units**: the
+console-setup failure is gone. Waydroid fdclose.1 is installed. User data
+retained (90 home entries, 11 recordings, 3 screenshots, unchanged). Three
+consecutive OTA installs have now retained userdata.
+
+## Open
+
+- console-setup root cause is upstream: the rootfs stores cache and config with
+  identical whole-second mtimes. Worth reporting to rootfs-builder-debos.
+- Signed channel (real signatures) for distribution; installer config.
