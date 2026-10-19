@@ -24,6 +24,11 @@ The proprietary APK is not committed.
   expanded panel deviated from that convention; the owner reported odd
   expanded-panel spacing. Horizontal positions stay vendor-derived. Fine-tune
   with the tool-notch-helper app the docs recommend.
+- Expanded corners 40px (2026-10-19): at the expanded label height (~50-110px)
+  the r=151 corner is ~9-40px deep; owner live test (bind-mounted yaml) shows
+  the right tab reaching x=1040. One labelled tab per side of the notch remains;
+  whether that is standard Lomiri 0.6 layout is still to be compared with a
+  reference device.
 
 Validate on-device in dark/light mode and expanded indicators, including clock,
 battery percentage and both SIM indicators. The values are grounded in the

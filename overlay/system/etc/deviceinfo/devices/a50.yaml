@@ -38,10 +38,12 @@ a50:
     - 1005 0 75 83
   # Expanded panel is taller: 147px, as in the UBports DisplayCutouts
   # example (FP4, same 1080px width and GridUnit 21). docs/display-cutout.md
+  # Corners 40px: in the taller expanded row the 151px corner radius is only
+  # ~40px deep at the label height (same as the FP4 example). Owner-tested.
   DisplayCutoutsExpanded:
-    - 0 0 75 147
+    - 0 0 40 147
     - 440 0 200 147
-    - 1005 0 75 147
+    - 1040 0 40 147
   WebkitDpr: 2
   SupportedOrientations:
     - Portrait
