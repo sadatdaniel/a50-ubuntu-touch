@@ -27,8 +27,10 @@ The proprietary APK is not committed.
 - Expanded corners 40px (2026-10-19): at the expanded label height (~50-110px)
   the r=151 corner is ~9-40px deep; owner live test (bind-mounted yaml) shows
   the right tab reaching x=1040. One labelled tab per side of the notch remains;
-  whether that is standard Lomiri 0.6 layout is still to be compared with a
-  reference device.
+  this is a known upstream limitation: Lomiri's notch tracking issue
+  (lomiri#128, after MR 304) lists "indicators should fill available space
+  better" and "large indicators need special handling" as deferred work.
+  Do not tune A50 values against it; it arrives with Lomiri updates.
 
 Validate on-device in dark/light mode and expanded indicators, including clock,
 battery percentage and both SIM indicators. The values are grounded in the
