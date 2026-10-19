@@ -51,7 +51,21 @@ on the phone:
 - 6-day log check: no service restarts, core dumps or OOM.
 - Waydroid package builds are byte-identical across CI runs (pinned changelog date).
 
-## Open, in order
+## Layout and OTA status (19 Oct, latest)
+
+The phone runs the **system-partition layout** installed by UBports'
+`system-image-upgrader`: two local OTAs, with user data retained
+([064](experiments/064-unified-recovery.md), [065](experiments/065-system-partition-ota.md)).
+The boot kernel is rf2 + `--systempart` (`dc71ee9c…`), recovery is unified
+`b2c75255…` (normal, signature check on), the cohort has 20 packages
+(camera Lomiri.Action added), and the GSI is 1585. Pipeline:
+`build-ota-rootfs.sh` → `build-device-tarball.sh --recovery` →
+`prepare-local-ota.sh` (`FORMAT=1`); test recovery via
+`build-unified-recovery.py --test-upgrader`, never shipped. Remaining for
+release: real signatures and a hosted channel, the installer config, the
+console-setup unit and expanded-panel layout checks. Rollback:
+`/userdata/a50-ota-test/ubuntu.img.bak` + rf2 boot.
+
 
 1. **Waydroid soak**: re-check `grep -c "Too many open files"
    /var/lib/waydroid/waydroid.log` (4 historical) after days of uptime; then

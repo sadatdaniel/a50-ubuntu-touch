@@ -45,11 +45,29 @@ updater also left `/userdata/ubuntu.img` in place. From recovery (root ADB):
 flash `boot-aa17rf2.img` with `flash-boot-image.sh` (current `dc71ee9c…`); the
 image file then wins again.
 
-## Open
+## Second OTA, 19 October: user data retained, camera restored
+
+The first install lost the camera app's Qt5 `Lomiri.Action`. On the old system
+it had been installed by hand (experiment 042), while the 26.04 rootfs ships
+only the Qt6 module. Two official, pool-identical archives
+(`lomiri-action-api` 1.2.2) joined the lock, which now holds 20 packages. A
+package-list comparison against the old system found nothing else ours
+missing; the 7 evolution-data-server libraries left upstream between the
+2 Oct and 11 Oct rootfs.
+
+The second OTA used the same method: rootfs `ad4b0313…` (20 packages), GSI
+1585, and device tarball `e924c055…` (expanded cutouts 147px). As system-image
+does for full images, `ubuntu_command` starts with `format system`, which
+formats only the system partition. Updater: `Done upgrading...`; it flashed
+only recovery (test → normal) because boot was already identical. **User data
+survived**: 88 home entries and 10 camera recordings, as before. The owner
+confirms camera record/Stop/playback, apps and Wi-Fi. Two OTA installs on the
+system-partition layout have now succeeded with retained userdata (unsigned,
+local test method).
+
 
 - `console-setup.service` fails: `setupcon` tries to write
   `/etc/console-setup/cached_UTF-8_del.kmap.gz` on the RO root although cached
   files exist and are newer than their config. It only affects the text
   console. Check upstream before changing anything.
-- Second OTA without `format system`, keeping user data (UBports requirement).
 - Signed channel (real signatures) for distribution.
