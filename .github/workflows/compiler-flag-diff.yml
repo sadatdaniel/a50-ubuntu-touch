@@ -25,7 +25,7 @@ jobs:
           GC: ${{ inputs.google_clang }}
         run: |
           set -euo pipefail
-          sudo apt-get -qq update && sudo apt-get -qq install -y flex bison bc libssl-dev libelf-dev cpio >/dev/null
+          sudo apt-get -qq update && sudo apt-get -qq install -y flex bison bc libssl-dev libelf-dev cpio gcc binutils-aarch64-linux-gnu gcc-arm-linux-gnueabi >/dev/null
           git init -q k && git -C k remote add origin https://github.com/sadatdaniel/android_kernel_samsung_exynos9610_mint
           git -C k fetch -q --depth 1 origin halium-a50-ut-llvm && git -C k checkout -q FETCH_HEAD
           git clone -q --single-branch -b proton https://gitlab.com/TenSeventy7/exynos9610_toolchains_fresh.git proton
@@ -39,13 +39,15 @@ jobs:
           OBJS="init/main.o arch/arm64/kernel/setup.o arch/arm64/kernel/head.o arch/arm64/mm/mmu.o kernel/printk/printk.o"
           for tc in proton google; do
             rm -rf "out-$tc"; mkdir "out-$tc"
-            export PATH="$PWD/$tc/bin:/usr/bin:/bin"
+            export PATH="$PWD/$tc/bin:/usr/bin:/bin" LD_LIBRARY_PATH="$PWD/$tc/lib"
+            # Host tools and the compat vDSO are not under test: same for both.
+            COMMON="HOSTCC=gcc HOSTCXX=g++ CROSS_COMPILE_ARM32=arm-linux-gnueabi-"
             if [ "$tc" = proton ]; then
               # vendor build.sh "proton" branch (no LLVM=1)
-              MK="ARCH=arm64 CC=clang HOSTCC=clang HOSTCXX=clang++ AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip CROSS_COMPILE=aarch64-linux-gnu-"
+              MK="$COMMON ARCH=arm64 CC=clang AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip CROSS_COMPILE=aarch64-linux-gnu-"
             else
               # halium-generic-adaptation-build-tools build-kernel.sh with llvm_compile=true
-              MK="ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 CROSS_COMPILE=aarch64-linux-gnu- CLANG_TRIPLE=aarch64-linux-gnu-"
+              MK="$COMMON ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 CROSS_COMPILE=aarch64-linux-gnu- CLANG_TRIPLE=aarch64-linux-gnu-"
             fi
             make -s -C k O="$PWD/out-$tc" $MK halium_a50_defconfig halium.config >/dev/null 2>&1 || echo "config failed for $tc"
             make -C k O="$PWD/out-$tc" $MK -k -j4 prepare >/dev/null 2>&1 || true
