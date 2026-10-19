@@ -10,4 +10,9 @@ if [ ! -d build ]; then
     git -C build checkout --detach "$TOOLS_COMMIT"
 fi
 [ "$(git -C build rev-parse HEAD)" = "$TOOLS_COMMIT" ] || { echo "E: build/ is not at $TOOLS_COMMIT" >&2; exit 1; }
+# The Samsung kernel Makefile turns PLATFORM_VERSION into -DANDROID_VERSION /
+# -DANDROID_MAJOR_VERSION (used by Wi-Fi, camera ISP and sdcardfs code). The
+# boot-tested build compiles with 120000 / 's', i.e. 12.0.0; without it the
+# tools build gets the 990000 fallback (compile-command diff, 2026-10-20).
+export PLATFORM_VERSION="${PLATFORM_VERSION:-12.0.0}"
 ./build/build.sh "$@"
