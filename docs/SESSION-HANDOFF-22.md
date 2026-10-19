@@ -27,7 +27,7 @@ Upstream artifacts expire: Jenkins keeps about 30 GSI builds, and CI
 artifacts last 7–90 days. Archive any new input into a release before relying
 on it.
 
-## Phone state (17 October)
+## Phone state (17 October; superseded by the layout section below)
 
 Runtime-firmware candidate 2 (`#1`, boot 18 October), aa17 fallback staged in `/userdata/a50-kernel-test`. aa17 is `#6`, aa18 `#7`. Root
 RO, AppArmor Y, zero failed units. Access over USB ADB as phablet; root needs
@@ -66,6 +66,11 @@ release: real signatures and a hosted channel, the installer config, the
 console-setup unit and expanded-panel layout checks. Rollback:
 `/userdata/a50-ota-test/ubuntu.img.bak` + rf2 boot.
 
+
+## Open, in order
+
+**Route decided 19 Oct: official UBports community port** — see
+[official-port-plan](official-port-plan.md) for gates and the cohort→upstream table.
 
 1. **Waydroid fd fix is now in the lock (19 Oct)**; the system-partition reinstall
    had reverted the phone to `.2`, so the next OTA restores `fdclose.1`. Earlier note,
