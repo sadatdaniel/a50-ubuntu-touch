@@ -1,9 +1,23 @@
-# UBports community-port CI (used once the repo lives in
-# gitlab.com/ubports/porting/community-ports). The shared pipeline builds the
-# kernel, boot/recovery and device tarball with halium-generic-adaptation-build-tools.
+# UBports community ports live on GitLab and build through this shared CI
+# configuration. This repository is mirrored on GitHub next to a50-halium; this
+# file is here so that moving it under gitlab.com/ubports/porting/community-ports/
+# is a push, not a rewrite (official route: docs/official-port-plan.md).
+#
+# Tools branch: `main`. It dispatches on deviceinfo_halium_version (9-16) and is
+# the only branch that knows 26.04-1.x; the old `halium-11` branch (last change
+# 2025-10) stops at 24.04-1.x, so an earlier pin to it could no longer build this
+# 26.04 port (checked 2026-10-19). The build.sh wrapper pins `main` to a tested
+# commit, so builds stay reproducible.
+#
+# Kernel: build.sh builds deviceinfo_kernel_source (halium-a50-ut-llvm) with the
+# tools' Google clang. That kernel currently hangs before the first printk on
+# this device (docs/SESSION-HANDOFF-22.md); until that is fixed this pipeline is
+# a compile check, and releases come from scripts/release/ with a50-halium's
+# boot-verified kernel.
 include:
-  - https://gitlab.com/ubports/porting/community-ports/halium-generic-adaptation-build-tools/-/raw/main/gsi-port-ci.yml
+    - https://gitlab.com/ubports/porting/community-ports/halium-generic-adaptation-build-tools/-/raw/main/gsi-port-ci.yml
 
 variables:
-  # Use this repo's build.sh, which pins the adaptation tools to a tested commit.
-  ADAPTATION_TOOLS_USE_BUILD_WRAPPER: 1
+    ADAPTATION_TOOLS_BRANCH: main
+    # Use this repo's build.sh, which pins the adaptation tools to a tested commit.
+    ADAPTATION_TOOLS_USE_BUILD_WRAPPER: 1
