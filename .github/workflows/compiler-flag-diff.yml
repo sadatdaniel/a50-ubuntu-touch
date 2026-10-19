@@ -1,0 +1,70 @@
+name: Kernel compiler flag diff (bisect)
+
+# The UBports-tools kernel (Google clang) hangs before the first printk while
+# Proton clang 13 boots the same source/config; Google's LLD/back end is ruled
+# out. Compile early-boot objects with both toolchains, invoked as each build
+# does, and diff the exact command lines the kernel Makefile generates.
+on:
+  workflow_dispatch:
+    inputs:
+      google_clang:
+        description: "'BRANCH clang-REV' of Google's prebuilt clang"
+        type: string
+        default: 'master-kernel-build-2022 clang-r450784e'
+
+permissions:
+  contents: read
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Fetch kernel tree, both toolchains
+        env:
+          GC: ${{ inputs.google_clang }}
+        run: |
+          set -euo pipefail
+          sudo apt-get -qq update && sudo apt-get -qq install -y flex bison bc libssl-dev libelf-dev cpio >/dev/null
+          git init -q k && git -C k remote add origin https://github.com/sadatdaniel/android_kernel_samsung_exynos9610_mint
+          git -C k fetch -q --depth 1 origin halium-a50-ut-llvm && git -C k checkout -q FETCH_HEAD
+          git clone -q --single-branch -b proton https://gitlab.com/TenSeventy7/exynos9610_toolchains_fresh.git proton
+          git -C proton checkout -q --detach 32074ae4fc8e2269569fdff26a22da037388c3e3
+          set -- $GC
+          mkdir google && curl -fsSL "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/$1/$2.tar.gz" | tar -xz -C google
+          proton/bin/clang --version | head -1; google/bin/clang --version | head -1
+      - name: Compile early-boot objects with each toolchain
+        run: |
+          set -uo pipefail
+          OBJS="init/main.o arch/arm64/kernel/setup.o arch/arm64/kernel/head.o arch/arm64/mm/mmu.o kernel/printk/printk.o"
+          for tc in proton google; do
+            rm -rf "out-$tc"; mkdir "out-$tc"
+            export PATH="$PWD/$tc/bin:/usr/bin:/bin"
+            if [ "$tc" = proton ]; then
+              # vendor build.sh "proton" branch (no LLVM=1)
+              MK="ARCH=arm64 CC=clang HOSTCC=clang HOSTCXX=clang++ AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip CROSS_COMPILE=aarch64-linux-gnu-"
+            else
+              # halium-generic-adaptation-build-tools build-kernel.sh with llvm_compile=true
+              MK="ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 CROSS_COMPILE=aarch64-linux-gnu- CLANG_TRIPLE=aarch64-linux-gnu-"
+            fi
+            make -s -C k O="$PWD/out-$tc" $MK halium_a50_defconfig halium.config >/dev/null 2>&1 || echo "config failed for $tc"
+            make -C k O="$PWD/out-$tc" $MK -k -j4 prepare >/dev/null 2>&1 || true
+            make -C k O="$PWD/out-$tc" $MK -k V=1 $OBJS > "log-$tc.txt" 2>&1 || true
+            for o in $OBJS; do
+              f="out-$tc/$(dirname $o)/.$(basename $o).cmd"
+              [ -f "$f" ] && sed -n '1s/^cmd_[^ ]* := //p' "$f" | tr ' ' '\n' | grep -v '^$' | sed "s|$PWD/out-$tc|OUT|g; s|$PWD|TOP|g" > "flags-$tc-$(basename $o).txt" || echo "missing $f"
+            done
+          done
+          for o in $OBJS; do
+            b=$(basename $o)
+            echo "===== $o: only proton (<) / only google (>)"
+            diff <(sort -u flags-proton-$b.txt 2>/dev/null) <(sort -u flags-google-$b.txt 2>/dev/null) || true
+          done | tee flag-diff.txt
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: compiler-flag-diff
+          path: |
+            flag-diff.txt
+            flags-*.txt
+            log-*.txt
+          retention-days: 30
