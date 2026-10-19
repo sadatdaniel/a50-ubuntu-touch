@@ -115,6 +115,15 @@ on the phone:
    without LTO (`CONFIG_LTO_CLANG`/`THINLTO` off via an extra defconfig fragment
    on a test branch); (2) clang r450784e (14); (3) `CONFIG_RELR` off. Evidence is
    in local gitignored `dl/conv-hang-20261019/`.
+   **(1) done, 19 Oct: no-LTO also hangs** at the same point (`boot-aa17nolto.img`
+   `059c06a5…`, branch `halium-a50-ut-llvm-nolto`, CI 39210295111; config =
+   tested minus LTO and its automatic `RANDOMIZE_MODULE_REGION_FULL`). LTO is
+   ruled out; rf2 restored from TWRP. Remaining difference from the booting
+   Proton build: Google clang/lld and the **integrated assembler** (the Proton
+   build assembles `.S` with GNU as; the tools force `LLVM_IAS=1`). An early-asm
+   (head.S/KASLR/RELR) miscompile fits "dies before the first printk". Next:
+   isolate the assembler with a Proton clang 13 + integrated-assembler build in
+   a50-halium CI, then clang r450784e or `CONFIG_RELR` off.
    Earlier note: `build.sh` clones the moving
    `halium-generic-adaptation-build-tools` (head `7dd99e0d` on 17 Oct) and builds
    `deviceinfo_kernel_source` branch `ubuntu-touch-26.04` (last change
