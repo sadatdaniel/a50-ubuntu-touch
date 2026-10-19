@@ -106,7 +106,15 @@ on the phone:
    integrated assembler. Its kernel config is aa17's minus blobs and Polly.
    Single-variable boot test staged: conventional kernel + aa17 ramdisk
    `boot-aa17conv.img` `7476403a…` (archived); current boot is rf2 `7d5855ef…`.
-   The tools' own ramdisk is the next variable.
+   **Result 19 Oct: hangs at the Samsung logo**, like experiment 004 (clang 11).
+   S-Boot's `last_kmsg` ends at `Starting kernel...` with no kernel line, so
+   it dies before the first printk reaches ramoops. Restored rf2 from TWRP with
+   `flash-boot-image.sh` (guards passed); healthy. Config is identical, so the
+   cause is the Google clang/lld build (12 here, 11 before), not
+   configuration. Next single variables, each one boot test: (1) same clang
+   without LTO (`CONFIG_LTO_CLANG`/`THINLTO` off via an extra defconfig fragment
+   on a test branch); (2) clang r450784e (14); (3) `CONFIG_RELR` off. Evidence is
+   in local gitignored `dl/conv-hang-20261019/`.
    Earlier note: `build.sh` clones the moving
    `halium-generic-adaptation-build-tools` (head `7dd99e0d` on 17 Oct) and builds
    `deviceinfo_kernel_source` branch `ubuntu-touch-26.04` (last change
