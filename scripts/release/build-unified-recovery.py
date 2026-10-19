@@ -32,6 +32,9 @@ def main():
     # deviceinfo_unified_recovery_ui_density: res-<density>/images from
     # ubports/halium_bootable_recovery, as the adaptation tools copy them.
     p.add_argument('--res-images', type=Path)
+    # TEST ONLY (UBports "Testing local OTA"): a system-image-upgrader whose
+    # signature check is bypassed. Never ship an image built with this.
+    p.add_argument('--test-upgrader', type=Path)
     p.add_argument('--out', type=Path, required=True)
     a = p.parse_args()
     if a.out.exists():
@@ -72,11 +75,15 @@ def main():
                 dst = root/'res/images'/img.name
                 dst.parent.mkdir(parents=True, exist_ok=True)
                 dst.write_bytes(img.read_bytes())
+        if a.test_upgrader:
+            dst = root/'system/bin/system-image-upgrader'
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_bytes(a.test_upgrader.read_bytes())
         lines = [line for line in original_props.splitlines() if line.split('=', 1)[0] not in props]
         (root/'prop.default').write_text('\n'.join(lines + [f'{k}={v}' for k, v in props.items()])+'\n')
         paths = sorted(root.rglob('*'))
         for path in paths:
-            path.chmod(0o755 if path.is_dir() else 0o644)
+            path.chmod(0o755 if path.is_dir() or path.name == 'system-image-upgrader' else 0o644)
             os.utime(path, (0, 0))
         names = b''.join(str(path.relative_to(root)).encode()+b'\0' for path in paths)
         overlay = subprocess.check_output(
