@@ -160,6 +160,11 @@ console-setup unit and expanded-panel layout checks. Rollback:
    commits (`thread_info.h`, Makefile, tzdev, firmware asm include). Next single
    variable: Proton build of `halium-a50-ut-llvm`'s extra commits, then
    clang r450784e.
+   **LLVM commits ruled out, 19 Oct:** a50-halium `--llvm-build-fixes`
+   (Proton 13 + those commits + systempart, CI 39249357299, symbols identical)
+   boots (boot `b329a4d8…`, owner-verified); it is currently installed. The hang
+   is therefore Google's clang/lld itself (r383902 and r416183b). Next: tools
+   build with `android12L`→`r450784e` (clang 14) or another supported revision.
    Earlier note: `build.sh` clones the moving
    `halium-generic-adaptation-build-tools` (head `7dd99e0d` on 17 Oct) and builds
    `deviceinfo_kernel_source` branch `ubuntu-touch-26.04` (last change
