@@ -67,7 +67,9 @@ console-setup unit and expanded-panel layout checks. Rollback:
 `/userdata/a50-ota-test/ubuntu.img.bak` + rf2 boot.
 
 
-1. **Waydroid soak**: re-check `grep -c "Too many open files"
+1. **Waydroid fd fix is now in the lock (19 Oct)**; the system-partition reinstall
+   had reverted the phone to `.2`, so the next OTA restores `fdclose.1`. Earlier note,
+   **Waydroid soak**: re-check `grep -c "Too many open files"
    /var/lib/waydroid/waydroid.log` (4 historical) after days of uptime; then
    update `validated-packages.lock`, the fresh-rootfs test and the release.
 2. **Camera/video GSI — PR 84 MERGED 17 Oct** (NotKit reworked it:

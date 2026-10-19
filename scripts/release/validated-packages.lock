@@ -1,5 +1,6 @@
 # Tested A50 Ubuntu Touch 26.04 cohort, 11 October 2026. See docs/experiments/059-image-package-integration.md.
 # 2026-10-19: + lomiri-action-api (Qt5 Lomiri.Action) — the preinstalled camera app needs it and the 26.04 rootfs lacks it (experiment 066).
+# 2026-10-19: waydroid +fdclose.1 (container daemon fd leak, waydroid#2357; experiment 062); byte-identical CI rebuilds.
 # package	version	architecture	sha256	origin
 libcontent-hub1	2.2.3+0~20261002220132.55+ubports26.04.1~1.gbpf9f0ad	arm64	fd438e9fae2d222de8eb78b434dc451605315003220f91d599dc1014705fd613	https://repo.ubports.com/pool/main/l/lomiri-content-hub/libcontent-hub1_2.2.3+0~20261002220132.55+ubports26.04.1~1.gbpf9f0ad_arm64.deb
 libexiv2-27-compat	0.27.6-1ubports1+0~20260529190549.1+ubports26.04.1~1.gbp94be66	arm64	42abd8711fba14713f55f858fccdfaab7ac068d7593a92827df9f69e7b72d6c6	https://repo.ubports.com/pool/main/e/exiv2-27/libexiv2-27-compat_0.27.6-1ubports1+0~20260529190549.1+ubports26.04.1~1.gbp94be66_arm64.deb
@@ -20,4 +21,4 @@ qml-module-qtmir0.1	0.7.2+0~20261008000645.83+ubports26.04.1~1.gbpac3ee9	arm64	d
 qml-module-ubuntu-content	2.2.3+0~20261002220132.55+ubports26.04.1~1.gbpf9f0ad	arm64	4f99e54672bd02b00bb987c274daada28139ee1dcefecdaae93cd1508ac8dd80	https://repo.ubports.com/pool/main/l/lomiri-content-hub/qml-module-ubuntu-content_2.2.3+0~20261002220132.55+ubports26.04.1~1.gbpf9f0ad_arm64.deb
 qtmir-qt5-mir1	0.7.2+0~20261008000645.83+ubports26.04.1~1.gbpac3ee9	arm64	5d536431acc23bfb3acc888cae01bb8ca870ca4cc85c3549f141eb934cc09d9c	https://repo.ubports.com/pool/main/q/qtmir/qtmir-qt5-mir1_0.7.2+0~20261008000645.83+ubports26.04.1~1.gbpac3ee9_arm64.deb
 tar	1.35+dfsg-4ubuntu0.4+a50openat2.1	arm64	a98715c7a33d8c688111882ceed7a5c1a87194b5e39b8732d7457f23c40836db	scripts/experiments/build-tar-openat2-package.sh
-waydroid	1.6.3-0ubports1~20260917185450.14~7ebfea8+ubports26.04.1+a50singleinstance.2	all	6d5444c20afea2409c8e00aa073df4ceee2630df75af3303fbaf1ad6eaad8cb5	https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/37192963426
+waydroid	1.6.3-0ubports1~20260917185450.14~7ebfea8+ubports26.04.1+a50singleinstance.2+fdclose.1	all	2817960d837e7ebca32009736a66fe7bece0fcdedc268676aa39a98aa73ea737	https://github.com/sadatdaniel/a50-ubuntu-touch/actions/runs/39029981210
