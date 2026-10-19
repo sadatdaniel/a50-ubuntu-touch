@@ -212,9 +212,9 @@ if [ -e "$MNT/var/lib/lxc/android/system.img" ]; then
     echo "I: renamed system.img -> android-rootfs.img"
 fi
 
-# Install native, versioned fixes after extraction; dependency/maintainer-script
-# failures abort the image build. No runtime repair or loose replacement libraries.
-bash "$HERE/scripts/release/install-validated-packages.sh" "$MNT" "$PACKAGE_BUNDLE"
+# Native, versioned fixes plus the A50 rootfs adjustments, shared with the OTA
+# rootfs (finalize-rootfs.sh). Failures abort the image build.
+NO_COMPAT="${NO_COMPAT:-}" DEVEL="${DEVEL:-}" bash "$HERE/scripts/release/finalize-rootfs.sh" "$MNT" "$PACKAGE_BUNDLE"
 
 # Apply device settings after native installation so package scripts cannot
 # overwrite device configuration. Preserve the conventional system/ layout.
@@ -235,30 +235,8 @@ fi
     echo "GSI_ANDROID_ROOTFS_SHA256=$(sha256sum "$MNT/var/lib/lxc/android/android-rootfs.img" | cut -d' ' -f1)"
 } > "$OUT/gsi-source.txt"
 
-# Release images use the normal read-only root; only debug builds opt in.
-
-# Ubuntu 26.04 renamed libxml2's SONAME, which stops the preinstalled OpenStore
-# and Morph from starting at all. Co-install the old one. --no-compat skips it.
-if [ -z "${NO_COMPAT:-}" ]; then
-    "$HERE/scripts/release/add-openstore-compat.sh" "$MNT"
-fi
-
-# Upstream's cgroup probe contains an NBSP before `true`, making the
-# intended fallback abort on kernels without nested schedtune groups.
-python3 "$HERE/scripts/release/fix-partition-probe.py" "$MNT"
-
-# Kernel 4.14 needs the installed polkit helper in its supported legacy mode.
-bash "$HERE/scripts/release/configure-polkit-legacy.sh" "$MNT"
-
-# --devel turns this into a debug image: sshd on, root password set, adb
-# unlocked, USB networking up. Kept out of the release image on purpose.
-if [ -n "${DEVEL:-}" ]; then
-    touch "$MNT/.writable_image"
-    "$HERE/scripts/release/add-devel-access.sh" "$MNT"
-else
-    rm -f "$MNT/.writable_image"
-    printf 'variant=release\nssh=off\n' > "$MNT/etc/a50-image-variant"
-fi
+# Release images use the normal read-only root; only debug builds opt in
+# (both handled in finalize-rootfs.sh).
 
 sync
 df -h "$MNT" | tail -1

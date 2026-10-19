@@ -25,6 +25,8 @@ BOOT=""; MODULES=""; OUT="$HERE/out"
 while [ $# -gt 0 ]; do
     case "$1" in
         --boot)    BOOT="$2"; shift 2 ;;
+        # Optional: system-image-upgrader also flashes partitions/recovery.img.
+        --recovery) RECOVERY="$2"; shift 2 ;;
         --dirty)   DIRTY=1; shift ;;
         --modules) MODULES="$2"; shift 2 ;;
         --out)     OUT="$2"; shift 2 ;;
@@ -51,6 +53,10 @@ trap 'rm -rf "$TMP"' EXIT
 mkdir -p "$TMP/partitions" "$TMP/system" "$OUT"
 
 cp "$BOOT" "$TMP/partitions/boot.img"
+if [ -n "${RECOVERY:-}" ]; then
+    [ "$(stat -c%s "$RECOVERY")" -le 67633152 ] || { echo "E: recovery image larger than the partition" >&2; exit 1; }
+    cp "$RECOVERY" "$TMP/partitions/recovery.img"
+fi
 
 # The port's userspace. overlay/system mirrors the rootfs root, exactly as in
 # the reference port (gitlab.com/uports/h10/oneplus-nord-n100).
