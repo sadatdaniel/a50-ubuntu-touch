@@ -5,6 +5,15 @@ name: Conventional UBports device build
 # which pins the tools. Builds kernel, boot and recovery from deviceinfo.
 on:
   workflow_dispatch:
+    inputs:
+      kernel_branch:
+        description: Test override for deviceinfo_kernel_source_branch (empty = deviceinfo)
+        type: string
+        default: ''
+      kernel_defconfig:
+        description: Test override for deviceinfo_kernel_defconfig (empty = deviceinfo)
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -24,6 +33,15 @@ jobs:
             xz-utils pahole libbpf-dev
           ln -sf python2 /usr/bin/python
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Apply test overrides (CI copy only)
+        if: inputs.kernel_branch != '' || inputs.kernel_defconfig != ''
+        env:
+          KB: ${{ inputs.kernel_branch }}
+          KD: ${{ inputs.kernel_defconfig }}
+        run: |
+          [ -z "$KB" ] || sed -i "s|^deviceinfo_kernel_source_branch=.*|deviceinfo_kernel_source_branch=\"$KB\"|" deviceinfo
+          [ -z "$KD" ] || sed -i "s|^deviceinfo_kernel_defconfig=.*|deviceinfo_kernel_defconfig=\"$KD\"|" deviceinfo
+          grep -E '^deviceinfo_kernel_(source_branch|defconfig)=' deviceinfo
       - name: Build with the pinned adaptation tools
         run: ./build.sh
       - name: Report outputs
