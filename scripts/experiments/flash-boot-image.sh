@@ -4,29 +4,26 @@
 #   flash-boot-image.sh IMAGE IMAGE_SHA256 CURRENT_BOOT_SHA256 CURRENT_BOOT_BYTES
 # The current boot partition must hash to CURRENT_BOOT_SHA256 over its first
 # CURRENT_BOOT_BYTES, so a rollback is always "the same script, swapped".
-# Vendor and recovery must be unchanged before and after.
+# Vendor and recovery must be unchanged by the write (compared before/after,
+# so it works whichever recovery is installed). Every failed check says why.
 set -eu
 img=$1 want=$2 cur=$3 curbytes=$4
 # TWRP names partitions under /dev/block/by-name, Ubuntu Touch under by-partlabel.
 d=/dev/block/by-name
 [ -e "$d/boot" ] || d=/dev/disk/by-partlabel
 boot=$d/boot
-VENDOR=48f5e9bfb9ef2dfd032ec7c92986ac1c8886abe7d658430b57ccacb5e3cffe3b
-RECOVERY=8535a9d9193243412fcefc0e6f1ba585d60e1533e65069867444a49d0287e51f
 sha() { sha256sum "$1" | cut -d ' ' -f1; }
 part_sha() { head -c "$2" "$1" | sha256sum | cut -d ' ' -f1; }
-check_others() {
-    test "$(sha $d/vendor)" = "$VENDOR"
-    test "$(sha $d/recovery)" = "$RECOVERY"
-}
-test "$(blockdev --getsize64 "$boot")" = 57671680
+die() { echo "E: $*" >&2; exit 1; }
+test "$(blockdev --getsize64 "$boot")" = 57671680 || die "boot partition size unexpected"
 size=$(stat -c %s "$img")
-test "$size" -le 57671680
-test "$(sha "$img")" = "$want"
+test "$size" -le 57671680 || die "image larger than boot partition"
+test "$(sha "$img")" = "$want" || die "image hash is not $want"
 test "$(part_sha "$boot" "$curbytes")" = "$cur" || { echo 'E: boot partition is not the expected current image' >&2; exit 1; }
-check_others
+vendor_before=$(sha $d/vendor); recovery_before=$(sha $d/recovery)
 dd if="$img" of="$boot" bs=1048576 conv=fsync
 sync
-test "$(part_sha "$boot" "$size")" = "$want"
-check_others
+test "$(part_sha "$boot" "$size")" = "$want" || die "readback mismatch after write"
+test "$(sha $d/vendor)" = "$vendor_before" || die "vendor changed"
+test "$(sha $d/recovery)" = "$recovery_before" || die "recovery changed"
 echo "boot written and read back ($want); vendor and recovery unchanged"
