@@ -183,6 +183,14 @@ console-setup unit and expanded-panel layout checks. Rollback:
    and linking, CI 39257525650) boots (boot `90289138…`, owner-verified). The
    hang is in **Google clang's front end** (defaults/flags). Next: diff the two
    drivers' defaults (`-###`, `-dM -E`) for the kernel's target and flags.
+   **Compile-command diff (20 Oct):** both real builds' `.cmd` files (CI now
+   keeps them). Code-relevant differences: ANDROID_VERSION 120000/'s' (Proton)
+   vs 990000 (tools), Polly (Proton only), `-fmerge-constants` and
+   `allow-store-data-races=0` (newer clang). `build.sh` now exports
+   `PLATFORM_VERSION=12.0.0` (correct regardless); that clang 14 build
+   (`b7e65ff1…`) **still hangs**. Testing `-O2` instead of FreshROMs' `-O3`
+   (branch `halium-a50-ut-llvm-o2`, fragment `a50-o2.config`). If that fails,
+   raise it with the UBports porting team.
    Earlier note: `build.sh` clones the moving
    `halium-generic-adaptation-build-tools` (head `7dd99e0d` on 17 Oct) and builds
    `deviceinfo_kernel_source` branch `ubuntu-touch-26.04` (last change
