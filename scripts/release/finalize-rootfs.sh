@@ -21,6 +21,17 @@ fi
 # intended fallback abort on kernels without nested schedtune groups.
 python3 "$HERE/fix-partition-probe.py" "$ROOT"
 
+# The upstream rootfs writes console-setup's cache in the same second as its
+# config (whole-second tar mtimes), so console-setup.sh's `-nt` test sees a
+# stale cache and runs `setupcon --save`, which fails on the read-only system
+# partition. Mark the cache one second newer than its config: deterministic,
+# and exactly the state upstream intended.
+cs="$ROOT/etc/console-setup"
+if [ -f "$cs/cached_setup_terminal.sh" ]; then
+    newest=$(stat -c %Y "$ROOT/etc/default/keyboard" "$ROOT/etc/default/console-setup" | sort -n | tail -1)
+    touch -h -d "@$((newest + 1))" "$cs"/cached_*
+fi
+
 # Kernel 4.14 needs the installed polkit helper in its supported legacy mode.
 bash "$HERE/configure-polkit-legacy.sh" "$ROOT"
 
