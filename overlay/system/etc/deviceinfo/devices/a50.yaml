@@ -36,10 +36,12 @@ a50:
     - 0 0 75 83
     - 440 0 200 83
     - 1005 0 75 83
+  # Expanded panel is taller: 147px, as in the UBports DisplayCutouts
+  # example (FP4, same 1080px width and GridUnit 21). docs/display-cutout.md
   DisplayCutoutsExpanded:
-    - 0 0 75 83
-    - 440 0 200 83
-    - 1005 0 75 83
+    - 0 0 75 147
+    - 440 0 200 147
+    - 1005 0 75 147
   WebkitDpr: 2
   SupportedOrientations:
     - Portrait

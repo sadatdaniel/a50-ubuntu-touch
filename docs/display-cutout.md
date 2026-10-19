@@ -17,8 +17,13 @@ The proprietary APK is not committed.
 - Center avoidance: x=440, width=200, height=83; approximately 3px clearance
   on each side of the vendor notch bounds. Panel height is 83px.
 - Corner avoidance: width=75, from the guide's corner-radius approximation
-  using r=151 and h=83. Same physical exclusions in collapsed/light/expanded
-  modes; do not invent an enlarged physical notch for the expanded panel.
+  using r=151 and h=83.
+- Expanded mode (2026-10-19): height 147px, following the UBports
+  DisplayCutouts example (FP4: 1080px wide, GridUnit 21, collapsed 81,
+  expanded 147). The earlier note reusing the 83px collapsed geometry for the
+  expanded panel deviated from that convention; the owner reported odd
+  expanded-panel spacing. Horizontal positions stay vendor-derived. Fine-tune
+  with the tool-notch-helper app the docs recommend.
 
 Validate on-device in dark/light mode and expanded indicators, including clock,
 battery percentage and both SIM indicators. The values are grounded in the
