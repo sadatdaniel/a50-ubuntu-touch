@@ -137,6 +137,13 @@ on the phone:
    (head.S/KASLR/RELR) miscompile fits "dies before the first printk". Next:
    isolate the assembler with a Proton clang 13 + integrated-assembler build in
    a50-halium CI, then clang r450784e or `CONFIG_RELR` off.
+   **Assembler ruled out, 19 Oct:** a50-halium `--llvm-ias` (Proton clang 13 +
+   integrated assembler + weak mem* fix, CI 39220818286, symbols identical to
+   rf2) **boots** (boot `7b5ac1c0…`, owner-verified hash). Remaining suspects: the
+   Google clang/lld version (11 and 12 both hang) or the old branch's LLVM=1
+   commits (`thread_info.h`, Makefile, tzdev, firmware asm include). Next single
+   variable: Proton build of `halium-a50-ut-llvm`'s extra commits, then
+   clang r450784e.
    Earlier note: `build.sh` clones the moving
    `halium-generic-adaptation-build-tools` (head `7dd99e0d` on 17 Oct) and builds
    `deviceinfo_kernel_source` branch `ubuntu-touch-26.04` (last change
