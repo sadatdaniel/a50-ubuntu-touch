@@ -1,2 +1,5 @@
 # Conservative initial UI configuration; display must be tested on hardware.
-ro.recovery.ui.margin_height=24
+# Blank/unblank at UI init: without it the Samsung fbdev panel stays dark (tested 19 Oct).
+ro.recovery.ui.blank_unblank_on_init=true
+# Keep the menu below the waterdrop notch.
+ro.recovery.ui.margin_height=120

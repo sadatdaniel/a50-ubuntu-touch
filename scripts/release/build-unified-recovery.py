@@ -29,6 +29,9 @@ def main():
     # The unified recovery ramdisk comes from a moving Jenkins job; pin each one used.
     p.add_argument('--base-sha256', default=BASE_SHA)
     p.add_argument('--overlay', type=Path, required=True)
+    # deviceinfo_unified_recovery_ui_density: res-<density>/images from
+    # ubports/halium_bootable_recovery, as the adaptation tools copy them.
+    p.add_argument('--res-images', type=Path)
     p.add_argument('--out', type=Path, required=True)
     a = p.parse_args()
     if a.out.exists():
@@ -64,6 +67,11 @@ def main():
             dst = root/rel
             dst.parent.mkdir(parents=True, exist_ok=True)
             dst.write_bytes((a.overlay/rel).read_bytes())
+        if a.res_images:
+            for img in sorted(a.res_images.glob('*.png')):
+                dst = root/'res/images'/img.name
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                dst.write_bytes(img.read_bytes())
         lines = [line for line in original_props.splitlines() if line.split('=', 1)[0] not in props]
         (root/'prop.default').write_text('\n'.join(lines + [f'{k}={v}' for k, v in props.items()])+'\n')
         paths = sorted(root.rglob('*'))

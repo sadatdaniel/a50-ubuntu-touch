@@ -263,7 +263,14 @@ deviceinfo_rootfs_image_sector_size="4096"
 ##########
 # Recovery
 #
-# [C] Deliberately not built yet. The UBports guide adds recovery at the
+# [C] (Superseded 2026-10-19, see below.) Deliberately not built yet. The UBports guide adds recovery at the
 #     finalization stage, and this device already has a working TWRP which is
 #     the only reliable way back when a boot image fails. recovery is sda15.
-deviceinfo_has_recovery_partition="false"
+# [V] 2026-10-19: unified UBports recovery tested on hardware (experiment 064):
+#     display, ADB as root, userdata-backed /cache. The verified TWRP dump is kept
+#     in release inputs-20261017 for restore. The panel needs
+#     ro.recovery.ui.blank_unblank_on_init (ramdisk-recovery-overlay/prop.halium).
+deviceinfo_has_recovery_partition="true"
+deviceinfo_recovery_partition_size="67633152"
+deviceinfo_use_unified_recovery="true"
+deviceinfo_unified_recovery_ui_density="xxhdpi"
