@@ -61,7 +61,11 @@ on the phone:
    Jenkins build **1585** (18 Oct) is the first with it: tarball `d08a92e4…`
    (archived in `inputs-20261017`, sources in `scripts/experiments/gsi1585-used-repos.txt`).
    Its 32/64-bit `libaudioclient.so` changed, and the wait loop's string is gone.
-   **No custom GSI build is needed any more.** Next: swap the phone's Android
+   **Done 19 Oct: installed on the phone and `gsi.lock` pinned to 1585**; owner
+   confirms camera record/Stop/playback, sound and lock screen
+   ([063](experiments/063-gsi-1585-camera.md)). Remaining: repeat recordings,
+   calls, Bluetooth audio and sleep on 1585.
+   **No custom GSI build is needed any more.** Done steps: swap the phone's Android
    image 1542 → 1585 reversibly (`scripts/experiments/swap-gsi-image.sh`;
    android-rootfs.img `da6c3373…`, 473,751,552 bytes), test boot, camera
    record/Stop/playback, audio and calls, then move `gsi.lock` to 1585.
