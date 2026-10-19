@@ -56,7 +56,16 @@ on the phone:
 1. **Waydroid soak**: re-check `grep -c "Too many open files"
    /var/lib/waydroid/waydroid.log` (4 historical) after days of uptime; then
    update `validated-packages.lock`, the fresh-rootfs test and the release.
-2. **Camera/video GSI** (Halium PR 84, open upstream): either upstream merges
+2. **Camera/video GSI — PR 84 MERGED 17 Oct** (NotKit reworked it:
+   `get_audio_flinger()` always returns null; hybris-patches `7d83d27b`).
+   Jenkins build **1585** (18 Oct) is the first with it: tarball `d08a92e4…`
+   (archived in `inputs-20261017`, sources in `scripts/experiments/gsi1585-used-repos.txt`).
+   Its 32/64-bit `libaudioclient.so` changed, and the wait loop's string is gone.
+   **No custom GSI build is needed any more.** Next: swap the phone's Android
+   image 1542 → 1585 reversibly (`scripts/experiments/swap-gsi-image.sh`;
+   android-rootfs.img `da6c3373…`, 473,751,552 bytes), test boot, camera
+   record/Stop/playback, audio and calls, then move `gsi.lock` to 1585.
+   Old text: (Halium PR 84, open upstream): either upstream merges
    it and `gsi.lock` moves to a Jenkins build, or the remote server builds it.
    Sources are re-pinned to Jenkins build 1584
    (`scripts/experiments/gsi1584-*`, 44 projects newer than 1542, incl. the

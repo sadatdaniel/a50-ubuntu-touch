@@ -1,0 +1,2639 @@
+9ace25eaf6e71aa38a1e18f94019b19f92d547e9
+843b21abebdde890f7a152a38dba6c457348270b
+project android/
+88e370827501474db8f1905128fdea2e8128ead4
+
+project art/
+7f2b48980eaa3e9ebeb3fe2df55ae4beb96f8248
+
+project bionic/
+b67b03356ceb6171bd0cfdb88c3ee9413c476935
+
+project bootable/recovery/
+2bc9bd9a20e120276d124b4a3e4008d0fd79eb24
+
+project build/blueprint/
+48e46e94de92a0a503d873677a20703472fbc13d
+
+project build/make/
+4fdba55d8946e7ede6d54422770b9bce45590924
+
+project build/soong/
+91bbda1f3319dc1c61fea4f4715f4217d5537841
+
+project compatibility/cdd/
+88cb8ac742cb42fd00470cca6eab4b24e8021850
+
+project cts/
+c554ab005261d4cd194b9a19aa5dd68c72d7df6e
+
+project dalvik/
+f3df716ee2164500d7feafc09c8f1e40ec007c2e
+
+project developers/build/
+b95e2339e3040470dbe7096f59b77c9cc1b776ff
+
+project development/
+9ecfb8110c04d5da90f8413d8ae396b2c98121f3
+
+project device/common/
+6b398d7f47aae5d42d126c49f0879fa20d2ca93b
+
+project device/generic/arm64/
+b2aea8576e3928e9add8b616740e56c1c5a811d2
+
+project device/generic/armv7-a-neon/
+b13c00e79c8bc1b96b62a3fc78cee075395f6271
+
+project device/generic/art/
+e10e1c2ca6d471e654854cd07d320a4935ea529c
+
+project device/generic/car/
+9b3509ac81d15f2c75956022062dcdbe45970684
+
+project device/generic/common/
+7fe048459cdf7f5deafe0806847bf129ec8b8bad
+
+project device/generic/goldfish/
+4394963c2eac6a8cd9716e815a63b33dceaba640
+
+project device/generic/goldfish-opengl/
+5259dd93194046d10a872d20a8665193dcbf86f9
+
+project device/generic/mini-emulator-arm64/
+600319b1f7a85aee93bcdec936f9dbab0a9cb77e
+
+project device/generic/mini-emulator-armv7-a-neon/
+de9e77471b32ec6e86d9325f99c7ef315548d8e3
+
+project device/generic/mini-emulator-x86/
+64b80cc91adbe43ca29e17ef94992c11262fb629
+
+project device/generic/mini-emulator-x86_64/
+3aaa50ca702d5a35221bcef368d4744857cbdcf1
+
+project device/generic/qemu/
+8234babf45501312e756efafd840673c593925bf
+
+project device/generic/trusty/
+365e5290c93e138eb18fe195f59952c539b56cdc
+
+project device/generic/uml/
+038d476bc08b77477f039d44a68117b6e24cca3e
+
+project device/generic/x86/
+7a73a1f8e9fd691cb8f45aa9de303f3c39c3837a
+
+project device/generic/x86_64/
+506952733fdebb5a2ef086b519ceebe86a95ae31
+
+project device/google/atv/
+49a6a7f162648500dc63c8f7bb7a4b2cd1ae11fa
+
+project device/google/contexthub/
+2457a6d194efd426f2f5d4186efcece5c4057e27
+
+project device/google/cuttlefish/
+5b4b95fb47e059be7302ee623ac598cb45444a8a
+
+project device/google/cuttlefish_kernel/
+2f8dc786bb22edd195c35f9bcec4ecb009b457f0
+
+project device/google/vrservices/
+19240f7c55a1fbaa721b265f76cacf7bf21109d7
+
+project device/halium/halium_arm64/
+11bec75fab07cc680686203d9c18ffe7e532540f
+
+project device/lineage/atv/
+21c2541198f69110e375d1d678466de6dfb9da8f
+
+project device/lineage/car/
+ac49fa77109148dfe3d6e433e179b09d83aa1e69
+
+project device/lineage/sepolicy/
+02f04d2b0a57f1c7435dc9f2ce8fac2640b38782
+
+project device/qcom/sepolicy/
+3415a281fcdc9e0d75b25d3fb9ba3e47da29cffb
+
+project device/qcom/sepolicy-legacy/
+a3e5797421fa59c908a87b3b4bf307ab74f6ab38
+
+project device/qcom/sepolicy-legacy-um/
+7e1793820d2faded17a55b639e8d2a3826dae286
+
+project device/qcom/sepolicy_vndr/
+6c122b26629f84c8383d1db583fe5ae0b59fcfaa
+
+project device/sample/
+5c4f1d093d7771d6ac327e87e19698cec6bf3a34
+
+project external/FP16/
+4039a7ffa4bbee623e1e616efef9a387b2a8b47d
+
+project external/FXdiv/
+c577b94ed81e89bb905b7cbba8043480561afda6
+
+project external/ImageMagick/
+46696775cff41245ab4a23a7c89f6d399543852c
+
+project external/OpenCL-CTS/
+5f72eacd832176138d336c45f152a383530f081c
+
+project external/OpenCSD/
+060a9da419873f9dbc234f8f85ca5704ce955c3f
+
+project external/Reactive-Extensions/RxCpp/
+439b0fad1d24972948f96f58a8931ebe72d0ab29
+
+project external/XNNPACK/
+5fa0858b57c36722f0ab2606c606e927b5a40448
+
+project external/aac/
+16235b090ec588640d0cbb5fcd8d7457efb10cfb
+
+project external/adeb/
+8c34d5da63b96dd7abbcb3321192ee943ec948db
+
+project external/adhd/
+9d7dd95bc29fe017068809cdeb32e548e235f6c0
+
+project external/android-clat/
+5a982408e9fb9f6e863ae2440cac86e628db23ee
+
+project external/androidplot/
+b999712946d5141812fa2456e652db6b818d439e
+
+project external/angle/
+e395d58e6cde4a5b7d17349a5d743f148a1eea7d
+
+project external/ant-glob/
+45461635647e5481fa67473795782ce232e44fe1
+
+project external/ant-wireless/ant_client/
+53546c7ceef11b3078bfbb9487bb25a0456533e2
+
+project external/ant-wireless/ant_native/
+c674e613ac60fcd7583ca26bbb8878eec6aec851
+
+project external/ant-wireless/ant_service/
+6b3d142c5609fb08276ea0a5033145b1c1ae3110
+
+project external/ant-wireless/antradio-library/
+85290ef0527d2f4cf82fdc3ffc290c970ca57f6b
+
+project external/ant-wireless/hidl/
+5f0fab93b14f1163ac486f83d530f7d17163caee
+
+project external/antlr/
+f207c52043d762d9cfbfd87986b5194c855a318a
+
+project external/apache-commons-bcel/
+50e755197cd5de9d584414616d6d48877c92c649
+
+project external/apache-commons-compress/
+5334065cacdd3d1af2688d4617918ec0460708e1
+
+project external/apache-commons-math/
+f30081520947ace21933c4f6ade062152c9b99f3
+
+project external/apache-harmony/
+61f55349a0d486a13f934fff77cac5f4421e6964
+
+project external/apache-http/
+3ed8712e122625ee614e424e4ab9c8facad1eeed
+
+project external/apache-xml/
+068ada767c295d9b040641db0d8ff8cf5c9c5a6e
+
+project external/arm-neon-tests/
+bc9bbf361c8cabbd4ae0a215de5871fad527915e
+
+project external/arm-optimized-routines/
+8edcec53c6d84dc7f85e4c0a8539384b3fe489ec
+
+project external/arm-trusted-firmware/
+cabe6937f2c9d0a50e4631c0545bddd650233ae8
+
+project external/autotest/
+24e35fe5e5d027a2f0f96c568680da1ffc2d303b
+
+project external/avb/
+5a2b0ed1b6e360303642ee05e970373fb86ca253
+
+project external/bash/
+f7be77e1db4d45c29b16c1e8d148e0ddf6bb8c62
+
+project external/bc/
+4a29cb9b257582baa92082f9bd978fdb764414f7
+
+project external/bcc/
+41065cda77e818716bab177ea578da7ea6419a0a
+
+project external/blktrace/
+060b8359b7de580cd8c7d734ae69caa300bfda56
+
+project external/boringssl/
+4f3c98594811d05ec0c445a1203198525817f7c3
+
+project external/bouncycastle/
+4bc9e6ac74bab2c5aa00d592671088a0c45e2322
+
+project external/brotli/
+619bffd9209f3ded7513ba5918b4497a3bdf3f51
+
+project external/bsdiff/
+68a0ca2dade5b6707dd7068b3c59f3d1ead041be
+
+project external/bzip2/
+c6c36df1fce6e8d61865d934d405804b1e2893ed
+
+project external/caliper/
+8180ab2636a5314cce94f4886033eb1494ba45d2
+
+project external/capstone/
+f1f1cbc054db7021d4167a96b55783e087e1b7b4
+
+project external/catch2/
+dba03cace0e298b6a690c00ccd99848193c2e0f9
+
+project external/cblas/
+d82c5f4ae14b2a5468303985070f7dadc15d4094
+
+project external/cbor-java/
+f81e576298790c97498311e99a0b0b34653c3dd8
+
+project external/chromium-libpac/
+169c93e00a00605346a68d39d3f4713735bdb61e
+
+project external/chromium-trace/
+e524766cad26d677a9a1ec8c00c512d4cac2cf5e
+
+project external/chromium-webview/patches/
+3847f83c25fa2e400f95298e012a7f026caf7c46
+
+project external/chromium-webview/prebuilt/arm/
+170e8996e41ef542769b5479297ab91072b487e2
+
+project external/chromium-webview/prebuilt/arm64/
+604ad4cbc41d3b894065ee6e83189c76e1ec06a1
+
+project external/chromium-webview/prebuilt/x86/
+2ca10d72f62377581fcc98cf5f8c35df6e0308b5
+
+project external/chromium-webview/prebuilt/x86_64/
+de57895442140a9c3c46c8e82a14e0b5a7ec6813
+
+project external/clang/
+0a1c53a5d295109bd4702ad13c0f2a5510ca1b26
+
+project external/cldr/
+6f90be3de6bb1dfc68c3eeba42237e84b4ffe0c2
+
+project external/cn-cbor/
+696530332036f5518681d3c450cdbc3ee412004a
+
+project external/compiler-rt/
+3af33001472e064655de5f3cb28a8ee59e8b3f61
+
+project external/connectivity/
+0bcb1672a85eaa9e0e198a1aa7b5f6fe37884a7a
+
+project external/conscrypt/
+07bcb013bd8e903007fc3ac2ce9f88fcab90250f
+
+project external/cpu_features/
+261550055f23a688466c7eb0c9642d0311146b63
+
+project external/cpuinfo/
+2e369efc3f37932d3b1f78d8076961b82753fb0d
+
+project external/crcalc/
+719c7cd8fec743584dcd101f977f3ac721dc0e0b
+
+project external/cros/system_api/
+62a171fbb750b2dcb217e54f4b0d517739e28e31
+
+project external/crosvm/
+4083f84de77b2855d5b453fcb178393a7ac21e9f
+
+project external/curl/
+0eb317978b71cb38f970e4fda0c40276daf01c35
+
+project external/dagger2/
+678a3d564813c41376a7ed56ac4e63acf4043346
+
+project external/deqp/
+0d492fc885262efafa8f620793b5234fde83882a
+
+project external/deqp-deps/SPIRV-Headers/
+5bd3950caf5a1520543951ba22b7ce24baf10822
+
+project external/deqp-deps/SPIRV-Tools/
+f57cb35ed815bd3c4122c80320e5213d905ab288
+
+project external/deqp-deps/amber/
+a1915007cb5c5e54ac304d78230f9d7280ccb310
+
+project external/deqp-deps/glslang/
+1f7fa079592f976b278233b4cdd80068288a78dd
+
+project external/desugar/
+5254fa239df6f2dd0771ad4bec180eae4b127324
+
+project external/dexmaker/
+9e115705753849a71d010af23f984a5aa560f0cb
+
+project external/dlmalloc/
+3a9d0af27a9f8fe533931a9e7ca843fd8e5b54f1
+
+project external/dng_sdk/
+fe73a7026ef8b7bb9c06605eb4b5404f518edb07
+
+project external/dnsmasq/
+89376206b76d25a1edf0770f334ccfc1e147e62f
+
+project external/doclava/
+baa68d6a1871e312e9193521eda9dcb5f44db10f
+
+project external/dokka/
+fb76ba5407dbb6816dca6ba7b6d0e21d52c6e411
+
+project external/drm_hwcomposer/
+e6aedbde1d66fb03c078726fcb8eda55983bdb75
+
+project external/drrickorang/
+d75961c2b57446c5201e64707bd8146fc925e566
+
+project external/dtc/
+239ff1d620479b06cd8a416fdb9ae1ab1bc0ac5f
+
+project external/dynamic_depth/
+82589497aa60f574ef747e82935fd6f3cad8109a
+
+project external/e2fsprogs/
+f6638bb5b7e01259e02112744c08ed6874f4e470
+
+project external/easymock/
+afd503b419c6c25d6804e137f2642217f10ee980
+
+project external/eigen/
+d2f82e2d6fc7f1dabc1af902c4515d74330877c6
+
+project external/elfutils/
+5f92182e496a66149ba09c92fe497135643663f5
+
+project external/emma/
+c2aa4d22fc24295761a9c588836531a7b3d3d519
+
+project external/error_prone/
+3501c38bc5248eec887a1bdccbabf53454483672
+
+project external/ethtool/
+0ee4880d2be92d35541f7f15d48e50bde5d43d10
+
+project external/exfatprogs/
+b9e03cce7274e53bc947e9b3291d2d4b885f442d
+
+project external/exoplayer/
+1367a0c6e60801c4f7d59184e9df476d1db2e2ce
+
+project external/expat/
+0a4c0b045c17d6545eefccac327141e107a100c9
+
+project external/f2fs-tools/
+75ec64039d6af9b04906b018c67342a6d2a09f1c
+
+project external/fastrpc/
+81249d5007dd3322a287878f64d961b834984f34
+
+project external/fdlibm/
+9b1875e1f9cb968e02b8a393e7ed230bd4f4062e
+
+project external/fec/
+7049b92008752b4f939425ad91bf2aea86133216
+
+project external/flac/
+294a58f3718f38f9e635be3faf76f0a2cdb61508
+
+project external/flatbuffers/
+1912eaaff49449e66eed1a76ede387f8be68d0ca
+
+project external/fmtlib/
+aa6fa3aa882afe47f7af990b0c6d747a01cd6104
+
+project external/fonttools/
+375cb3ca5498f918169cf83acfb5abc6cd950495
+
+project external/freetype/
+802450d1d821d8ceafe27c4eda13daebc938dbf7
+
+project external/fsck_msdos/
+0fa08a6c46cdee80aa054e27fec121808e6bb4e1
+
+project external/fsverity-utils/
+cc5e51366174ddd4580c78c9845d86e44586c034
+
+project external/gemmlowp/
+f96628cfe2e070e73230e644721f3b8a8e1f7877
+
+project external/gflags/
+8703a3bf83f05149602c8aaed691a7be51a72816
+
+project external/giflib/
+529b42ce81e5ec1537ef40e91758e82af3cc935e
+
+project external/glide/
+bd0082947a4c7b0058049c155d3c2517d462cc81
+
+project external/golang-protobuf/
+e58929c83073a51fed4c23b819175c649fddfa33
+
+project external/google-benchmark/
+6e9b9330d4c6a1279ce715150fca8a6b7c8377c6
+
+project external/google-breakpad/
+05728773737deb58a10cdbe29750152c13e400bf
+
+project external/google-fonts/arbutus-slab/
+573b99d69f31c4d485810b6ffca82657676bf269
+
+project external/google-fonts/arvo/
+b20f0dcb8affa1a19850f599e7c63741e76befc0
+
+project external/google-fonts/barlow/
+efc104d906ad165fdfdf7d5f7d1050c35ca6bdcb
+
+project external/google-fonts/big-shoulders-text/
+a2053632354b20a1140cb2783b42c14515121cb3
+
+project external/google-fonts/carrois-gothic-sc/
+533cb08bf58c00f2f8d257e6db0b9f37202016ac
+
+project external/google-fonts/coming-soon/
+161c1af751124ac73e21d48c630162dc753af803
+
+project external/google-fonts/cutive-mono/
+a7e367ca6a33cd7a74df285fd88472b9da379868
+
+project external/google-fonts/dancing-script/
+213684b54283321a54976eb6ff54426ebbf9c5b4
+
+project external/google-fonts/fraunces/
+b98b9c56cdb41d1b5f5c602357235a1762f6b899
+
+project external/google-fonts/karla/
+3c029a135846c6d3402aea394601c8e89e36cb76
+
+project external/google-fonts/lato/
+ba0c99db0bf7ba5fb45f2308f1bf1c1e685259bb
+
+project external/google-fonts/lustria/
+3a47268e4bff81e30c37a06c8092aeed16701acd
+
+project external/google-fonts/rubik/
+6e2bb32e2cf81324b6a484587ba838a1e42f8770
+
+project external/google-fonts/source-sans-pro/
+073b45bf14e356c84c11c01cda1678e5bbfc0411
+
+project external/google-fonts/zilla-slab/
+f1a96df144ee083555bf37edb595b15d6c51f51c
+
+project external/google-fruit/
+57123c8a2477a4d99cb68c53d195e9fb428dd535
+
+project external/google-styleguide/
+e8635854e4dd46c3ec9ea1490025a7d3f7ad5eae
+
+project external/googletest/
+783dd00b924f4676f31ff4b5da999e8f01a090a4
+
+project external/gpg/
+b615113939972d14ea75861f6570b8d1e4776dab
+
+project external/gptfdisk/
+41c39364584df9a3871d8f9fe901945a09b449c2
+
+project external/grpc-grpc/
+75bfcd05212333d0f4247865e3a61eaf6092d932
+
+project external/grpc-grpc-java/
+9b4f1a6db99b7cb7d46320e25e32317853b500dc
+
+project external/guava/
+f68acb20fe2dbfb31dd6259fd0cf161f09d51701
+
+project external/guice/
+341b3654f990734fccc4f8bdda401862f1aea696
+
+project external/gwp_asan/
+76e2fecf2dd8449ab4d636dc3e55f1be1d7a56d0
+
+project external/hamcrest/
+c24f6249abf1583a60f7b33ea29e321e8f15c586
+
+project external/harfbuzz_ng/
+ab5e62fefce126b4f299430f1327b33c9fe526e1
+
+project external/honggfuzz/
+03bc7e514aac0c4c64a5bb978454aa2020695ac3
+
+project external/htop/
+5bbeb9e90187551b5cc51b85799d3caf75a10544
+
+project external/hyphenation-patterns/
+ac87c57f7beddbf5d5a50462508ce182f4fe72e8
+
+project external/icu/
+da4816edc4db0efb594b5d971766528ff6a60708
+
+project external/igt-gpu-tools/
+cb3381988ec1617f3d794162410c54bc5521a8ed
+
+project external/image_io/
+135f7c04ae98ce694efcfc6d9a0d2bc38f4c3653
+
+project external/ims/
+d61e15930734b443b36116d9dd8c1367b9df38b1
+
+project external/iperf3/
+84c367eba8bd20381cbdf41a1945e3f7d0cc97fa
+
+project external/iproute2/
+359545a6aeec28a25a0ba59f71320489bedfeaa9
+
+project external/ipsec-tools/
+21841d18260f3247c0189c5157169c862632f0ec
+
+project external/iptables/
+db325961118ca9c1b2179698d4c69b568b04470c
+
+project external/iputils/
+4647133b841a2d77044f4f78c85772968fb84c3a
+
+project external/iw/
+948cf7974947823433758278292bd657ef140d42
+
+project external/jacoco/
+824fbb7e21ff47001b31682152aecbade46d2193
+
+project external/jarjar/
+51d1c00fbf88036d7bed00ddc455b3cd939dc74c
+
+project external/javaparser/
+1151cfe383321b5d71dd3d32e595ffaa28bca7db
+
+project external/javapoet/
+b3ebb5d8c63cdda55bb74b23d436a36a55191f68
+
+project external/javasqlite/
+c093f72b18ff45bd66c8884ef667399aa5891b9f
+
+project external/jcommander/
+c4d97985b3787276d6b391510250246c9ca94541
+
+project external/jdiff/
+8cfae805e056320128cc7e506c8eae24daccac0b
+
+project external/jemalloc/
+e3ff6769f8262841c98245e21b96dc67536759dc
+
+project external/jemalloc_new/
+45117afe65c48295ed9b987c4e99479f04f7de62
+
+project external/jline/
+478835d3c4603b43c28feb80912ff33f2c6811a6
+
+project external/jsilver/
+241cd1b197ee8e520aa6b04f277c3b29a2ff0fe4
+
+project external/jsmn/
+da7fb9c17ab5e9a1c11beacc1c1ad460ee66bfe8
+
+project external/json-c/
+06a40b8b3b99b9cc223f8328b5ed54d5afce8204
+
+project external/jsoncpp/
+ceed690fefd71a34154781da01b3bb0294a486eb
+
+project external/jsr305/
+2c190e46f7369a6bb2d79b78a11ffb5e932d819d
+
+project external/jsr330/
+4221d13d2c4079d3299c1d3265ed93564b84c78b
+
+project external/junit/
+2e771a25d8437246287c87d8045794c7f6968ec1
+
+project external/junit-params/
+ed4bc1eedea9e248f690ed682e4bd1b65863268d
+
+project external/kernel-headers/
+98de591de8a89211e0d97ce6da031ec142ee8b86
+
+project external/kmod/
+9271b26ce33f744b2f0d3dde6ed9609e345cc710
+
+project external/kotlinc/
+451272f744c49c47efa1a96238e911ca1a013d1b
+
+project external/kotlinx.coroutines/
+ad50cea75fbf4cf484d5016efb8f1295d748c1e7
+
+project external/ksoap2/
+35e0997508e99f0a5ca60de58a0f1a9df891698e
+
+project external/libaom/
+cf5de99a83d4e8bd061338c2dd190b98df639e8c
+
+project external/libarchive/
+17c59ebeab6efd772dd3e770022fc9628032d899
+
+project external/libavc/
+638188b96cbd176792558d8a5355d358e574fdfe
+
+project external/libbackup/
+2141bb48d626369da6313aac930939b8faa83226
+
+project external/libbrillo/
+9e260fa59a43bc04701216c51053922d445fefd8
+
+project external/libcap/
+7e0408acfb03a3119541557b82ba3f8d28d5e78e
+
+project external/libcap-ng/
+e17ed85e2a3b4691efd6975a02f8e56277cc93af
+
+project external/libchrome/
+e871b0b6badd9c8b977f470badb533b78a2812d5
+
+project external/libcups/
+1919b0f2af107b73767ed52d919432ef531f8497
+
+project external/libcxx/
+8e12f3ece5c809efb45393fb889beeb43a3280c5
+
+project external/libcxxabi/
+e3c7223a009074e8d6b57d56757851ede7d8ab07
+
+project external/libdaemon/
+433dd14cb58a66737e158ad1331c02162a80f43f
+
+project external/libdivsufsort/
+abb3a16c4986c5f7dda62580c4f53c1930d4d1b9
+
+project external/libdrm/
+9d5089ee87931edcf5ba01949e0a11cf1a52b471
+
+project external/libepoxy/
+8f53ca38c16e91d11888e129069443d795f37fdb
+
+project external/libese/
+127c3cd569dcb5fe47d3b420086d30853d0361da
+
+project external/libevent/
+e2ad30a2c0dd53cef7fd37e5336407938b64da26
+
+project external/libexif/
+c06fb4a306fa56519b44cfa47c7f65a5b187fac7
+
+project external/libffi/
+346fc30ba1b84cca643e0d970175358d79554d8c
+
+project external/libfuse/
+dfbcbb8fa1ab5367cc307a8a28069c5c91593be3
+
+project external/libgav1/
+b2c0e2fc2f5a0812bfb4aee94fff6fac6a8a825a
+
+project external/libgsm/
+2822c44a30e0d109492b3e96f128409ec2ed5fc9
+
+project external/libhevc/
+c780df49dbc4c54ad16b275269df096f9598f1d6
+
+project external/libiio/
+8fcb4fb5c580bfd9121dd8ddb93d4eb907d23f9e
+
+project external/libjpeg-turbo/
+0cd36dd9593c659539ccaf318e65d1fa2888a8b9
+
+project external/libkmsxx/
+b3dedeaa7107178b3f577cc986c91113c92e8edd
+
+project external/libldac/
+93195ee38bd08ea8d9f87cbfa550635923f213de
+
+project external/libmpeg2/
+92caa89837f5ffa4085fb6d8014f5e6c07067eb4
+
+project external/libncurses/
+61a6a4ffcb72fc2961951c02bdd085895e377171
+
+project external/libnetfilter_conntrack/
+a44a0c25fa5eb2575df464bd4d9e3e5c7da9ccf6
+
+project external/libnfc-nxp/
+e4fb0694ac4eb888f098598bd895587b71747ce5
+
+project external/libnfnetlink/
+ac537e1d43625a99d8b266a362f4735762a42b66
+
+project external/libnl/
+eaf0ff4b41b655449a4098f8cceacb74cb7cacce
+
+project external/libogg/
+9ade11b9e2782651747306dff43a9b553c94203a
+
+project external/libopus/
+91bf556330e514c5a43d5dd5202b9570db940e2b
+
+project external/libpcap/
+a534481a0cee14a9c4cd4bcb0a2aa7fff7a6c7a1
+
+project external/libphonenumber/
+ebe83670878bfd616c86d8a4d9b8cde00a6e9d38
+
+project external/libpng/
+9e1f873b22bba8158573ff47b69131603e56743d
+
+project external/libprotobuf-mutator/
+829b4113d970aeec2fcb6acecd3631624c48acd4
+
+project external/libsrtp2/
+1904160d088401788daf6b5d1130819f087ff946
+
+project external/libtextclassifier/
+b82ba94b6eb041fe54afbe1043e4301aa3102086
+
+project external/libunwind/
+279b6f9c5e6b5fade1ecb2c50b4c773a29fe384c
+
+project external/libunwind_llvm/
+b015df41c165ab31a0a63ff1319ef14dd7d52e7a
+
+project external/libusb/
+e486a629e38d567d271f38f50deeccdac6b7fc62
+
+project external/libutf/
+a767ddfc5e962aa166c36fca4da613a8be989806
+
+project external/libvpx/
+58b73fb6456bb66cbf03f92115c13b1330860bb3
+
+project external/libxaac/
+895c0e3e32383913d7ec79ef3a9c0405f236885f
+
+project external/libxkbcommon/
+52016fde3e9beb9d1f67cd905635847eb73f8a16
+
+project external/libxml2/
+fabe49bdc23aa4a7f4e358f21d08c30bfc9cee6f
+
+project external/libyuv/
+38bdba20e21285e60d6b0a0e534de4f7f21fb5da
+
+project external/linux-kselftest/
+96e90b20779b769488086463fd3db9d6a70744ea
+
+project external/llvm/
+f7b5e7df8e0fedad229c0bcc6798789fc50d818b
+
+project external/lmfit/
+3d36ea54c2216475d5e21da31ee0db4af24ebed1
+
+project external/ltp/
+b506acbca227f177bf3534ff0b32404078c000fb
+
+project external/lua/
+afada5cde35988a386b820bb9b2d2b09130a828e
+
+project external/lvm2/
+0bee28199d91814c444dbf4165c69b4142901025
+
+project external/lz4/
+fdd43c66dd9e77283aa8f7e52a881be44d622441
+
+project external/lzma/
+7ad0c1013f4666f8c9d088e0c6893a86057f5ebd
+
+project external/markdown/
+41a03193095447f4ff110690171574ed8b721292
+
+project external/mdnsresponder/
+249adc6ec6ee7399c95e9a79c8858d809990e53b
+
+project external/mesa3d/
+4bc5ec21cffcb1686f1414950df63a087edff36d
+
+project external/mime-support/
+8c4635bb418118ef654d961fba112f8b9e746d8a
+
+project external/minigbm/
+aa65a6a67cd41390d4e8a0f87e20d3191db2994d
+
+project external/minijail/
+13c257bca9a38043781672af3b7df4c5ede1c268
+
+project external/mksh/
+7703b0f19b57fd7161c3f9338f21b6b0b6a2abdd
+
+project external/mockftpserver/
+1f487440520b7264f9134079441bce0adcf05af0
+
+project external/mockito/
+c63bd7149ae1c6599c4174fe734247a12cf5ec35
+
+project external/mockwebserver/
+afc120010a63fcce78a03104376c7fcd7d406baf
+
+project external/modp_b64/
+4eb713e802be7d2b2f1cd37f91d04ae5c40d05f4
+
+project external/mp4parser/
+91052b1c78aaf57b0db28a0b1e4f7b91e5d8fda6
+
+project external/mtpd/
+26ef32a27635e278731f958c1b9559e43c8ce851
+
+project external/nano/
+67ac008cbde36b2991a4fb5e5c9063d49b733ad1
+
+project external/nanohttpd/
+9e6fdd3de9cf7ebc3a16c614147a28e63e62485e
+
+project external/nanopb-c/
+7a527b438b50a517645be2b876259121118bda39
+
+project external/naver-fonts/
+37ba854a88b1721057585111c7a1d7e5fd02b556
+
+project external/neon_2_sse/
+7dff91633c4faf01e78427a0d1626853d96289ab
+
+project external/neven/
+c0157fe840c0abf28e594a9324b36d1e53e002a3
+
+project external/newfs_msdos/
+6cbd5a634d77914c907cdc00b5bb9fdb1fbc438d
+
+project external/nfacct/
+da41b2d4c2089f96a7fcb81a8b686046e635da7d
+
+project external/nist-pkits/
+ceb84ee20207625eb009872960834e6a6c98ad46
+
+project external/nist-sip/
+d0a7687d3a0fff06ea6c1fe7d11cbff9864beb99
+
+project external/nos/host/generic/
+36e3566c79fc2786b62729f4ee2d82242900a526
+
+project external/noto-fonts/
+0d82872ce2be4725b1bcdaec4ea926570135b25c
+
+project external/ntfs-3g/
+7471d6403640f1cd0878cc2c87279571a497bcb7
+
+project external/oauth/
+2f79a0fdace446afd17a6b539b391be92214fd47
+
+project external/objenesis/
+170bfdd5ca3fdbd2a3a99ce825dca3382e307bbf
+
+project external/oj-libjdwp/
+34fcbf5b3d1adc494d9f723d8640d4965a1a171a
+
+project external/okhttp/
+89c7e1929d4c864912f412ea7eb090039db79181
+
+project external/one-true-awk/
+48afa534d75dba2b93756044b41226417fdfca5d
+
+project external/opencensus-java/
+610a17c2139830070c0dc56540d35aeb64222ec7
+
+project external/openssh/
+6160989a0f1b8f9650b699fddfb4df3f6cf15677
+
+project external/oss-fuzz/
+fc25fcf0519e5da3d5acfea27eadaa9ccffaef55
+
+project external/owasp/sanitizer/
+264347ba9499b19a1bf991308c47ad5d8f5a547c
+
+project external/p7zip/
+6f674e41e9e243e24e8e334f0db15a325a03b35a
+
+project external/parameter-framework/
+c676f15f0e814b5ab32e62400c703bcd0f3b5c4e
+
+project external/pcre/
+7fed2aa21aec621cd8c3c27261fae910b9bd8ad7
+
+project external/pdfium/
+4eeff6a85fd1294535c2c888034490b5dc877ca1
+
+project external/perfetto/
+37e41206db9bc9c8f86b09d88436b0e9a7b3f5d3
+
+project external/piex/
+6ff91ae0acacf741dd12b217460ea843b738eb1a
+
+project external/pigz/
+b825616338a219976c6e7d8a31b474242bb6cf1d
+
+project external/ply/
+21c343dd3b9c717de2ec122a943214c5f70d154e
+
+project external/ppp/
+e4712fc02b6b2b4645858b8b5270860f7cb9025b
+
+project external/proguard/
+4049237427905fe053ec217c082ce222f9edc814
+
+project external/protobuf/
+961fd36be178372d9640645e89d56eb8f73db1b6
+
+project external/psimd/
+38ff772f60dd2fba919dc8bebb9c349364c1a61a
+
+project external/pthreadpool/
+7c44d52f24ec6160ed832c4b51139819f844ad0f
+
+project external/puffin/
+f41ef119872c6595e7711ca9346131eb8d40ac8f
+
+project external/python/apitools/
+2b23d118222109ef59376b69d15cf366dcbecad5
+
+project external/python/asn1crypto/
+f9bf9b4162753bac4752faab67bd082e57c6145f
+
+project external/python/cffi/
+a0c2438c7a883c23642177532ad8228d7b666de4
+
+project external/python/cpython2/
+4ecd9450778988240cdfa9b2721750a433cec969
+
+project external/python/cpython3/
+de73b7ba33a73ae5cba35a3be7809153b030e91d
+
+project external/python/cryptography/
+5039a1c7df356db2877ae4ecc44a28d32a9466a7
+
+project external/python/dateutil/
+9390706c7578702a91e88a74cf388072e67afaf7
+
+project external/python/enum34/
+de9878e3b12f11d41ae97ee16c62ac7dcbb8e69f
+
+project external/python/funcsigs/
+6b9dcff686b5f367aaac114d21055a505a86d81c
+
+project external/python/futures/
+89a8fe6ab75db54c27ab073acda54b57b3a1187b
+
+project external/python/google-api-python-client/
+4c93867c0a194da55c6e6958046754aa70fbc2f0
+
+project external/python/httplib2/
+31f091c0ae1c78c65214d8c6c94938e00fe9f6e2
+
+project external/python/ipaddress/
+aebf8ebdf7d40de96a0d5865c99d4102bd0c1fdb
+
+project external/python/mock/
+2955fbc6ae54f18375684e1d933c83907978f92f
+
+project external/python/oauth2client/
+48bbe85f5376bdd485cbe92d8abea459c31d6034
+
+project external/python/parse_type/
+b3dec94033e2397772f630e456ee4ed148da0b49
+
+project external/python/pyasn1/
+3840362825124737bc1b9fb4bf45f937de64fb38
+
+project external/python/pyasn1-modules/
+c340f08f61bbea0a35f7030eba6c67b93cbd43e2
+
+project external/python/pybind11/
+f4b2b5240ecede571187e9931ea9483041d5ceb7
+
+project external/python/pycparser/
+24385e7bc2d202bae209c86bcc9ade41b09078ba
+
+project external/python/pyopenssl/
+751caf63d05da8477d934da5c05316ddeb4f64de
+
+project external/python/rsa/
+50feeefb8baf91ea1f81ba16428c270706f6d1ca
+
+project external/python/setuptools/
+513ec3d6bb6f7786d02caf51720497a118b8f4be
+
+project external/python/six/
+bc5b71ea687cbe1a5675215e617d1f4b310cc4e5
+
+project external/python/uritemplates/
+e9b8a40534df1b0de66ee1d6581ce657a6f9eee9
+
+project external/rappor/
+24abc025df68928ce97749b18521c4dbfa3faaf7
+
+project external/replicaisland/
+ea2fbe6a4828e8a4214ece603dab08804bb3bee4
+
+project external/rmi4utils/
+eab13882ca581b5ef579eeeca311957f5fa2eada
+
+project external/robolectric-shadows/
+82111d98867af5c0d17ca4669c8f3b03312b30b2
+
+project external/roboto-fonts/
+2f81b268a6ea2caf870350532ba02ff6b81b314d
+
+project external/rootdev/
+2b38487945c95283b77047a5470aa750af02f847
+
+project external/rsync/
+1f245165a608cf32490f75e55077e6876ee22b3d
+
+project external/rust/crates/byteorder/
+821d2a074bc11e3cd81c9156702d3ec6fb5f2228
+
+project external/rust/crates/libc/
+c3ced644b99c79d6a58a4dd4d699d3ef58ea972e
+
+project external/rust/crates/proc-macro2/
+ee5eeb3ec7940bcfe8be3dced54a877b029be36f
+
+project external/rust/crates/quote/
+a78d493bdbb465c11c6ff31b08fa4213b1cba79c
+
+project external/rust/crates/remain/
+dc3071e3317ddbac7633c7438ee98a41398e62af
+
+project external/rust/crates/syn/
+83d3986cfea93b8928487b3c5967c4f72c8d5111
+
+project external/rust/crates/unicode-xid/
+e6512220fea4425c82e21a3807214414b59e8fd8
+
+project external/scapy/
+2c6d26c6fc374a6b26b012ff4523a24e903d8329
+
+project external/scrypt/
+d6114db148b1ededd120de0cf2d1fc73ba1611ac
+
+project external/scudo/
+9ae674f6f6964dbd4d261beda92755735f7b6d8a
+
+project external/seccomp-tests/
+2795191f28591534096193bf5a92124367786b88
+
+project external/selinux/
+0731e73364dec7a4859acbe03c6c1fa3a06bf10d
+
+project external/setupcompat/
+2dcf5f96bf0a8174978f1e6e22babef489c698b3
+
+project external/setupdesign/
+09a5e8e0fbb8585fad96f6646b847ef3d7d3e77c
+
+project external/sfntly/
+a9a48a4ed3826e4e1fe33cf0642febe0172e8890
+
+project external/shaderc/spirv-headers/
+ee39ac64341b0c3d85a1299973988285f2f350de
+
+project external/shflags/
+6d6812d19da2747fdbee25421af1bd3583d75bf0
+
+project external/skia/
+246118bdf77aa7713793e729dada73ec7076dac0
+
+project external/skqp/
+21e70f4e18c18e2e7049abc7e3b4974798cc017c
+
+project external/sl4a/
+6c77ff7f51d1175e94fbb03af86e5a06ac519f82
+
+project external/slf4j/
+4cd3f35de15e9270f3d5822c3f04a7c2b02189ea
+
+project external/smali/
+aff0371ad4c54034cb84f48e170367bb787cd5f2
+
+project external/snakeyaml/
+5df2ff5ed7c5eebfaff21a8299019e21f648b0f6
+
+project external/sonic/
+043398f5c456fc78cd8f5f2057e3a2e767eebfca
+
+project external/sonivox/
+83082a72582da67e80dc23220d7e98d5494644dc
+
+project external/speex/
+999f3e21f50ac6531cdee4e7bcb5feeb6e2392e0
+
+project external/sqlite/
+b2158c9779b12617fbf1e76d5f605991a65a3ee7
+
+project external/squashfs-tools/
+26929f59a759b06cb01c539ba45630958a8e3a76
+
+project external/strace/
+f1cb53780e02e7a9112b4aa53a132cae53a1fa15
+
+project external/stressapptest/
+4d151d9e70555f617bd5c8859d9b3857be31fde3
+
+project external/subsampling-scale-image-view/
+5fb46aa47bd8d0ca763b7f17033a6f842e57d4f9
+
+project external/swiftshader/
+f5c5d50a2e69e7c66715eff7c53c6abb07acc827
+
+project external/tagsoup/
+62d766e91ae3052534f8cf5c68f4321045f12c58
+
+project external/tcpdump/
+f50b8b00f4d40eaaeb7e0e3a398d441d27e63d54
+
+project external/tensorflow/
+c3d31c8f43e0c8ca62cd84ecdf3fe2d06f0bdf44
+
+project external/testng/
+74aac3e648e789b5f462bd42debc34a16507dbad
+
+project external/tinyalsa/
+65b23d8be55cddce4e4b78301a04ae4857581463
+
+project external/tinycompress/
+d78bf3b141c1e8c8eacf4fc06f82c5dcbacefa17
+
+project external/tinyxml/
+30b01f5b6ece6c5204d46f6b2ea90745dbc69826
+
+project external/tinyxml2/
+1b7e9f45b916fdafad6a450244d6d30735b075db
+
+project external/toolchain-utils/
+b75f321fc8978b92ce3db6886ccb966768f0c7a8
+
+project external/toybox/
+8d1908eb5e872968131f8ea8334532177a2add03
+
+project external/tremolo/
+3ab154fd0976b4738dd50338cf178576fba131da
+
+project external/turbine/
+c6fb3b925e3e7c9dbf8324105097988c75b69c2b
+
+project external/u-boot/
+b47bcd97279db87270593c2396ef9717abbd249d
+
+project external/ukey2/
+cd9c844bd676ff9ff69a74bc49e157149a7f0918
+
+project external/unicode/
+e6d48226be7fee655a30c8dd7847dfb5d02153d8
+
+project external/universal-tween-engine/
+37a0007888efb1fc8b4d360d4e0560c03e55e5eb
+
+project external/unrar/
+17c84c8e627f81a36ad555e7a641a3401544fcbc
+
+project external/v4l2_codec2/
+25c3c32f40307e211630744ca03545c5bcaeb5fa
+
+project external/v8/
+dc02784c8323eab361da0fa9aaf796bfee98aee5
+
+project external/vboot_reference/
+df6d6b6e5280520b096fb1f565b758948bc872ee
+
+project external/vim/
+7a3f2feaaf576804df795b1cbd76f38c7b98cf17
+
+project external/virglrenderer/
+420c9e3d834eb6698c821a6d023a0dad63cc8b7e
+
+project external/vixl/
+c150fd7455f6f3520efe35ac6b24854ecc5b3a70
+
+project external/vogar/
+28704bea251866d1438d60b59dcf090f446ffdc6
+
+project external/volley/
+5c532a6de0f207c1d42c3ef5578b82f46c8641d1
+
+project external/vulkan-headers/
+0e0fe8825a3c6dc19470647ff7987c06a5b87087
+
+project external/vulkan-validation-layers/
+a2f99966439b03c57a5e5071e9e28601c04e8918
+
+project external/walt/
+66fd6f729742dc00f5c25bebf4166c8c1d9f9237
+
+project external/wayland/
+5c83f965ac8bbe0aca11fb77e377121223c624e5
+
+project external/wayland-protocols/
+0023658c1130d5bfe1b55ec9bb758c713a6216d4
+
+project external/webp/
+b26fd204d603ac43000488c0870a14abea36664b
+
+project external/webrtc/
+661e84967bb2600427cb65715caeeba112b94244
+
+project external/wpa_supplicant_8/
+f4cfe10ee881f42be7afb2c0eb74e3f4603d70d0
+
+project external/wycheproof/
+1b808efc7c903b0eaae0da8f6788f55513e4e339
+
+project external/xmp_toolkit/
+44d7e4d00ef6da63a75bf3a4f9296872cc4d2ac1
+
+project external/xz-embedded/
+51923a98b0af813e3db6a027d64471ee8710a4f2
+
+project external/xz-java/
+bd7892bb8927360cd34805bc332039154a2110e0
+
+project external/yapf/
+45d923c40605a71867d174abcd04a1db76945651
+
+project external/zip/
+c4117e141be848db220f292f08006182427cd93f
+
+project external/zlib/
+ec8d4c4bca51cbce4365f19d0e10c4e9575508b4
+
+project external/zopfli/
+4e42ccafb7c571f502a23177bca2d3cfc209035c
+
+project external/zxing/
+65193280855e46d11bf5b44f1a7e49ec0c7bd57e
+
+project frameworks/av/
+7db8eb3de32436269109f8168d24f19d90cb24ce
+
+project frameworks/base/
+2f5cf1e4fc1e8b1480d3c27a855f95d6d45429f4
+
+project frameworks/compile/libbcc/
+fff6169b647b9c5d60350923019e8d60449a3652
+
+project frameworks/compile/mclinker/
+c7e43705055a74fd97f481fd31dddd8b9e307c4a
+
+project frameworks/compile/slang/
+122ad4e102004cbf3bdc2b6f62b0d41aaa293541
+
+project frameworks/ex/
+5050934c425fa1c775d31a1c2ab7bbe6f8fe5bc6
+
+project frameworks/hardware/interfaces/
+0468af57ab9fb5e1f25dafe53ad78a17e25aaf7b
+
+project frameworks/layoutlib/
+b707cd3ba15b04325a844d611ab1ef6c7a4f6465
+
+project frameworks/libs/modules-utils/
+410b53b14010a7af14b1091bf53aae46d7a97912
+
+project frameworks/libs/native_bridge_support/
+c2e22119f33893fbee3cac58fb975092daba0049
+
+project frameworks/libs/net/
+3c1c253e01577c3563ce2806f6ca6dbd7400d927
+
+project frameworks/libs/systemui/
+4fcec24e32031a44800b7706c3ec1fc54e90f8bb
+
+project frameworks/minikin/
+107a01a1a80cb2ccf2455d90e4976eeaea398bc9
+
+project frameworks/ml/
+c27e8e1aaa438edabf5f42734d4434528538cb00
+
+project frameworks/multidex/
+e60bb86cd116127913fe8f4872d7846852627ffb
+
+project frameworks/native/
+103c04dc9ff92585765f9076959be684351064c3
+
+project frameworks/opt/bitmap/
+e9850af1278e499e427d08dbf40244f3622bd6db
+
+project frameworks/opt/calendar/
+6e29ad1dfe9b353af1c41a30101673bf01d7a144
+
+project frameworks/opt/car/services/
+71f349738c840f813abe64a5da89e3ae34772848
+
+project frameworks/opt/car/setupwizard/
+2dce33de2b08a48f5cb4df2f4e595048b0ab856e
+
+project frameworks/opt/chips/
+627a2f6bcac0b717041cc3e17f5b642a3e6e3a52
+
+project frameworks/opt/colorpicker/
+e39d8b0ad631c643d0ea3f0312808eb1bf055d34
+
+project frameworks/opt/localepicker/
+43f19d66c3f874dc97520c4231e03cbda7e80c9a
+
+project frameworks/opt/net/ethernet/
+bb92f4c7f08722711d0613c94153ed4296ffdc5a
+
+project frameworks/opt/net/ims/
+a0a24a7c38438d1e8649841e7a81c4af0a4054e1
+
+project frameworks/opt/net/voip/
+702a3e75d6c432a96db2481f5748953c9d69cc86
+
+project frameworks/opt/net/wifi/
+18e932aec8672fef4f9fbeb6bb0d19ae20558898
+
+project frameworks/opt/photoviewer/
+e277c3e0a6ac479ab7089934464a4f01df90ed43
+
+project frameworks/opt/setupwizard/
+8d2737e20a56addbf718aba9bc9bdc0c38e8c236
+
+project frameworks/opt/telephony/
+efc958ac5a609659ef4b2fd67352651ed2116a02
+
+project frameworks/opt/timezonepicker/
+ef33be78b14465c9c0f7a5c2d596560688571a58
+
+project frameworks/opt/tv/tvsystem/
+1c99e79a6de9d0a7df92d52f2779a95b9cbe8145
+
+project frameworks/opt/vcard/
+88212b105552d2b5f0a142d9c9eda33d74a7aaac
+
+project frameworks/rs/
+b3242e04d1ba3f9172e30ac88311affd73a36049
+
+project frameworks/wilhelm/
+0f31f10ff06ca27cfc6c8228e7c61fc40e0fb272
+
+project hardware/broadcom/libbt/
+ec39e72fbeda08ba91b3b05e8123de8477d470b8
+
+project hardware/broadcom/nfc/
+5e07a5b4b6dd32435455b550dc2d4c96d1d71ee1
+
+project hardware/broadcom/wlan/
+8f608ec0b9a7f9464c7681721ad18bd3bfd65104
+
+project hardware/google/apf/
+8e3611df8bb66b87dad2e73e5485b5aa49602a24
+
+project hardware/google/av/
+1322f13349b64287f663db5dfcdb49083cead1ea
+
+project hardware/google/camera/
+7d7739cdf2f0e9b5755889ee2f9b1101e0c6cc8a
+
+project hardware/google/easel/
+068aa473eab7cc0521c1b01668fdadb98b5e11f1
+
+project hardware/google/interfaces/
+7fd0e6a8712b9c2b83ee66dc92b6bd11205bcfa2
+
+project hardware/google/pixel/
+1c03493096d43bc0c4cbbe18a3097e037129129c
+
+project hardware/google/pixel-sepolicy/
+ffe859e40b3351c676c14c0c0cc949605260f115
+
+project hardware/interfaces/
+203e87a39c04f30bc1f09f6c2306b701d6b97fe0
+
+project hardware/invensense/
+a51c32c7d16d32462fcd2d3fc61474bb0ec56864
+
+project hardware/knowles/athletico/sound_trigger_hal/
+339f25dde12d5334a42c1b9739742219045d1043
+
+project hardware/libhardware/
+90e3ce2014c258736729a8da929f76d50dc19255
+
+project hardware/libhardware_legacy/
+22f705057482747bd4b7c5f3e9d60a12a4558257
+
+project hardware/lineage/interfaces/
+cfcb4c8a978a8627a5d6913089d9bb92d7356877
+
+project hardware/lineage/livedisplay/
+3e298771b18d6c0e28350f50c7204c3c036662b8
+
+project hardware/nxp/nfc/
+0ed6fe13adbaf217cde7784a6249a8b3bb658f1f
+
+project hardware/nxp/secure_element/
+8453b0b883bdd62610a16c6638309e3f915ed7b4
+
+project hardware/qcom-caf/apq8084/audio/
+7feb4b0794bd9d628ec3dadbe1baa5d96c39ceff
+
+project hardware/qcom-caf/apq8084/display/
+26a54aa24bda9626ff5b21d6023f0032296b34d5
+
+project hardware/qcom-caf/apq8084/media/
+09bc40392ee7b78f385093765146758c7472b546
+
+project hardware/qcom-caf/bootctrl/
+d1c4ad022e65f17d5267182165fb8a78bdde40a7
+
+project hardware/qcom-caf/bt/
+a11ce8ff780183c69aa0cc530fc60ac981002828
+
+project hardware/qcom-caf/common/
+5bd19fac7133383aeebd8b601e1de3c0685bf240
+
+project hardware/qcom-caf/msm8916/audio/
+e0e79d6281d55c4f0c93ec7d471d4554281a796b
+
+project hardware/qcom-caf/msm8916/display/
+4e024284f14a6e70332e0c5ea413b2d0e49722e6
+
+project hardware/qcom-caf/msm8916/media/
+bf62f596b10d39caf9c4208ce767a7deed662a1c
+
+project hardware/qcom-caf/msm8952/audio/
+c8f712cca75c74b9ef6583f85ecfe20f24c3376c
+
+project hardware/qcom-caf/msm8952/display/
+a5643f0d566911d8f19b743b0b39dec27993397f
+
+project hardware/qcom-caf/msm8952/media/
+7514c222b2e6f11ddaeb5dda2ab26083e2653bb1
+
+project hardware/qcom-caf/msm8953/audio/
+b6b4b95176283ccd966e3cf388ec2fc2acbe4ef6
+
+project hardware/qcom-caf/msm8953/display/
+6fe03b204444745439fe8d164dc78ee0a5576ca8
+
+project hardware/qcom-caf/msm8953/media/
+a147957c9926d98b69a8a8e9508df2db6cfb77a8
+
+project hardware/qcom-caf/msm8960/audio/
+7d62e7d4ccbd600b09210c51bd2ab44853b484de
+
+project hardware/qcom-caf/msm8960/display/
+51325414dbfda98d84365b774d84f750461366b6
+
+project hardware/qcom-caf/msm8960/media/
+a6a90709117cc790e30935dcb0c681c3f49a53be
+
+project hardware/qcom-caf/msm8974/audio/
+dab793a09339de7700b3b1ea918cdec780f5bfff
+
+project hardware/qcom-caf/msm8974/display/
+05538f83eaf805e3cf8cf4bed1c38c8aba8a3614
+
+project hardware/qcom-caf/msm8974/media/
+921538f4e1436038b01cf24e567c6fe949917652
+
+project hardware/qcom-caf/msm8994/audio/
+23c562e4653bc32574544c14457bb0aa8e689103
+
+project hardware/qcom-caf/msm8994/display/
+3bf44d6f53b4b67c6c1fc2403d32f21cebf9a885
+
+project hardware/qcom-caf/msm8994/media/
+234b63258e1664e20c32de88f689920ff3208058
+
+project hardware/qcom-caf/msm8996/audio/
+0fc4528a2b10fe4faf8a9c4959417957d264d419
+
+project hardware/qcom-caf/msm8996/display/
+bc83fe53a24d54969bb0e3b9e8800035b3101431
+
+project hardware/qcom-caf/msm8996/media/
+0f04f3c6a6b24ad1fab043a817216df408eeba5d
+
+project hardware/qcom-caf/msm8998/audio/
+916aee116091b60b375d7de95012846ab82af950
+
+project hardware/qcom-caf/msm8998/display/
+a7f8fc8b821df20c00bce999f9e11fd674dea896
+
+project hardware/qcom-caf/msm8998/media/
+c31b5917498087f638900f2336412085af8089b1
+
+project hardware/qcom-caf/sdm845/audio/
+bd63d5c759946a714245de90fcf53bf4ee5964bc
+
+project hardware/qcom-caf/sdm845/display/
+efb19693a84983a9fb9358319fbf732575f81bc8
+
+project hardware/qcom-caf/sdm845/media/
+026664f250620cecd8fb2811d1fad0ab32d8dd9a
+
+project hardware/qcom-caf/sm8150/audio/
+948a7ef42c46dbecc7ca35b235f4e96485c53bb3
+
+project hardware/qcom-caf/sm8150/display/
+0b034a6e503ef6b158b60422a4e844d0b0d3e4a3
+
+project hardware/qcom-caf/sm8150/media/
+7cf64b834302e8917c5ba96f143d1d9a05bc9f47
+
+project hardware/qcom-caf/sm8250/audio/
+bed4ccce77c07e2d66da01cb9ae39ea23ffa6804
+
+project hardware/qcom-caf/sm8250/display/
+2059e60b6d8396fdc45bbfd417e8ef9c85e7937f
+
+project hardware/qcom-caf/sm8250/media/
+41e7d380e6ead3e7ff75d91c6e7254f40434ca84
+
+project hardware/qcom-caf/sm8350/audio/
+a2f6a9b5db931791ffb4ce8fe8011d06431fc0fa
+
+project hardware/qcom-caf/sm8350/display/
+ae6dd12dca3d363692fe7136a570a772846a4262
+
+project hardware/qcom-caf/sm8350/media/
+16e0c932b4308c90d8f70cd407c28db2d141de58
+
+project hardware/qcom-caf/thermal/
+08cefce67ef2ee2ad6faccad144665a50ca18673
+
+project hardware/qcom-caf/vr/
+a2c6ad6f6443dee7ec4b48f788a2c8f7ee351aa2
+
+project hardware/qcom-caf/wlan/
+23c60982c1e1e0dde405d06aa192377e7f7b877e
+
+project hardware/qcom/audio/
+bfb3ac5202465f2191d39b146c57e003cf05c401
+
+project hardware/qcom/bootctrl/
+fa2d1b6724d73525a3018317e2d3826ab0549fcf
+
+project hardware/qcom/bt/
+a3c96a5d88745d872ee672b42cb288742cd200b3
+
+project hardware/qcom/camera/
+28d813dc105841097be1fd25ff55de1fcb868ccb
+
+project hardware/qcom/data/ipacfg-mgr/
+d9334ba8bba733223ac63f3b01b737acfb807d79
+
+project hardware/qcom/display/
+818ef15669802f4e2ccbbd5a8d806f6ef7a12a5e
+
+project hardware/qcom/gps/
+9bd070f8a1cb36c9ddc2900951b6874cd0ecd2cf
+
+project hardware/qcom/keymaster/
+cfa17ea7b26995d3c7719b1c1476ea1d56306186
+
+project hardware/qcom/media/
+4c1c087bbaa21349d3fc2686dc7849455f9e3b8e
+
+project hardware/qcom/neuralnetworks/hvxservice/
+7638b8fa905e92534583bb22202d0d715c3507e9
+
+project hardware/qcom/sdm845/bt/
+29c8a55bb6e521089ebd80a64afc893f8822aad2
+
+project hardware/qcom/sdm845/data/ipacfg-mgr/
+ba108d83b07216db03cd4139145383408fac6772
+
+project hardware/qcom/sdm845/display/
+39287d79a0dc162b295d33b13ad17a0c5433cd10
+
+project hardware/qcom/sdm845/gps/
+ad243335de98449bcb201aa6a84e065d5f05e4d2
+
+project hardware/qcom/sdm845/media/
+ac972a6108eb41c1e03f439e6b836c4b19a2b549
+
+project hardware/qcom/sdm845/thermal/
+08972b2fe3179702d6f052f90e49d68b702395dc
+
+project hardware/qcom/sdm845/vr/
+0e06489f538d99656ba2594d1d1aa6f24ba825f4
+
+project hardware/qcom/sm7150/gps/
+5b483a0c54d7d167a1219593ff6270f1f5c6bfca
+
+project hardware/qcom/sm7250/display/
+2233dfbf2ca901c4b5ce7042d0e439acc49b86d0
+
+project hardware/qcom/sm7250/gps/
+f965de348d95beb4b0f47ba9b5f7490aa04480f1
+
+project hardware/qcom/sm7250/media/
+fef0fc60da8bd9ace3fdc73c7af2583204375aa0
+
+project hardware/qcom/sm8150/data/ipacfg-mgr/
+4f288b03b069ab1461a6d05102388d3252f5a48c
+
+project hardware/qcom/sm8150/display/
+a75de6b5488718a33de0a41ff1c5a0d1a0322098
+
+project hardware/qcom/sm8150/gps/
+e367ea4ba1dc77185a980f4ea245284a041be7cd
+
+project hardware/qcom/sm8150/media/
+59924302f3060fb7509b6029666a36d1486e1474
+
+project hardware/qcom/sm8150/thermal/
+ae2f68f423efaf5710229ee05ffcadaed306f8ee
+
+project hardware/qcom/sm8150/vr/
+83c0155ec713872c7096a7610683e0c99e1f9803
+
+project hardware/qcom/sm8150p/gps/
+2dcbb1efacb66e4ac019458a44640505b7b9b9c4
+
+project hardware/qcom/wlan/
+4ea030cc240f0b35858d1a4060cb5b0465ea0521
+
+project hardware/ril/
+f9587934e6d3b6219ff1d5c0dd914ff65b916e6d
+
+project hardware/st/nfc/
+e7bc22cac073a5f6b5cf2b5d158498e3739f227f
+
+project hardware/st/secure_element/
+57cb663656fc58d1898ed7fdffdf05ea0859ddac
+
+project hardware/ti/am57x/
+ecea4a76d9fd937f4e79f71332190da98229495c
+
+project hybris-patches/
+7d83d27b10d5badd62d93400bd020700396cf531
+
+project kernel/configs/
+e4102999005f8f3c8db1fdacfba80a2c581a72f1
+
+project kernel/prebuilts/4.19/arm64/
+332808127a212d39ef607a3241fe0ff1d48cd795
+
+project kernel/tests/
+0b69217c71fdb04e6e2dea74443ebe3e4391104a
+
+project libcore/
+bd1b2c6ee0b082457c2a885c051d4d7b1dd07b94
+
+project libnativehelper/
+8f6772e9eae4e8c4544546062ac0803334edb797
+
+project lineage-sdk/
+5f1b14d27249f8b7f035060005e07ac9388e5470
+
+project lineage/charter/
+29a6394fe5d27a8b65f8409a47d74d865c5c9049
+
+project lineage/contributors-cloud-generator/
+68b3aa8a899337047ef18b22baa91dea54d9bb18
+
+project lineage/crowdin/
+ab74e67614e8e9381ea275b20d2b1c81b1c8c094
+
+project lineage/hudson/
+017c0229b72ed2b8dc9b2881cb2f2902f51841aa
+
+project lineage/mirror/
+65f45e72654504f149b0becc8a9fc4f91171bc0e
+
+project lineage/scripts/
+9e37043ee5d59ecb00a44e9c14e4756a1d8fae6f
+
+project lineage/slackbot/
+ec8ea4d5505905da2151c2dd4608c41b510dbc07
+
+project lineage/website/
+ca73ca067d4277d1b2cf36f4af387bb7d795b70c
+
+project lineage/wiki/
+62993c820d165d2e95359e6a1a6cd873340ed6c3
+
+project packages/apps/AudioFX/
+23b1cf1805e26a2a97c24cd1b2751e80d2cfbf3d
+
+project packages/apps/Backgrounds/
+d084fb949a8d1075adce1c9afb523a597a5a5831
+
+project packages/apps/BasicSmsReceiver/
+24073c663e084f5a1c0ce2dc543af30d6643e9be
+
+project packages/apps/Bluetooth/
+c3172d173b528ceeff005f6c1397087b1c51146a
+
+project packages/apps/Camera2/
+ba73b97e236cb7bf15d91940b1639300298809e3
+
+project packages/apps/Car/Calendar/
+21d26e6527981180e4f33549edcfb4984cce981f
+
+project packages/apps/Car/Cluster/
+8ed370795084da63d723cfac07795d07b9859e89
+
+project packages/apps/Car/Dialer/
+47fda1d262091d61b50f519ce584da9adc726b49
+
+project packages/apps/Car/Hvac/
+d9e71de12bc86444941142f50d8bdfd9c9fe6855
+
+project packages/apps/Car/LatinIME/
+de1026103842def1d39294bdf65b320b37f0eb0a
+
+project packages/apps/Car/Launcher/
+ac5e9805a8ce19b485afec07776aa98320ad96dc
+
+project packages/apps/Car/LinkViewer/
+e81dd8eb9eec5b1edd40d4846b65fb4941a1aef6
+
+project packages/apps/Car/LocalMediaPlayer/
+707b5b730b97dc0e948422a4ac8e206cb8700fc8
+
+project packages/apps/Car/Media/
+aea16b8e4a59d9dd2ebbb4274566212e4bf1f775
+
+project packages/apps/Car/Messenger/
+84302ad551cdaa476f5a41f8bc064630f480d4b8
+
+project packages/apps/Car/Notification/
+f2d7c58d69cfde4c34fac6064a2625f0fa59ecc9
+
+project packages/apps/Car/Radio/
+fbf8caacab12ae184fe3ed5ba8e1a6bc0f3697a9
+
+project packages/apps/Car/RotaryController/
+cd504900fe9ec40da217e908b19a6528e7b0a856
+
+project packages/apps/Car/Settings/
+8e352834971446c98704a77df12b213307fb1446
+
+project packages/apps/Car/SystemUpdater/
+d7af3a403665186388ae86628fa0a956201e69c1
+
+project packages/apps/Car/libs/
+bda7ad4939fbafbf309f2b045f3631ed396d4dbf
+
+project packages/apps/Car/tests/
+ae3c42557453a2cd94ae4b76f8cb95d8f501dda9
+
+project packages/apps/CarrierConfig/
+58658ef55f4eb1c4873da1c377dda28c88be8435
+
+project packages/apps/CellBroadcastReceiver/
+635d157f8452ac501438e41af3ff11a706a9f0ba
+
+project packages/apps/CertInstaller/
+375335cc7dc29ee3e0568538839364afb77c6907
+
+project packages/apps/Contacts/
+acb807dfbd15caf91cc77a0aa56c19fcd6b6e039
+
+project packages/apps/DeskClock/
+66f6725f6e5f74330fbbe58383d9ac4696375075
+
+project packages/apps/Dialer/
+8d41f861cf524f7f8028b216d1f37bf24d7e1fad
+
+project packages/apps/DocumentsUI/
+7c184bde4a33121effde192a9ec619896089b441
+
+project packages/apps/Eleven/
+9f82d3ed4cc63f70effca35f3acf0eae44dbc0ce
+
+project packages/apps/EmergencyInfo/
+d314a2740c20430b9723d5a9c92921899cf713b9
+
+project packages/apps/Etar/
+7d960b78c314d1a1a24674709c96414ce5c63fe6
+
+project packages/apps/ExactCalculator/
+f4cbae82c3e761a489009cca42457456da1a9db2
+
+project packages/apps/FMRadio/
+c8664126026de37a442dba996db8bc4d3606dc41
+
+project packages/apps/FlipFlap/
+6f4cedc10afbb003bddc979eac7c65af24a3ab66
+
+project packages/apps/Gallery2/
+cd08e441ab84d50283e83c62628f4f376063b853
+
+project packages/apps/HTMLViewer/
+56316249eef9779014c6a25d5293c9bc8487ec5e
+
+project packages/apps/Jelly/
+b3b92da43bb02db69cffe76b854940c8bb634002
+
+project packages/apps/KeyChain/
+f98bfe92cfee4a1b23b4d57372e133beb9a6e8b3
+
+project packages/apps/LineageCustomizer/
+f582a5a2d787f9f860b65e4387797f5c50acb6ba
+
+project packages/apps/LineageParts/
+2355efff0185485290939987b958f4306f1ef535
+
+project packages/apps/ManagedProvisioning/
+378b16bb84c6912b6a649084372324bc2049e67b
+
+project packages/apps/Messaging/
+22ac97decae0d2c0738d682bca5325b1fac2fa78
+
+project packages/apps/Nfc/
+7a88b68f594da51d53ee317a455ef2f095cf3042
+
+project packages/apps/OnDeviceAppPrediction/
+ee2d2f15cb5458756c4a882c5a2cd9a77b8b1034
+
+project packages/apps/OneTimeInitializer/
+737b0d2daabf33a458ed754e045b2f0e2b65da70
+
+project packages/apps/PermissionController/
+4a0c24310daa02ce33dbba1f1d1465ee69ca60b1
+
+project packages/apps/PhoneCommon/
+98f31e80373d32aa57ee0a88e76af06cc77efbd2
+
+project packages/apps/Profiles/
+8dee69242cb49fd7bcfee72bb28be0e693127096
+
+project packages/apps/Provision/
+a169fa4647c818fbebe1a24ebbc18ec746133adb
+
+project packages/apps/QuickAccessWallet/
+d17b7e87f387060ed7694a93798657246775e7e7
+
+project packages/apps/Recorder/
+c9b8b0b5da13b91405471cb434651f0ecf1eb85c
+
+project packages/apps/SafetyRegulatoryInfo/
+f31ce9a17f776e22f17e8cc7821eb5a1db6a3a7b
+
+project packages/apps/SampleLocationAttribution/
+c7952bab7ab6127649d0f4e2d9d67f4af014fb82
+
+project packages/apps/SecureElement/
+57ba8db9d456de7ce36303676d5238021c96be50
+
+project packages/apps/Seedvault/
+68dc4f16bc0c383bec3b101b6a33606f3196acb4
+
+project packages/apps/Settings/
+31468874b701614b372765ee02d723b507f33004
+
+project packages/apps/SettingsIntelligence/
+da232f4c56e3d5268d96722c8cd1cb18a1cc40b2
+
+project packages/apps/SetupWizard/
+a965cffe53f566c0c29ffd4e11fe3bf3aac46d46
+
+project packages/apps/SimpleDeviceConfig/
+b13034a011b9cc08274c2bc4b90b8213d4293e97
+
+project packages/apps/Snap/
+df790318398b9ba2278389edf54fbf5ac182b025
+
+project packages/apps/Stk/
+642461c6ccb16a568bdaeb46651160697983b3ee
+
+project packages/apps/StorageManager/
+1b09d216a30621f269bcd137148cc0f6292ce7f0
+
+project packages/apps/TV/
+6f600bc753cd6bfbe7c4ae85b46f9633259b035d
+
+project packages/apps/Tag/
+0f19c27d542203da339e58dee11cf2f3b9309af0
+
+project packages/apps/Test/connectivity/
+22d6ee33637f78f91e78195ebe84fb0ca0639bf0
+
+project packages/apps/ThemePicker/
+afaee793f99234976c0223955ad27df60c90718d
+
+project packages/apps/Traceur/
+01c9981aee9cc79484057e1f68a648af256cc971
+
+project packages/apps/Trebuchet/
+63f2e824fe6a6ec9b56c3f4393b38b8e3d570485
+
+project packages/apps/TvSettings/
+feb72ca6177e145f2661f9235dcc78fa29298876
+
+project packages/apps/UniversalMediaPlayer/
+d2894e3b45dcbd4bfed9cd482d51833b72853411
+
+project packages/apps/Updater/
+9ab1ae0ded06e25b30ffde0ae0a747736e4dec1c
+
+project packages/apps/WallpaperPicker2/
+0fbeba24d520cf54cd305d51f3c7488e847b14eb
+
+project packages/inputmethods/LatinIME/
+f2f914c68272b775fa6c94703d2090c4774ae93e
+
+project packages/inputmethods/LeanbackIME/
+1667592ee5924122e43b611fa813c8f894087cd6
+
+project packages/modules/ArtPrebuilt/
+d078c40eedd7ae262541642ee18b225d3b56a5f9
+
+project packages/modules/CaptivePortalLogin/
+7ea98acae2ede244760998ba7ab9c47e0116753f
+
+project packages/modules/CellBroadcastService/
+90f14e22b264993c1a23c83e69ecf2e093a299d0
+
+project packages/modules/Cronet/
+618b9f9d549467dc0383962d9449c32e61e53be1
+
+project packages/modules/DnsResolver/
+2e135953cab113dc66452b4ad7394ff260b9f88e
+
+project packages/modules/ExtServices/
+fc28504517ab3de2f7db2cc86d4b1d7568767e7f
+
+project packages/modules/IPsec/
+3d5334773fb782232b63dd860615ddbccc37f815
+
+project packages/modules/ModuleMetadata/
+bf198f3182e53f3d1dc9d061f558656e59f5d4c8
+
+project packages/modules/NetworkPermissionConfig/
+78b33ffc1f33060463b83bbbd8b9dbb161f82535
+
+project packages/modules/NetworkStack/
+88d4fd9cd4e49102d92cd7e6d8e270284e00e76e
+
+project packages/modules/SdkExtensions/
+c571e6f6702a630532f270cce5fe832a8ee71cdc
+
+project packages/modules/TestModule/
+3523a2f0f9b12d4e60374af63aae14f75a2b4c10
+
+project packages/modules/vndk/
+9d2db0e4f7bd51b1627c4dc07dd9b93925e4f962
+
+project packages/overlays/Lineage/
+0a9abbda309b4f4ec73cd6bf130fead61cadb8b2
+
+project packages/providers/BlockedNumberProvider/
+49f631b14b181d5247847cb4d9468c2a08bb22dc
+
+project packages/providers/BookmarkProvider/
+11665d52d278c0e2871ed061ab3c4f737edecaca
+
+project packages/providers/CalendarProvider/
+63cba4780f78e89698bf0e6422620e3f80069c42
+
+project packages/providers/CallLogProvider/
+83ed05c3dae13a06a271b2e88ca025b5fe019430
+
+project packages/providers/ContactsProvider/
+7b1131a18889425ff9ccc516306ed5ced3bf45d8
+
+project packages/providers/DownloadProvider/
+65e7c53354ec541c16bcadfa8f0b32f22ccdc3a9
+
+project packages/providers/MediaProvider/
+55c343eb1c669e26a385964f9a020554ec6cae65
+
+project packages/providers/PartnerBookmarksProvider/
+9c3b541b4357011de2047a2e24f92a63c6d8d8a0
+
+project packages/providers/TelephonyProvider/
+458b8b5c8c172f3b0508d505d56ccb0ae034bff0
+
+project packages/providers/TvProvider/
+5d3d2780a3d52410a67be508bcd8d591f7cb2ef0
+
+project packages/providers/UserDictionaryProvider/
+27778f818344a7652f159a46a82dcced67a9cbd0
+
+project packages/resources/devicesettings/
+16b2d48fa1f44181990a313195c6e6037011369c
+
+project packages/screensavers/Basic/
+55d97a0304cbf36592485df5b758dc6910dc310a
+
+project packages/screensavers/PhotoTable/
+88446347d644052aa80ceb697f72e28edb09d6d4
+
+project packages/services/AlternativeNetworkAccess/
+b4955a68ca98fce9e3f73dbccbc5e82482a6d0a6
+
+project packages/services/BuiltInPrintService/
+a5f2794d806b68f37cc605864febb7266a270fb9
+
+project packages/services/Car/
+cf0f848f86e24b6a680122283c5148659299db9d
+
+project packages/services/Mms/
+20eadc021d566984b62e9e190e2b84ba6371336a
+
+project packages/services/Mtp/
+8788b998339af115404ec7230d28c06d5dea4424
+
+project packages/services/Telecomm/
+8381867d864dbe299f91ee040249eb4cd4667b5f
+
+project packages/services/Telephony/
+4c675054ae5e03b6e71a0b86e26921e3d2efa700
+
+project packages/wallpapers/ImageWallpaper/
+0a1680f07b09889c7642a775b6bb69d1b27f9b09
+
+project packages/wallpapers/LivePicker/
+988574f1027506c2ed5be9588861f45dcfa98d7a
+
+project pdk/
+4a62634eaf9e69cbaca900d259330ab5d632f373
+
+project platform_testing/
+8a084996037712ad4c5585d7dec551a4a0b04e2b
+
+project prebuilts/abi-dumps/ndk/
+cfba83229ba83f9bc058af952916e1b2db273714
+
+project prebuilts/abi-dumps/platform/
+dc6751d5dd6ebc7c5e045875543c2ecd0647e9a8
+
+project prebuilts/abi-dumps/vndk/
+bc22cb8abc9ef2b949725d01e0deed616afc7544
+
+project prebuilts/android-emulator/
+d75a457e03a65387642353391588c37d97de7460
+
+project prebuilts/asuite/
+ae246e35ef988d7972190103f3879a6ca748abd3
+
+project prebuilts/build-tools/
+4ccb71c99a09ab343b9a17b36fd07f16c027e618
+
+project prebuilts/bundletool/
+42973709abd84594a62443b8dd2f905e25b3212c
+
+project prebuilts/checkcolor/
+b2b4c468ad93319a1997474fb1bb88938d04009d
+
+project prebuilts/checkstyle/
+c05b54f806a0283a022284fdf571bba8884b742f
+
+project prebuilts/clang-tools/
+fe0a2e9f1ba408a9641619a0092f6905e04a9da7
+
+project prebuilts/clang/host/darwin-x86/
+d0d0a2bf904a1ce56245a91196797b2021083dad
+
+project prebuilts/clang/host/linux-x86/
+7e2d7f3e8dba20760df041bf90ca5a15913631c8
+
+project prebuilts/cmdline-tools/
+6c5a91fb37a6f4d140645beb41e61ffffdf12fa7
+
+project prebuilts/devtools/
+7880027af1a44ffe1c2b4ef8c874ff9c3a414b69
+
+project prebuilts/extract-tools/
+2ffd09a03179514217dbdb7305418a1c50daf677
+
+project prebuilts/fuchsia_sdk/
+12c41f24a38aefda3c5dda0dd513945b616cd765
+
+project prebuilts/gas/linux-x86/
+592150fc8ae9f48f2e73f390961f32ca6f5f6a9f
+
+project prebuilts/gcc/darwin-x86/aarch64/aarch64-linux-android-4.9/
+b835552472bb75806a815bd001499024bf732563
+
+project prebuilts/gcc/darwin-x86/arm/arm-linux-androideabi-4.9/
+f04dbd26f42d6cba53f67e0cb1213a913cd40b45
+
+project prebuilts/gcc/darwin-x86/host/i686-apple-darwin-4.2.1/
+353332b8c310174c2dff55db520349cff40b1295
+
+project prebuilts/gcc/darwin-x86/x86/x86_64-linux-android-4.9/
+994ce4ff4b01195efb81b3bdb541771e259bd0f1
+
+project prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/
+be79a1c2ee1ff7a110b653a682c236979539acd2
+
+project prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/
+da10d2bd65e2c57d338fb6bb712ff522ad4e34e7
+
+project prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.17-4.8/
+3a954758bbbf155a136ccb528c3fd2431c0d14d2
+
+project prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8/
+43a9fd9dd0601fca3e53e252aa3848cfabec04ac
+
+project prebuilts/gcc/linux-x86/x86/x86_64-linux-android-4.9/
+0a266d069d64010971f84e189fdc7f629d2a3dac
+
+project prebuilts/gdb/darwin-x86/
+481790b5f34a2e67e677d04c7fdf1684e64cc413
+
+project prebuilts/gdb/linux-x86/
+96d94994f490d4eee9ca54f65733fa43741b232f
+
+project prebuilts/go/darwin-x86/
+6f220189501db4eb5096cbdd3bd0e9615d97154b
+
+project prebuilts/go/linux-x86/
+a11b3f9506390724cec9673ff9c21fba12136046
+
+project prebuilts/gradle-plugin/
+83deb3e12b75aeba7585bfbd913f38c289adf9d4
+
+project prebuilts/jdk/jdk11/
+2af57446f191a0481fe08779815e507c70db7f4c
+
+project prebuilts/jdk/jdk8/
+74e4f1844dfa9b8df9e0fe2ff34a2ecc24d52b07
+
+project prebuilts/jdk/jdk9/
+3930f832ed6418ae1625df6dc3eb836e173afe0f
+
+project prebuilts/ktlint/
+78713762f01e42e647fc6ec2adde628d41bdc265
+
+project prebuilts/manifest-merger/
+3b9fc994c7ec52c403a8d30ceb08ca29b3579c52
+
+project prebuilts/maven_repo/android/
+1057296cf7d4af15eb504ffdf6a1791aca1dce7b
+
+project prebuilts/maven_repo/bumptech/
+cc50918f07cd929227e0e93c85b897c84aa499c8
+
+project prebuilts/misc/
+77ef700dc1f31260c15052ee4560c6acc97c6aa5
+
+project prebuilts/module_sdk/art/
+0a68152386e56eab7fce3813aca01301e197b17b
+
+project prebuilts/ndk/
+4a0fef6af484b233e411d60a4d226ad3c830941f
+
+project prebuilts/python/darwin-x86/2.7.5/
+0c5958b1636c47ed7c284f859c8e805fd06a0e63
+
+project prebuilts/python/linux-x86/2.7.5/
+53add29eb7b4eaa9e128e3ec84eac9e65cf4c986
+
+project prebuilts/qemu-kernel/
+084fa0f4df2012019501ecad76674160b808eca0
+
+project prebuilts/r8/
+b44d88031d45271af33ac47162ad93d7e14c049c
+
+project prebuilts/remoteexecution-client/
+3e6eb6d6152c31151994abc53de2a4cb898131a9
+
+project prebuilts/runtime/
+2efbd99a0140b8a224d5ec39b82550a6da88cedc
+
+project prebuilts/rust/
+a48fb0348501e6d2ef7380b7c5e66ebe297e0dfd
+
+project prebuilts/sdk/
+98518f78bb6fbdfbb9a93b98e6e2246f767b1576
+
+project prebuilts/tools/
+e28f95d20d869137f8bae3cde99458e0335347f4
+
+project prebuilts/tools-lineage/
+302f18415ab0da9ad2cc0190bdc2c38eaf30e2e0
+
+project prebuilts/vndk/v27/
+1ab20db3e87e22209bf9e00971346a199c2d07c8
+
+project prebuilts/vndk/v28/
+9acec88c89b23881a2b3e5b9473176a12474f160
+
+project prebuilts/vndk/v29/
+93623f6d162e93762d0391dcb91db2036d4b6db3
+
+project sdk/
+31b3d471a4d3dd7262f50cdfac83dbce7e7c5479
+
+project system/apex/
+350b70f0ed2cf7e65dec83276bb440edbb90dbca
+
+project system/bpf/
+81b26a8a969c9d25676f90597079b7ab8f8576b4
+
+project system/bpfprogs/
+df5007df690cd26579d0c47e544b6dc91a38dfcd
+
+project system/bt/
+bcca9a572f1cc539ba21ebe940c3642ce8707d1a
+
+project system/ca-certificates/
+07ece71a40a06548f4942619bf7b919d5ff91ed2
+
+project system/chre/
+872b6a3aaf2dc12eb51496c402c2d523da1d5848
+
+project system/connectivity/wificond/
+57a054befc2a837ec8d1f63e2df6d51a9a3afd15
+
+project system/connectivity/wifilogd/
+d96bd96c699461682699628ba6bf604bf36f011a
+
+project system/core/
+92420679ffbd50b79d76525085b21278f8497037
+
+project system/extras/
+54a53b6e30f8a787241932b6da0685c4e8be183d
+
+project system/gatekeeper/
+dd73a85fb461d6b6732fed1096ebd7b3e4619691
+
+project system/gsid/
+353bd5faa73121b77d7ca80ec3d71e0119898222
+
+project system/hardware/interfaces/
+a2fe15bf96c8bb88c174ac61eab6c013a04332c4
+
+project system/hwservicemanager/
+9ed41f25fd3be8b51fd31b5d0c1223c754d437c4
+
+project system/incremental_delivery/
+766ee48f1ea7fec76d126b0b5528ae78ad4cf911
+
+project system/iorap/
+d51ec6be97d92d9cea1f9d28b3faeada5d808165
+
+project system/keymaster/
+c6aaab44fee6db7c3a8bf1d473510f562aae29dd
+
+project system/libartpalette/
+3468f55d442bf980af9c3e675e0edf2efe2cff11
+
+project system/libfmq/
+19c77ec23cfb09b28a0fe7d38b3677b94a555a35
+
+project system/libhidl/
+989f1ade9f402060c5b03aaa9cf03c36992f8ba8
+
+project system/libhwbinder/
+c98cc47aa6a19487e7aa6edcfdf4a37be99f6ff3
+
+project system/libsysprop/
+27c3ec696619e55dbe767728385729cdb57b518d
+
+project system/libufdt/
+0e5bbf7a5bcb235c300ca214a9375078103a8326
+
+project system/libvintf/
+b200cfdb6e0a8109b69a9a583bd23f91e629e948
+
+project system/linkerconfig/
+935f98a97b2e225cc515f2c4fcfec978ea2fa523
+
+project system/media/
+b432f63fcbf6fecb43631ac8ef0454fa770182a4
+
+project system/memory/libion/
+08029308f4e9b267caedb6e294971cac170b91fb
+
+project system/memory/libmeminfo/
+69298f797fdf0b580021befec2c4c6553fa4b5f0
+
+project system/memory/libmemtrack/
+e3d7988449a9579bfced8a4fa8355de36ee95d64
+
+project system/memory/libmemunreachable/
+0c0852b75771a8b36bbcb8c816d8658aa92b9b45
+
+project system/memory/lmkd/
+1ff19f401fe249dec8bbcd2e77617ade2d795d85
+
+project system/netd/
+c013516ff3b78598cbab7e1d0b86583732273b8f
+
+project system/nfc/
+e56578d0fc93b4ca4375c07e7f4bca82b8aa2ceb
+
+project system/nvram/
+559fb5ba33c4288d79545c7abdd6d7368c0a1ce0
+
+project system/security/
+c5fa3c5375a7d13919846adac1e039287648dbc2
+
+project system/sepolicy/
+c590512ecdcf4980bc5ed1a5896be929c403b29c
+
+project system/server_configurable_flags/
+594a01f179ebfbc1de99d22d9faf62014f0244a0
+
+project system/teeui/
+add4ebe79988fe4cff1b368fe2f1f67c1f1de98e
+
+project system/testing/gtest_extras/
+8e8f1e9c82c946997959642073317784627919a5
+
+project system/timezone/
+a33c0c82ff93f5648215a59e4e485a94287088f6
+
+project system/tools/aidl/
+6ed41513844eede4790cbb4f511e94bf645cfeeb
+
+project system/tools/dtbtool/
+ffd4bcb0e07a135e9bb65b07e33f6c8f5f1c47b9
+
+project system/tools/hidl/
+4ca5e6b5886fbe7aaa840db67276b60c95a1279b
+
+project system/tools/mkbootimg/
+ed76fccb92950d0d1fba31cc5777944a5a636c23
+
+project system/tools/sysprop/
+6372fde5de60e3062c01f796b97820ea30c0de4e
+
+project system/tools/xsdc/
+0be301d6033204d4668b2c26f84fd851dd7cf068
+
+project system/update_engine/
+4ea7960317c33d195cadf92146e6c8227c88b947
+
+project system/vold/
+85ffd688e91103bdfad15353bc807d1133def876
+
+project test/app_compat/csuite/
+5c86fc9b9b042528f9af6ea7c53c22f892ed3b2f
+
+project test/framework/
+c44480ac572c0eeaded19fa1c70833fcac21bfd0
+
+project test/mlts/benchmark/
+13abfc2f14d03f8e606528f42700f761667da302
+
+project test/mlts/models/
+a92852efb52754926c69e9cdbe651de935f55349
+
+project test/mts/
+a92b902cd0e74e6568eb645b99370cbc4569a19f
+
+project test/suite_harness/
+3a5b1207c2177d72db24da78aba86574d95c26f8
+
+project test/vti/dashboard/
+a9bd47e4caa21d535fb89c0e6efe23fa08d25847
+
+project test/vti/fuzz_test_serving/
+6319e3d94c65669050c49c6ca570096d41823b82
+
+project test/vti/test_serving/
+bdaf2327fefdb061abb03896d0eed6e776a7d6d7
+
+project test/vts/
+f001416f91f7f02a7a042bd0c52f0c62394fa78c
+
+project test/vts-testcase/fuzz/
+43fcddcde333cac6b365ea32f0fecc3a2c9d7ff8
+
+project test/vts-testcase/hal/
+430829c9435b28f605cac28b930586281ec674f7
+
+project test/vts-testcase/hal-trace/
+2695892568f8fade958ec0ec172df8f295ae4112
+
+project test/vts-testcase/kernel/
+86e06938eddc05ef961d0f398369d222c6d60d34
+
+project test/vts-testcase/nbu/
+0712e2a442364af77a0b1dda0adf922d1d1447bc
+
+project test/vts-testcase/performance/
+f0e5dcee43de6f9c44a3872721087d96eaa48273
+
+project test/vts-testcase/security/
+fff787f02b16ddd7a40d6252f06c6c8a5f5fff4c
+
+project test/vts-testcase/vndk/
+66a450e3cc08e79d346047280113d8d690918118
+
+project toolchain/benchmark/
+1fba1825631e6e52dff5b3ceb87a5b439e2acf52
+
+project toolchain/pgo-profiles/
+df7cd88e8839bdf864700fc7d302b678a604b943
+
+project tools/acloud/
+24d4a06dd195458321c206fbacd8333e129d1af7
+
+project tools/apifinder/
+dfa8cfc75cecc4b0b50e2b951903cca10af32163
+
+project tools/apksig/
+ca83134c76fc0dddad7e799f300a980a34fa91f4
+
+project tools/apkzlib/
+b855432e74c0b3764a154da97670f9ffe6981d06
+
+project tools/asuite/
+5474d4e9edb55dc81d6ee846238aa03ec65c399f
+
+project tools/carrier_settings/
+028379115086b3b2d3adfdd1c79b7e6b3ef12861
+
+project tools/currysrc/
+faa13ba30d3ecaaf56b7c3b0fd68658a4eea090e
+
+project tools/dexter/
+6426a69b96ebca6b9e15494d9f2bb0ec5cfffccd
+
+project tools/doc_generation/
+197c862d83eecb60c4a3ee390a5df806eb10d7bd
+
+project tools/external/fat32lib/
+2aa98e48614927413550d00c755351b3f68542b4
+
+project tools/external_updater/
+0cdcbb4bd863acd54e9cfc3f63da85c05fd0a278
+
+project tools/extract-utils/
+18705c3129dbbf266131408faa4522aafa1ecab7
+
+project tools/loganalysis/
+915dbf1d7ed0f684d2d1bc3a6be9ef417c93527d
+
+project tools/metalava/
+21659a2683eed66e16aeafeb8d9c40916946a51b
+
+project tools/ndkports/
+d0ec81e4b134f4b1446d3fd5a6dfbf095475597c
+
+project tools/platform-compat/
+b553fea7dd2aa8dcc26f4d8f91effd86e55dd72e
+
+project tools/repohooks/
+d480cf2500a8842b4ef64b931acfd4ddc2f04ecf
+
+project tools/security/
+a5c3644bd83674858e0b9d5da3e6014a3cbf3ba6
+
+project tools/test/connectivity/
+38ccb70b61038b0be21da87ae626b01a3d162bf8
+
+project tools/test/graphicsbenchmark/
+7c31a9c1f32d602e1b50446951088d3beddedb84
+
+project tools/tradefederation/contrib/
+0ff7007d58dd912f7d5dca4178a9731494b31222
+
+project tools/tradefederation/core/
+f5410b0a4c7ff2430b2dc2ea5a8718eb72e8bb7d
+
+project tools/treble/
+4a70b7b8a10119fe886bb009c634646a533f7db0
+
+project tools/trebuchet/
+b735f448e61c99f4c06101902ff76eee4e5496f1
+
+project vendor/apn/
+35d822d750556e09dafaa2950ea87e912b49eab1
+
+project vendor/codeaurora/telephony/
+aa73e97ce334422309585057987787a5125ada58
+
+project vendor/crowdin/
+2d24c4287d2584556ab4871749a99eab0f9362df
+
+project vendor/halium/audioflingerglue/
+15327dd9a40b064300835ddfe47c20c133c6d3aa
+
+project vendor/halium/biometryd/
+1005154be01ed2d01f50f8f99fdaaf02cc62077b
+
+project vendor/halium/config/
+b473807c0993f940d7968be211cae93db7ce1d78
+
+project vendor/halium/devices/
+e4e4a7acdcae03702fe3d763da899117e8edb588
+
+project vendor/halium/droidmedia/
+8b82f5e87d90fcba0af04b3b90ae6d59b451a959
+
+project vendor/halium/hardware/
+76b7368a15b74c6e360d8ea73fce871f4a54cb77
+
+project vendor/halium/libhybris/
+bc24b741405b927b525d9cfc4bf916f0cad4e766
+
+project vendor/halium/manifest/
+5adafe832169a72edbf7bb82590b8d0c5b96bf6e
+
+project vendor/halium/platform-api/
+ab60c2cdbbda210ced1c6e907b554c9ede7882ff
+
+project vendor/halium/selinux_stubs/
+e63ed1f44eda1673f003155cbdaf146063c871a2
+
+project vendor/halium/stub_netd/
+de0f6c30e5db15d3a38b3016e7044f7f83aed03c
+
+project vendor/lineage/
+9acedc7d0e3866d90911a0112074fc312ca11ed5
+
+project vendor/nxp/opensource/commonsys/external/libnfc-nci/
+1caf66342b69f9d819a152dcdb5a5d5408de047b
+
+project vendor/nxp/opensource/commonsys/frameworks/
+cfe757afa291b1b7dc9c6376ef538ac51c9d174d
+
+project vendor/nxp/opensource/commonsys/packages/apps/Nfc/
+93d3b3f38d7ee3d1c71252b727100bb56519f420
+
+project vendor/nxp/opensource/interfaces/nfc/
+6b30fe8b2fba967bc2f00bb191d57ef420c789f9
+
+project vendor/nxp/opensource/pn5xx/halimpl/
+667f7b0a8aa651a96102a75a8419c39c5338f3d3
+
+project vendor/nxp/opensource/pn5xx/hidlimpl/
+a210f5e90e6ce7326f0cc5fcfda40ca63d55373e
+
+project vendor/nxp/opensource/sn100x/halimpl/
+bc004d6692ad7cbed746d737ecb232835f199e57
+
+project vendor/nxp/opensource/sn100x/hidlimpl/
+f0c90061cd98bfba93e21d3a82ad10c3fa86d5bf
+
+project vendor/qcom/opensource/audio/
+77abc79effe30e310908bf7c5a133674bd886f30
+
+project vendor/qcom/opensource/audio-hal/st-hal/
+6fd1cb841731827ae15cca4b6edae5cdbcf177dc
+
+project vendor/qcom/opensource/commonsys-intf/bluetooth/
+df40ec386e783660c251d2bafcc5dd7d41098903
+
+project vendor/qcom/opensource/commonsys-intf/display/
+244be5cd87088cb85dfba8fa7891df3b54854718
+
+project vendor/qcom/opensource/commonsys/bluetooth_ext/
+7a9e33ee59493bc4adcae1e0f77dc7b89e3fecb6
+
+project vendor/qcom/opensource/commonsys/packages/apps/Bluetooth/
+3be0667d6112fc370b044b29461126651372a827
+
+project vendor/qcom/opensource/commonsys/system/bt/
+6c64ff7760e082c2af0048d28cef8b533e2bc3ba
+
+project vendor/qcom/opensource/cryptfs_hw/
+aaa8a78850cb6c557045321d46d54194fbfa2f68
+
+project vendor/qcom/opensource/data-ipa-cfg-mgr/
+582dffc7248802d33a7fef490484e5c794413ff6
+
+project vendor/qcom/opensource/dataservices/
+821b3b0a887f30a6784969d5da73cdde03b9d456
+
+project vendor/qcom/opensource/fm-commonsys/
+eae6909108afd9035b40685111e1fd7b3dfe58d9
+
+project vendor/qcom/opensource/interfaces/
+f50e5c3db5a69932a192f1716b9d80fb871c585c
+
+project vendor/qcom/opensource/libfmjni/
+e33227ed63c6b8e7df0b638f556bf14fa99acd83
+
+project vendor/qcom/opensource/power/
+46ec6ba9a67695cc90c23b122792b3b870aceb54
+
+project vendor/qcom/opensource/thermal-engine/
+d016322bd511e4adb759f1b89ce4137f3b74eb4c
+
+project vendor/qcom/opensource/usb/
+ba7cebfb062bb8619ac6d1029c5e09d6ded66091
+
+project vendor/qcom/opensource/vibrator/
+0ba562c54613b3ac2d8c92844b1b9c23665507e3
+
+project vendor/qcom/opensource/wfd-commonsys/
+2fefd776cb17654b676c8a567668ed47e4d18b66
+
+project vendor/vndk/
+fcdc4eda06f3d23015378cf17a14f86cfcfa4e00
+nothing to commit (working directory clean)
