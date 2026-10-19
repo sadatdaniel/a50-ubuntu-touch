@@ -178,6 +178,11 @@ console-setup unit and expanded-panel layout checks. Rollback:
    compiler vs the linker/objtools (e.g. Proton clang + Google ld.lld, or
    the reverse) in a50-halium CI. If the Google linker is at fault, raise it with
    the UBports porting team (their tools only fetch Google prebuilts).
+   **Google LLD/LLVM back end ruled out (19 Oct):** a50-halium `--linker-from
+   /gclang` (Proton clang 13 front end, Google LLD 14.0.7 doing ThinLTO codegen
+   and linking, CI 39257525650) boots (boot `90289138…`, owner-verified). The
+   hang is in **Google clang's front end** (defaults/flags). Next: diff the two
+   drivers' defaults (`-###`, `-dM -E`) for the kernel's target and flags.
    Earlier note: `build.sh` clones the moving
    `halium-generic-adaptation-build-tools` (head `7dd99e0d` on 17 Oct) and builds
    `deviceinfo_kernel_source` branch `ubuntu-touch-26.04` (last change
