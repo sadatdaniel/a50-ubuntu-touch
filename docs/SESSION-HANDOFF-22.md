@@ -170,6 +170,14 @@ console-setup unit and expanded-panel layout checks. Rollback:
    boots (boot `b329a4d8…`, owner-verified); it is currently installed. The hang
    is therefore Google's clang/lld itself (r383902 and r416183b). Next: tools
    build with `android12L`→`r450784e` (clang 14) or another supported revision.
+   **clang 14 also hangs (19 Oct):** tools build with `master-kernel-build-2022`
+   r450784e (clang 14.0.7; tfa9872 needed `cc-disable-warning,
+   unused-but-set-variable`, committed on `halium-a50-ut-llvm`), boot
+   `f7673efd…`: Samsung logo, restored rf2sp from recovery. Google clang 11/12/14
+   all hang; Proton 13 boots with identical source/config. Next bisect: the
+   compiler vs the linker/objtools (e.g. Proton clang + Google ld.lld, or
+   the reverse) in a50-halium CI. If the Google linker is at fault, raise it with
+   the UBports porting team (their tools only fetch Google prebuilts).
    Earlier note: `build.sh` clones the moving
    `halium-generic-adaptation-build-tools` (head `7dd99e0d` on 17 Oct) and builds
    `deviceinfo_kernel_source` branch `ubuntu-touch-26.04` (last change
