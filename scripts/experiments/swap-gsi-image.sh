@@ -16,7 +16,8 @@ if [ ! -e "$backup" ]; then
 fi
 test "$(sha "$backup")" = "$cur" || [ "$(sha "$backup")" = "$want" ] || { echo 'E: backup does not match' >&2; exit 1; }
 mount -o remount,rw /
-finish() { sync; mount -o remount,ro /; }
+# Busy services can block the read-only remount; the next reboot mounts / RO anyway.
+finish() { sync; mount -o remount,ro / || echo 'W: / stays rw until reboot' >&2; }
 trap finish EXIT
 cp "$new" "$dst.new"
 test "$(sha "$dst.new")" = "$want"

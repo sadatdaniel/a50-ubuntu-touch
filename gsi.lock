@@ -20,15 +20,22 @@
 # Jenkins job: UBportsCommunityPortsJenkinsCI /
 #   ubports/porting/community-ports/jenkins-ci/generic_arm64 / halium-11.0
 GSI_JOB=https://ci.ubports.com/job/UBportsCommunityPortsJenkinsCI/job/ubports%252Fporting%252Fcommunity-ports%252Fjenkins-ci%252Fgeneric_arm64/job/halium-11.0
-GSI_BUILD=1542
-GSI_DATE=2026-09-05
+# 2026-10-19: moved 1542 -> 1585, the first build with Halium PR 84 merged
+# (hybris-patches 7d83d27b, "libaudioclient: Don't wait for AudioFlinger"),
+# which fixes the camera video Stop hang. Boot-tested on the A50: lock screen,
+# sound, and camera record -> Stop -> playback from a cold boot without any
+# temporary library mounts (docs/experiments/063-gsi-1585-camera.md).
+# Jenkins keeps only ~30 builds; the tarball is archived in GitHub release
+# inputs-20261017 (scripts/release/fetch-release-inputs.sh).
+GSI_BUILD=1585
+GSI_DATE=2026-10-18
 
 # sha256 of halium_halium_arm64.tar.xz as downloaded.
-GSI_SHA256=48ed0fd15c3b6b3a29de2b683c511ab9fb54f148b6e25556dbe6a1767fb6d2a3
+GSI_SHA256=d08a92e40fa77246415d1e78acaf6f51c7cca4d5e982177d2810cb2726ed49be
 
 # sha256 of the file that tarball actually installs, at
 # /var/lib/lxc/android/android-rootfs.img. This is the one checkable on a
 # running device:
 #     sha256sum /var/lib/lxc/android/android-rootfs.img
-GSI_ANDROID_ROOTFS_SHA256=e53c4d7fe5beec7e641b1c7eb998cfb117eed934078b913fe610d964f194bc98
-GSI_ANDROID_ROOTFS_BYTES=473772032
+GSI_ANDROID_ROOTFS_SHA256=da6c337369b04ae6e652135dd102b53758c6d1470d83d563b8bb2a50b1db78db
+GSI_ANDROID_ROOTFS_BYTES=473751552
