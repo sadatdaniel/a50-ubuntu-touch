@@ -13,6 +13,7 @@ These are ready-to-post texts. Status column is updated when posted.
 | 5 | Launchpad #2166326: tar on kernels without openat2 | draft (comment) |
 | 6 | UBports waydroid packaging: `X-Lomiri-Single-Instance` | draft |
 | 7 | waydroid/waydroid#2357: close foreground_pipe descriptors | draft (PR) |
+| 8 | UBports porting team: tools-built kernel hangs with Google clang | draft (forum/Matrix) |
 
 ---
 
@@ -78,3 +79,32 @@ Wrap the select loop of `tools/helpers/run_core.py` `foreground_pipe()` in
 pipe are closed on every exit. Regression: 200 calls with GC disabled leak
 400 fds before, 0 after (`scripts/experiments/test-waydroid-foreground-pipe-fds.py`).
 Patch: `scripts/experiments/waydroid-foreground-pipe-close.patch`.
+
+## 8. Porting team: Samsung Exynos 9610 kernel hangs only when built with Google clang
+
+Galaxy A50 (SM-A505F, Halium 11, Ubuntu Touch 26.04 community port in progress).
+Kernel: FreshROMs Mint 4.14.194 tree plus our patches. Built by
+halium-generic-adaptation-build-tools `build.sh`, it hangs at the Samsung logo
+before the first printk. S-Boot's last_kmsg ends at "Starting kernel...", and
+nothing reaches ramoops. The same source and `.config` built with Proton
+clang 13 boots and works (audio, sleep, AppArmor, OTA via
+system-image-upgrader). One variable per boot test:
+
+| Build | Result |
+|---|---|
+| Google clang r383902 (11), r416183b (12), r450784e (14), ThinLTO | hang |
+| Google clang 12 without LTO | hang |
+| Google clang 14 with PLATFORM_VERSION matched (ANDROID_VERSION 120000) | hang |
+| Google clang 14 at -O2 instead of the tree's -O3 | hang |
+| Proton 13 + integrated assembler (LLVM_IAS=1) | boots |
+| Proton 13 + the LLVM=1 build-fix commits | boots |
+| Proton 13 front end + Google LLD 14 (ThinLTO codegen + link) | boots |
+
+The remaining difference is Google clang's front end/middle end. A
+compile-command diff of the early objects shows only Polly (Proton only) and
+`-fmerge-constants`/`--param=allow-store-data-races=0` (newer clang). Questions:
+are Exynos 9610/9611 or other Samsung 4.14 ports known to need a specific
+clang? Is there a supported way for a port to select a different clang in the
+tools (`deviceinfo_kernel_clang_*` only offers Google prebuilts)? Kernel branch
+and build evidence: github.com/sadatdaniel/android_kernel_samsung_exynos9610_mint
+(`halium-a50-ut-llvm`), a50-ubuntu-touch docs/SESSION-HANDOFF-22.md.

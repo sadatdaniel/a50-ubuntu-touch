@@ -191,6 +191,8 @@ console-setup unit and expanded-panel layout checks. Rollback:
    (`b7e65ff1…`) **still hangs**. Testing `-O2` instead of FreshROMs' `-O3`
    (branch `halium-a50-ut-llvm-o2`, fragment `a50-o2.config`). If that fails,
    raise it with the UBports porting team.
+   **-O2 also hangs (20 Oct, boot `129cc482…`), rf2sp restored.** Escalation
+   text for the porting team: docs/upstream-drafts.md item 8 (owner posts).
    Earlier note: `build.sh` clones the moving
    `halium-generic-adaptation-build-tools` (head `7dd99e0d` on 17 Oct) and builds
    `deviceinfo_kernel_source` branch `ubuntu-touch-26.04` (last change
